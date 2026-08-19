@@ -3575,7 +3575,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const handleQuickContact = (type, lead) => {
     dispatchContact(type, lead, (id) => {
-      setLeads((prev) => prev.map((l) => l.id === id ? { ...l, lastContact: new Date().toISOString(), notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])] } : l));
+      setLeads((prev) => prev.map((l) => l.id === id ? {
+        ...l,
+        lastContact: new Date().toISOString(),
+        // Falar com o lead por qualquer canal já resolve a tarefa da semana automaticamente -
+        // antes ficava esquisito: você conversava, mas a Lista da Semana continuava mostrando pendente.
+        weekDone: l.weekTag ? true : l.weekDone,
+        notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])],
+      } : l));
+      if (lead.weekTag && !lead.weekDone) setToast("Marcado como feito na Lista da Semana também!");
     });
   };
 
@@ -3604,9 +3612,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const logWaListSend = (leadId, message) => {
     const now = new Date().toISOString();
     const lead = leads.find((l) => l.id === leadId);
-    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, lastContact: now, notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])] } : l));
+    setLeads((prev) => prev.map((l) => l.id === leadId ? {
+      ...l,
+      lastContact: now,
+      weekDone: l.weekTag ? true : l.weekDone,
+      notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])],
+    } : l));
     setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
+    if (lead?.weekTag && !lead?.weekDone) setToast(`${lead.company}: marcado como feito na Lista da Semana também!`);
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
