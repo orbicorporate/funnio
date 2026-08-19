@@ -1108,7 +1108,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                       onClick={() => pickScript(s)}
                       style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10, paddingTop: 10, border: "none", borderTop: `1px solid ${s.color}18`, background: "transparent", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", width: "100%" }}
                     >
-                      <Pencil size={11} /> Editar antes de usar
+                      <Pencil size={11} /> Editar script padrão
                     </button>
                   </div>
                 );
