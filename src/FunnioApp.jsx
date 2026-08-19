@@ -105,6 +105,16 @@ const TEMP_CONFIG = {
   cold: { label: "Frio", color: "#4a9eea", grad: "linear-gradient(160deg, #7dbdf5, #4a9eea)", bg: "rgba(74, 158, 234, 0.12)", ring: "rgba(74, 158, 234, 0.35)", icon: SnowflakeIcon },
 };
 
+// Como uma tarefa da semana foi concluída - usado tanto no card "Concluídos essa
+// semana" quanto no histórico com filtro de período.
+const WEEK_VIA_CONFIG = {
+  manual: { label: "Marcado manualmente", color: "#6d5ef8", icon: CheckCircle2 },
+  whatsapp: { label: "Via WhatsApp", color: "#25d366", icon: MessageCircle },
+  "whatsapp-lista": { label: "Via lista de envio WhatsApp", color: "#128c4a", icon: Send },
+  email: { label: "Via Email", color: "#3b82f6", icon: Mail },
+  phone: { label: "Via Telefone", color: "#8b5cf6", icon: Phone },
+};
+
 const STAGE_OPTIONS = ["Apresentação", "Alinhamento", "Escopo Enviado", "Proposta", "Conquistado", "Perdida"];
 
 const STAGE_COLORS = {
@@ -279,6 +289,7 @@ const GOALS_CONFIG_KEY = "goalsConfig:v1";
 const BADGES_KEY = "earnedBadges:v1";
 const CHAT_HISTORY_KEY = "assistantChat:v1";
 const WA_SEND_HISTORY_KEY = "waSendHistory:v1";
+const WEEK_HISTORY_KEY = "weekCompletionHistory:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
@@ -1131,6 +1142,124 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Histórico de conclusões da Lista da Semana, com filtro de período - pra
+// responder "o que eu fiz nas últimas semanas/meses" sem precisar lembrar de cabeça.
+const WEEK_HISTORY_RANGES = [
+  { key: "7d", label: "7 dias", days: 7 },
+  { key: "30d", label: "30 dias", days: 30 },
+  { key: "90d", label: "3 meses", days: 90 },
+  { key: "all", label: "Tudo", days: null },
+];
+
+const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
+  const [range, setRange] = useState("30d");
+
+  const filtered = useMemo(() => {
+    const opt = WEEK_HISTORY_RANGES.find((r) => r.key === range);
+    if (!opt || opt.days === null) return history;
+    const cutoff = Date.now() - opt.days * 86400000;
+    return history.filter((h) => new Date(h.date).getTime() >= cutoff);
+  }, [history, range]);
+
+  const grouped = useMemo(() => {
+    const groups = {};
+    filtered.forEach((h) => {
+      const day = new Date(h.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+      if (!groups[day]) groups[day] = [];
+      groups[day].push(h);
+    });
+    return Object.entries(groups);
+  }, [filtered]);
+
+  const byVia = useMemo(() => {
+    const counts = {};
+    filtered.forEach((h) => { counts[h.via] = (counts[h.via] || 0) + 1; });
+    return counts;
+  }, [filtered]);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
+      <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ArrowLeft size={17} />
+              </button>
+              <div>
+                <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16.5, fontWeight: 800 }}>Histórico da Lista da Semana</div>
+                <div style={{ fontSize: 11.5, opacity: 0.85 }}>{filtered.length} conclusõe{filtered.length === 1 ? "" : "s"} no período</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.15)", borderRadius: 12, padding: 4 }}>
+            {WEEK_HISTORY_RANGES.map((r) => (
+              <button key={r.key} onClick={() => setRange(r.key)} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 9, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", background: range === r.key ? "white" : "transparent", color: range === r.key ? "#6d5ef8" : "rgba(255,255,255,0.8)" }}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+              <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Nada nesse período</div>
+              <div style={{ fontSize: 12.5, marginTop: 4 }}>Tenta um intervalo maior, ou marque leads como concluídos na Lista da Semana.</div>
+            </div>
+          ) : (
+            <>
+              {/* Resumo por canal */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                {Object.entries(byVia).map(([via, count]) => {
+                  const cfg = WEEK_VIA_CONFIG[via] || WEEK_VIA_CONFIG.manual;
+                  return (
+                    <div key={via} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 12, background: cfg.color + "12", border: `1px solid ${cfg.color}30` }}>
+                      <cfg.icon size={12} color={cfg.color} />
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: cfg.color }}>{count} {cfg.label.replace("Via ", "").replace("Marcado ", "")}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {grouped.map(([day, items]) => (
+                <div key={day} style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>{day}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {items.map((h) => {
+                      const cfg = WEEK_VIA_CONFIG[h.via] || WEEK_VIA_CONFIG.manual;
+                      const lead = leads.find((l) => l.id === h.leadId);
+                      return (
+                        <div
+                          key={h.id}
+                          onClick={() => lead && onOpenLead(lead)}
+                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, background: "white", border: `1px solid ${cfg.color}22`, cursor: lead ? "pointer" : "default" }}
+                        >
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: cfg.color + "18", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <cfg.icon size={14} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{h.company}</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>{h.owner} · {cfg.label}</div>
+                          </div>
+                          <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{new Date(h.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -3347,6 +3476,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
   const [scriptPickerLead, setScriptPickerLead] = useState(null);
   const [waSendHistory, setWaSendHistory] = useState([]);
+  const [weekHistory, setWeekHistory] = useState([]);
+  const [showWeekHistory, setShowWeekHistory] = useState(false);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [toast, setToast] = useState("");
@@ -3367,8 +3498,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(LEADS_KEY, seedLeads), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
-      loadData(WA_SEND_HISTORY_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory]) => {
+      loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist]) => {
       if (mounted) {
         setLeads(l); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
         setWeeklyGoal(typeof g === "number" && g > 0 ? g : DEFAULT_WEEKLY_GOAL);
@@ -3377,6 +3508,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setEarnedBadges(Array.isArray(badges) ? badges : []);
         setChatMessages(Array.isArray(chatHistory) ? chatHistory : []);
         setWaSendHistory(Array.isArray(waHistory) ? waHistory : []);
+        setWeekHistory(Array.isArray(weekHist) ? weekHist : []);
         setLoaded(true);
       }
     });
@@ -3391,7 +3523,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(WEEK_HISTORY_KEY, weekHistory); }, [weekHistory, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
+
+  // Registra no histórico persistente (dura semanas/meses, não só a semana atual)
+  // toda vez que uma tarefa da semana é marcada como concluída, e por qual canal.
+  const logWeekHistory = (lead, via) => {
+    setWeekHistory((prev) => [{ id: "wk_" + Date.now() + "_" + lead.id, leadId: lead.id, company: lead.company, owner: lead.owner, via, date: new Date().toISOString() }, ...prev].slice(0, 500));
+  };
 
   // Detecta automaticamente quando um SDR bate um nível de meta (bronze/prata/ouro) e credita a badge.
   // Roda sempre que leads/reuniões/config de metas/SDRs mudam.
@@ -3517,7 +3656,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     }
   };
   const deleteLead = (id) => { setLeads((prev) => prev.filter((l) => l.id !== id)); setSelected(null); };
-  const toggleWeekDone = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: !l.weekDone } : l)));
+  const toggleWeekDone = (id) => {
+    const lead = leads.find((l) => l.id === id);
+    const willBeDone = lead && !lead.weekDone;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: !l.weekDone, weekDoneVia: !l.weekDone ? "manual" : l.weekDoneVia } : l)));
+    if (willBeDone) logWeekHistory(lead, "manual");
+  };
   const toggleSuperAttention = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, superAttention: !l.superAttention } : l)));
   const setWeekTag = (id, tag) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone } : l)));
   const toggleWeekFlag = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
@@ -3592,9 +3736,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         // Falar com o lead por qualquer canal já resolve a tarefa da semana automaticamente -
         // antes ficava esquisito: você conversava, mas a Lista da Semana continuava mostrando pendente.
         weekDone: l.weekTag ? true : l.weekDone,
+        weekDoneVia: (l.weekTag && !l.weekDone) ? type : l.weekDoneVia,
         notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])],
       } : l));
-      if (lead.weekTag && !lead.weekDone) setToast("Marcado como feito na Lista da Semana também!");
+      if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, type); }
     });
   };
 
@@ -3627,11 +3772,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       ...l,
       lastContact: now,
       weekDone: l.weekTag ? true : l.weekDone,
+      weekDoneVia: (l.weekTag && !l.weekDone) ? "whatsapp-lista" : l.weekDoneVia,
       notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])],
     } : l));
     setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
-    if (lead?.weekTag && !lead?.weekDone) setToast(`${lead.company}: marcado como feito na Lista da Semana também!`);
+    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "whatsapp-lista"); }
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -4331,10 +4477,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
-                <div>
+                <div style={{ flex: 1 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 500, margin: 0, color: "#0f172a" }}>Abordar essa semana</h1>
                   <div style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>{stats.weekList.length} pendentes · {stats.weekDoneCount} já feitos</div>
                 </div>
+                <button
+                  onClick={() => setShowWeekHistory(true)}
+                  title="Ver histórico de semanas e meses anteriores"
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 12, border: "1px solid rgba(109,94,248,0.25)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+                >
+                  <ClipboardList size={13} /> Histórico
+                </button>
               </div>
 
               {stats.weekTotalTagged > 0 && (
@@ -4355,7 +4508,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
 
-              {/* Histórico dos já concluídos essa semana */}
+              {/* Concluídos essa semana - agora mostra POR QUAL CANAL cada um foi resolvido */}
               {stats.weekCompleted.length > 0 && (
                 <div style={{ marginTop: 24 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
@@ -4363,33 +4516,40 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Concluídos essa semana</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(16,185,129,0.12)", padding: "2px 8px", borderRadius: 7 }}>{stats.weekCompleted.length}</span>
                   </div>
-                  <Glass style={{ borderRadius: 16, padding: "6px 6px" }}>
-                    {stats.weekCompleted.map((lead, i) => (
-                      <div
-                        key={lead.id}
-                        onClick={() => setSelected(lead)}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", cursor: "pointer",
-                          borderTop: i > 0 ? "1px solid rgba(148,163,184,0.15)" : "none",
-                        }}
-                      >
-                        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(16,185,129,0.14)", color: "#059669", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Check size={13} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{lead.owner} · {lead.weekTag === "hoje" ? "era pra hoje" : "era pra essa semana"}</div>
-                        </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleWeekDone(lead.id); }}
-                          title="Reabrir - voltar para a lista de pendentes"
-                          style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", flexShrink: 0 }}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {stats.weekCompleted.map((lead) => {
+                      const via = WEEK_VIA_CONFIG[lead.weekDoneVia] || WEEK_VIA_CONFIG.manual;
+                      return (
+                        <div
+                          key={lead.id}
+                          onClick={() => setSelected(lead)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", cursor: "pointer",
+                            background: "white", borderRadius: 16, border: `1px solid ${via.color}25`,
+                            boxShadow: `0 2px 10px -6px ${via.color}30`,
+                          }}
                         >
-                          Reabrir
-                        </button>
-                      </div>
-                    ))}
-                  </Glass>
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", background: via.color + "18", color: via.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <via.icon size={15} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                              <span style={{ fontSize: 10, fontWeight: 800, color: via.color, background: via.color + "14", padding: "1.5px 7px", borderRadius: 20 }}>{via.label}</span>
+                              <span style={{ fontSize: 11, color: "#94a3b8" }}>{lead.owner}</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleWeekDone(lead.id); }}
+                            title="Reabrir - voltar para a lista de pendentes"
+                            style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", border: "none", borderRadius: 9, padding: "7px 11px", cursor: "pointer", flexShrink: 0 }}
+                          >
+                            Reabrir
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </>
@@ -5087,6 +5247,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             lead={scriptPickerLead}
             onClose={() => setScriptPickerLead(null)}
             onSelect={addToWaListWithScript}
+          />
+        )}
+        {showWeekHistory && (
+          <WeekHistoryScreen
+            history={weekHistory}
+            leads={leads}
+            onClose={() => setShowWeekHistory(false)}
+            onOpenLead={(lead) => { setShowWeekHistory(false); setSelected(lead); }}
           />
         )}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
