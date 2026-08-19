@@ -8,7 +8,7 @@ import {
   Share2, Video, FileText, SlidersHorizontal, BarChart3, Users2, ClipboardList,
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
-  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus,
+  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -330,8 +330,11 @@ const ORIGIN_OPTIONS = [
   { key: "contato_pessoal", label: "Contato pessoal", icon: Users, color: "#ec4899" },
   { key: "linkedin", label: "LinkedIn", icon: Linkedin, color: "#0a66c2" },
   { key: "seo", label: "SEO", icon: Globe, color: "#059669" },
-  { key: "midia_social", label: "Mídia social", icon: Share2, color: "#e1306c" },
+  { key: "instagram_organico", label: "Instagram Orgânico", icon: Share2, color: "#e1306c" },
+  { key: "facebook_organico", label: "Facebook Orgânico", icon: Share2, color: "#1877f2" },
+  { key: "meta_ads", label: "Meta Ads", icon: Megaphone, color: "#0668e1" },
   { key: "google_ads", label: "Google Anúncio", icon: Megaphone, color: "#ea4335" },
+  { key: "outro", label: "Outro canal", icon: MoreHorizontal, color: "#6b7280" },
 ];
 const ORIGIN_BY_KEY = Object.fromEntries(ORIGIN_OPTIONS.map((o) => [o.key, o]));
 
@@ -707,7 +710,8 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
               <span className="lc-owner" style={{ color: txtOwner, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.owner}</span>
               {lead.origin && ORIGIN_BY_KEY[lead.origin] && (() => {
                 const OriginIcon = ORIGIN_BY_KEY[lead.origin].icon;
-                return <OriginIcon size={11} color={ORIGIN_BY_KEY[lead.origin].color} style={{ marginLeft: 2, flexShrink: 0 }} title={`Origem: ${ORIGIN_BY_KEY[lead.origin].label}`} />;
+                const originLabel = lead.origin === "outro" && lead.originOther ? lead.originOther : ORIGIN_BY_KEY[lead.origin].label;
+                return <OriginIcon size={11} color={ORIGIN_BY_KEY[lead.origin].color} style={{ marginLeft: 2, flexShrink: 0 }} title={`Origem: ${originLabel}`} />;
               })()}
             </div>
           </div>
@@ -1226,6 +1230,14 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 );
               })}
             </div>
+            {draft.origin === "outro" && (
+              <input
+                value={draft.originOther || ""}
+                onChange={(e) => update({ originOther: e.target.value })}
+                placeholder="Qual canal? (ex: TikTok, panfleto, parceiro...)"
+                style={{ ...inputStyle, marginTop: 8 }}
+              />
+            )}
           </div>
 
           <div style={{ marginBottom: 8 }}>
