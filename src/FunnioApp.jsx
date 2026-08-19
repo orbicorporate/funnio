@@ -3599,24 +3599,34 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
 
-              {/* Sugestão pro assistente de IA quando há leads quentes esfriando sem contato */}
-              {stats.hotNoContact.length > 0 && (
-                <div
-                  onClick={() => { setChatInput(`Quais desses ${stats.hotNoContact.length} leads quentes sem contato eu deveria priorizar hoje?`); setView("assistente"); }}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", cursor: "pointer", marginBottom: 14 }}
-                >
-                  <div style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(109,94,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Sparkles size={14} color="#6d5ef8" />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>
-                      {stats.hotNoContact.length} lead{stats.hotNoContact.length === 1 ? "" : "s"} quente{stats.hotNoContact.length === 1 ? "" : "s"} esfriando
+              {/* Sugestão pro assistente de IA quando há leads quentes esfriando sem contato -
+                  a legenda mostra o lead mais urgente de verdade, não um texto genérico */}
+              {stats.hotNoContact.length > 0 && (() => {
+                const sortedHot = [...stats.hotNoContact].sort((a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999));
+                const mostUrgent = sortedHot[0];
+                const urgentDays = daysSince(mostUrgent.lastContact);
+                const urgentLabel = urgentDays === null ? "nunca contatado" : `há ${urgentDays} dias sem contato`;
+                const extra = stats.hotNoContact.length - 1;
+                return (
+                  <div
+                    onClick={() => { setChatInput(`Quais desses ${stats.hotNoContact.length} leads quentes sem contato eu deveria priorizar hoje?`); setView("assistente"); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", cursor: "pointer", marginBottom: 14 }}
+                  >
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
+                      <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
                     </div>
-                    <div style={{ fontSize: 11, color: "#6b6b75" }}>sem contato há 3+ dias · perguntar ao assistente o que priorizar</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>
+                        {stats.hotNoContact.length} lead{stats.hotNoContact.length === 1 ? "" : "s"} quente{stats.hotNoContact.length === 1 ? "" : "s"} esfriando
+                      </div>
+                      <div style={{ fontSize: 11, color: "#6b6b75", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <strong style={{ color: "#6d5ef8" }}>{mostUrgent.company}</strong> está {urgentLabel}{extra > 0 ? ` · +${extra} outro${extra === 1 ? "" : "s"}` : ""}
+                      </div>
+                    </div>
+                    <ChevronRight size={16} color="#6d5ef8" style={{ flexShrink: 0 }} />
                   </div>
-                  <ChevronRight size={16} color="#6d5ef8" style={{ flexShrink: 0 }} />
-                </div>
-              )}
+                );
+              })()}
 
               {/* Linha de campos pequenos: Conquistados, Reuniões agendadas, Negociações antigas, Super lead */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
