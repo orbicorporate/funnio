@@ -8,7 +8,7 @@ import {
   Share2, Video, FileText, SlidersHorizontal, BarChart3, Users2, ClipboardList,
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
-  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight,
+  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -671,7 +671,7 @@ const ChannelLabel = ({ label, checked, onToggle, disabled }) => (
 // LEAD CARD (grid principal)
 // ════════════════════════════════════════════════════════════════════════
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted }) => {
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, onToggleWaList }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -808,6 +808,21 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           <ToggleSwitch on={isOnWeekList} onClick={() => onToggleWeekFlag(lead.id)} />
         </div>
         <div style={{ display: "flex", gap: 6 }}>
+          {lead.whatsapp && onToggleWaList && (
+            <button
+              onClick={() => onToggleWaList(lead.id)}
+              title={inWaList ? "Remover da lista de envio WA" : "Adicionar à lista de envio WA"}
+              style={{
+                width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${inWaList ? "#25d366" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
+                background: inWaList ? "#25d366" : (dark ? "rgba(255,255,255,0.06)" : "white"),
+                color: inWaList ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                transition: "all 0.15s ease", transform: inWaList ? "scale(1.05)" : "scale(1)",
+              }}
+            >
+              {inWaList ? <Check size={15} /> : <Send size={13} />}
+            </button>
+          )}
           <CircleContactBtn icon={MessageCircle} color="#25d366" dark={dark} hasData={!!lead.whatsapp} onClick={() => (lead.whatsapp ? onQuickContact("whatsapp", lead) : onOpen(lead))} />
           <CircleContactBtn icon={Phone} color="#6d5ef8" dark={dark} hasData={!!lead.phone} onClick={() => (lead.phone ? onQuickContact("phone", lead) : onOpen(lead))} />
           <CircleContactBtn icon={Mail} color="#6d5ef8" dark={dark} hasData={!!lead.email} onClick={() => (lead.email ? onQuickContact("email", lead) : onOpen(lead))} />
@@ -936,6 +951,184 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
           ))}
         </div>
       </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// LISTA DE ENVIO WHATSAPP - junta leads marcados, manda em fila guiada
+// (um WhatsApp por vez, sempre com a pessoa no controle de cada envio -
+// nada de automação por trás, é só o app deixando o processo mais rápido)
+// ════════════════════════════════════════════════════════════════════════
+const buildWaListDefaultMessage = (lead) => {
+  const firstName = (lead.contactName || "").trim().split(" ")[0];
+  return firstName
+    ? `Olá, ${firstName}! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`
+    : `Olá! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`;
+};
+
+const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }) => {
+  const [mode, setMode] = useState("list"); // list | sending | done
+  const [idx, setIdx] = useState(0);
+  const [message, setMessage] = useState("");
+  const [sentCount, setSentCount] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
+
+  const validLeads = leadsInList.filter((l) => l.whatsapp);
+  const withoutPhoneCount = leadsInList.length - validLeads.length;
+  const currentLead = validLeads[idx];
+
+  useEffect(() => {
+    if (mode === "sending" && currentLead) setMessage(buildWaListDefaultMessage(currentLead));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, mode]);
+
+  const startSending = () => {
+    if (validLeads.length === 0) return;
+    setIdx(0); setSentCount(0); setSkippedCount(0);
+    setMode("sending");
+  };
+
+  const goNext = () => {
+    if (idx + 1 >= validLeads.length) setMode("done");
+    else setIdx((i) => i + 1);
+  };
+
+  const handleSend = () => {
+    const num = cleanPhone(currentLead.whatsapp);
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, "_blank");
+    onLogSent(currentLead.id, message);
+    setSentCount((c) => c + 1);
+    goNext();
+  };
+
+  const handleSkip = () => { setSkippedCount((c) => c + 1); goNext(); };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
+      {/* Cabeçalho verde - tema WhatsApp em todas as telas dessa tela */}
+      <div style={{ background: "linear-gradient(135deg, #25d366, #128c4a)", padding: "18px 20px", color: "white", flexShrink: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Send size={17} />
+            </div>
+            <div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>Lista de envio WhatsApp</div>
+              <div style={{ fontSize: 11.5, opacity: 0.85 }}>
+                {mode === "list" && `${leadsInList.length} lead${leadsInList.length === 1 ? "" : "s"} na lista`}
+                {mode === "sending" && `Enviando ${idx + 1} de ${validLeads.length}`}
+                {mode === "done" && "Envio concluído"}
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={17} /></button>
+        </div>
+        {mode === "sending" && (
+          <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+          </div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        {mode === "list" && (
+          <>
+            {leadsInList.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Lista vazia</div>
+                <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
+              </div>
+            ) : (
+              <>
+                {withoutPhoneCount > 0 && (
+                  <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                    ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem WhatsApp cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} no envio.
+                  </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
+                  {leadsInList.map((lead) => (
+                    <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                      <OwnerAvatar name={lead.company} size={32} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                        <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
+                      </div>
+                      <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {mode === "sending" && currentLead && (
+          <div style={{ maxWidth: 480, margin: "0 auto" }}>
+            <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <OwnerAvatar name={currentLead.company} size={42} />
+                <div>
+                  <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0f172a" }}>{currentLead.company}</div>
+                  <div style={{ fontSize: 12, color: "#25d366", fontWeight: 600 }}>{currentLead.whatsapp}</div>
+                </div>
+              </div>
+              <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={5}
+                style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                Pular
+              </button>
+              <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.6)" }}>
+                <Send size={15} /> Abrir WhatsApp e continuar
+              </button>
+            </div>
+            {idx > 0 && (
+              <button onClick={() => setIdx((i) => i - 1)} style={{ width: "100%", marginTop: 10, padding: "8px 0", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                ← Voltar pro anterior
+              </button>
+            )}
+          </div>
+        )}
+
+        {mode === "done" && (
+          <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
+            <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
+              {sentCount} mensage{sentCount === 1 ? "m aberta" : "ns abertas"} no WhatsApp{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
+            </div>
+            <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+              Fechar
+            </button>
+          </div>
+        )}
+      </div>
+
+      {mode === "list" && leadsInList.length > 0 && (
+        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+          <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            Limpar lista
+          </button>
+          <button
+            onClick={startSending}
+            disabled={validLeads.length === 0}
+            style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
+          >
+            <Send size={15} /> Iniciar envio ({validLeads.length})
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -2868,6 +3061,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const [selected, setSelected] = useState(null);
   const [quickContactLead, setQuickContactLead] = useState(null);
+  const [waSendList, setWaSendList] = useState([]);
+  const [showWaSendScreen, setShowWaSendScreen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [toast, setToast] = useState("");
 
@@ -3105,6 +3300,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     dispatchContact(type, lead, (id) => {
       setLeads((prev) => prev.map((l) => l.id === id ? { ...l, lastContact: new Date().toISOString(), notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])] } : l));
     });
+  };
+
+  const toggleWaList = (leadId) => {
+    setWaSendList((prev) => prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]);
+  };
+
+  const logWaListSend = (leadId, message) => {
+    const now = new Date().toISOString();
+    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, lastContact: now, notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])] } : l));
+    setWaSendList((prev) => prev.filter((id) => id !== leadId));
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -3750,7 +3955,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.includes(lead.id)} onToggleWaList={toggleWaList} />)}
                 </div>
               )}
 
@@ -4530,6 +4735,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
         {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
         {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
+        {showWaSendScreen && (
+          <WaSendListScreen
+            leadsInList={waSendList.map((id) => leads.find((l) => l.id === id)).filter(Boolean)}
+            onClose={() => setShowWaSendScreen(false)}
+            onRemove={(id) => setWaSendList((prev) => prev.filter((x) => x !== id))}
+            onClear={() => setWaSendList([])}
+            onLogSent={logWaListSend}
+          />
+        )}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
         {showSdrManager && (
           <SdrManager
@@ -4562,6 +4776,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           />
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
+
+        {/* ── BOTÃO FLUTUANTE: LISTA DE ENVIO WHATSAPP (só aparece com itens na lista) ── */}
+        {waSendList.length > 0 && view !== "assistente" && (
+          <button
+            onClick={() => setShowWaSendScreen(true)}
+            title="Lista de envio WhatsApp"
+            style={{
+              position: "fixed", right: 84, bottom: 90, width: 50, height: 50, borderRadius: "50%",
+              border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              boxShadow: "0 10px 26px -8px rgba(37,211,102,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          >
+            <Send size={19} />
+            <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
+              {waSendList.length}
+            </span>
+          </button>
+        )}
 
         {/* ── BOTÃO FLUTUANTE: ASSISTENTE DE IA (logo com anel de LED girando) ── */}
         {view !== "assistente" && (
