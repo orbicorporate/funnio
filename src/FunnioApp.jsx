@@ -1057,7 +1057,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
         <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : "Editar mensagem"}</div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : (initialMessage ? "Editar script da fila" : "Editar mensagem")}</div>
               <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
             </div>
             <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
@@ -1103,6 +1103,14 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                   ← {pickedTitle ? `Trocar (era: ${pickedTitle})` : "Escolher outro script"}
                 </button>
               )}
+              {initialMessage && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                  <Pencil size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
+                    Essa é a <strong>mensagem fixa guardada na fila</strong> pra esse lead. O que você salvar aqui fica valendo até você mandar (ou editar de novo) - diferente do ajuste rápido que dá pra fazer na hora do envio, que vale só daquela vez.
+                  </div>
+                </div>
+              )}
               <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
                 <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#6d5ef8" />Ajuste o texto à vontade</label>
                 <textarea
@@ -1118,7 +1126,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                 disabled={!draftMessage.trim()}
                 style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
               >
-                {initialMessage ? "Salvar edição" : "Usar essa mensagem"}
+                {initialMessage ? "Salvar na fila" : "Usar essa mensagem"}
               </button>
             </div>
           </div>
@@ -1325,6 +1333,9 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                   </div>
                 </div>
                 <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
+                <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: -3, marginBottom: 6 }}>
+                  Ajuste rápido - vale só pra esse envio agora, não altera o script salvo na fila.
+                </div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
