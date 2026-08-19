@@ -166,6 +166,19 @@ export default function Root() {
     if (!error) setMembers(data || []);
   }, [activeWorkspace]);
 
+  // Carrega os membros também assim que o workspace abre (não só quando o painel é aberto),
+  // pra "Gerenciar SDRs" já saber de cara quem tem login de verdade no funil.
+  useEffect(() => {
+    if (activeWorkspace && bridgeReady) loadMembers();
+  }, [activeWorkspace, bridgeReady, loadMembers]);
+
+  const syncMemberAvatar = async (displayName, avatarUrl) => {
+    await supabase.rpc("crm_update_member_avatar_by_name", {
+      ws_id: activeWorkspace.id, target_name: displayName, new_avatar_url: avatarUrl,
+    });
+    loadMembers();
+  };
+
   const handleOpenMembers = async () => {
     setShowMenu(false);
     setShowMembers(true);
@@ -223,7 +236,7 @@ export default function Root() {
 
   return (
     <div style={{ position: "relative" }}>
-      <FunnioApp key={activeWorkspace.id} />
+      <FunnioApp key={activeWorkspace.id} authMembers={members} onSyncMemberAvatar={syncMemberAvatar} currentUserId={session.user.id} />
       <WorkspaceMenu
         workspaceName={activeWorkspace.name}
         show={showMenu}
