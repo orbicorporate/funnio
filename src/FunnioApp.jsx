@@ -1033,54 +1033,103 @@ const fillScriptTemplate = (template, lead) => {
 // Tela colorida de escolha de script - abre ao tocar no aviãozinho num lead.
 // Mostra os 10 tipos de abordagem já com o texto preenchido pro lead específico,
 // pra escolher rapidinho qual mais combina com a situação.
-const ScriptPickerModal = ({ lead, onClose, onSelect }) => {
+const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
+  // Se abrir já com uma mensagem pronta (editando um lead que já está na fila),
+  // pula direto pra etapa de edição. Senão, começa mostrando a lista de scripts.
+  const [step, setStep] = useState(initialMessage ? "edit" : "pick");
+  const [draftMessage, setDraftMessage] = useState(initialMessage || "");
+  const [pickedTitle, setPickedTitle] = useState("");
+
+  const pickScript = (s) => {
+    setDraftMessage(fillScriptTemplate(s.template, lead));
+    setPickedTitle(s.title);
+    setStep("edit");
+  };
+
+  const confirm = () => {
+    if (!draftMessage.trim()) return;
+    onSelect(draftMessage.trim());
+  };
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 160, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
         <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>Escolha um script</div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : "Editar mensagem"}</div>
               <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
             </div>
             <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
-            {SCRIPT_LIBRARY.map((s) => {
-              const filled = fillScriptTemplate(s.template, lead);
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => onSelect(filled)}
-                  style={{
-                    textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
-                    background: "white", cursor: "pointer", display: "flex", gap: 12, transition: "transform 0.12s ease, box-shadow 0.12s ease",
-                    boxShadow: `0 2px 10px -6px ${s.color}40`,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
-                >
-                  <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <s.icon size={16} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
-                  </div>
-                </button>
-              );
-            })}
+        {step === "pick" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
+              {SCRIPT_LIBRARY.map((s) => {
+                const filled = fillScriptTemplate(s.template, lead);
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => pickScript(s)}
+                    style={{
+                      textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
+                      background: "white", cursor: "pointer", display: "flex", gap: 12, transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                      boxShadow: `0 2px 10px -6px ${s.color}40`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <s.icon size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
+        {step === "edit" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+            <div style={{ maxWidth: 520, margin: "0 auto" }}>
+              {!initialMessage && (
+                <button onClick={() => setStep("pick")} style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 14 }}>
+                  ← {pickedTitle ? `Trocar (era: ${pickedTitle})` : "Escolher outro script"}
+                </button>
+              )}
+              <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+                <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#6d5ef8" />Ajuste o texto à vontade</label>
+                <textarea
+                  value={draftMessage}
+                  onChange={(e) => setDraftMessage(e.target.value)}
+                  rows={7}
+                  autoFocus
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
+                />
+              </div>
+              <button
+                onClick={confirm}
+                disabled={!draftMessage.trim()}
+                style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
+              >
+                {initialMessage ? "Salvar edição" : "Usar essa mensagem"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogSent }) => {
+const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogSent, onEditMessage }) => {
+  const [editingLead, setEditingLead] = useState(null);
   const [mode, setMode] = useState("list"); // list | sending | done
   const [tab, setTab] = useState("fila"); // fila | historico (só usado quando mode === "list")
   const [idx, setIdx] = useState(0);
@@ -1217,6 +1266,11 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                             <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
                           </div>
                           {lead.whatsapp && (
+                            <button onClick={() => setEditingLead(lead)} title="Editar mensagem" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Pencil size={13} />
+                            </button>
+                          )}
+                          {lead.whatsapp && (
                             <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Send size={13} />
                             </button>
@@ -1319,6 +1373,15 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
           <div style={{ position: "fixed", left: "50%", bottom: "30%", transform: "translateX(-50%)", fontSize: 28, pointerEvents: "none", animation: "coinFloat 0.9s ease-out forwards", zIndex: 210 }}>
             🪙
           </div>
+        )}
+
+        {editingLead && (
+          <ScriptPickerModal
+            lead={editingLead}
+            initialMessage={editingLead.waMessage || buildWaListDefaultMessage(editingLead)}
+            onClose={() => setEditingLead(null)}
+            onSelect={(msg) => { onEditMessage(editingLead.id, msg); setEditingLead(null); }}
+          />
         )}
       </div>
 
@@ -3533,6 +3596,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setToast("Adicionado à lista de envio!");
   };
 
+  const editWaListMessage = (leadId, message) => {
+    setWaSendList((prev) => prev.map((x) => (x.leadId === leadId ? { ...x, message } : x)));
+    setToast("Mensagem atualizada!");
+  };
+
   const logWaListSend = (leadId, message) => {
     const now = new Date().toISOString();
     const lead = leads.find((l) => l.id === leadId);
@@ -4986,6 +5054,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onRemove={(id) => setWaSendList((prev) => prev.filter((x) => x.leadId !== id))}
             onClear={() => setWaSendList([])}
             onLogSent={logWaListSend}
+            onEditMessage={editWaListMessage}
           />
         )}
         {scriptPickerLead && (
