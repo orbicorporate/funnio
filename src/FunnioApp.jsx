@@ -1081,25 +1081,36 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
               {SCRIPT_LIBRARY.map((s) => {
                 const filled = fillScriptTemplate(s.template, lead);
                 return (
-                  <button
+                  <div
                     key={s.key}
-                    onClick={() => pickScript(s)}
                     style={{
                       textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
-                      background: "white", cursor: "pointer", display: "flex", gap: 12, transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                      background: "white", transition: "transform 0.12s ease, box-shadow 0.12s ease",
                       boxShadow: `0 2px 10px -6px ${s.color}40`,
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
                   >
-                    <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <s.icon size={16} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
-                      <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
-                    </div>
-                  </button>
+                    <button
+                      onClick={() => onSelect(filled)}
+                      title="Usar esse script direto"
+                      style={{ width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", gap: 12 }}
+                    >
+                      <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <s.icon size={16} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
+                        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => pickScript(s)}
+                      style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10, paddingTop: 10, border: "none", borderTop: `1px solid ${s.color}18`, background: "transparent", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", width: "100%" }}
+                    >
+                      <Pencil size={11} /> Editar antes de usar
+                    </button>
+                  </div>
                 );
               })}
             </div>
