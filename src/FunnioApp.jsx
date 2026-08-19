@@ -2363,6 +2363,79 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
   );
 };
 
+// Central de notificações: junta tudo que precisa de atenção (negociações antigas,
+// leads quentes esfriando, reuniões próximas e a lista da semana ainda pendente),
+// cada bloco levando direto pra tela certa.
+const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
+  const meetingsSoon = stats.upcomingMeetings.filter((m) => {
+    const d = new Date(m.date);
+    const in48h = new Date(Date.now() + 48 * 3600 * 1000);
+    return d <= in48h;
+  }).slice(0, 3);
+
+  const items = [
+    {
+      key: "desatendidos", count: stats.desatendidos.length, icon: Clock, color: "#e2483f",
+      title: "Negociações antigas", desc: "leads parados há muito tempo sem contato", view: "desatendidos",
+    },
+    {
+      key: "hot", count: stats.hotNoContact.length, icon: Flame, color: "#f0431f",
+      title: "Leads quentes esfriando", desc: "sem contato há 3+ dias, risco de perder", view: "dashboard",
+    },
+    {
+      key: "week", count: stats.weekList.length, icon: Target, color: "#6d5ef8",
+      title: "Marcados pra essa semana", desc: "ainda não foram abordados", view: "semana",
+    },
+    {
+      key: "meetings", count: meetingsSoon.length, icon: CalendarIcon, color: "#3b82f6",
+      title: "Reuniões nas próximas 48h", desc: meetingsSoon.map((m) => m.company).join(", ") || "nenhuma agendada", view: "agenda",
+    },
+  ];
+  const totalPending = items.reduce((sum, it) => sum + it.count, 0);
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.4)", backdropFilter: "blur(6px)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "82vh", overflowY: "auto", background: "white", borderRadius: "24px 24px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h2 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 800, margin: 0, color: "#14141a" }}>Notificações</h2>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={16} /></button>
+        </div>
+        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: 18 }}>
+          {totalPending === 0 ? "Tudo em dia por aqui." : `${totalPending} coisa${totalPending === 1 ? "" : "s"} pedindo atenção`}
+        </div>
+
+        {items.filter((it) => it.count > 0).length === 0 ? (
+          <div style={{ textAlign: "center", padding: "30px 10px", color: "#9a9aa3", fontSize: 13 }}>
+            🎉 Sem pendências agora. Funil em dia!
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {items.filter((it) => it.count > 0).map((it) => (
+              <div
+                key={it.key}
+                onClick={() => onNavigate(it.view)}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", borderRadius: 16, background: "#f8fafc", border: "1px solid #eef0f3", cursor: "pointer" }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: it.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <it.icon size={18} color={it.color} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>{it.title}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: "white", background: it.color, padding: "1px 7px", borderRadius: 10 }}>{it.count}</span>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "#9a9aa3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.desc}</div>
+                </div>
+                <ChevronRight size={16} color="#c4c4cc" style={{ flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ════════════════════════════════════════════════════════════════════════
 // APP
 // ════════════════════════════════════════════════════════════════════════
@@ -2402,6 +2475,7 @@ export default function CRM() {
   const [showSdrManager, setShowSdrManager] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const [selected, setSelected] = useState(null);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -2803,9 +2877,9 @@ export default function CRM() {
                   <Menu size={19} />
                 </button>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <button onClick={() => setView("desatendidos")} title="Notificações - negociações antigas" style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                  <button onClick={() => setShowNotifications(true)} title="Notificações" style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                     <Bell size={18} />
-                    {stats.desatendidos.length > 0 && <span style={{ position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: DARK.lime, border: "2px solid " + DARK.card }} />}
+                    {(stats.desatendidos.length + stats.hotNoContact.length + stats.weekList.length) > 0 && <span style={{ position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: DARK.lime, border: "2px solid " + DARK.card }} />}
                   </button>
                   <button onClick={() => setShowSdrManager(true)} title="Gerenciar SDRs" style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15 }}>
                     {(sdrs[0]?.name || "U").charAt(0)}
@@ -4013,6 +4087,13 @@ export default function CRM() {
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
         {showSdrManager && <SdrManager sdrs={sdrs} leads={leads} meetings={meetings} onAdd={addSdr} onRemove={removeSdr} onClose={() => setShowSdrManager(false)} />}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
+        {showNotifications && (
+          <NotificationsPanel
+            stats={stats}
+            onClose={() => setShowNotifications(false)}
+            onNavigate={(v) => { setShowNotifications(false); setView(v); }}
+          />
+        )}
         {showMenu && (
           <MenuPanel
             view={view}
