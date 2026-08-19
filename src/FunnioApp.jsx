@@ -1129,7 +1129,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                   <Pencil size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
-                    Essa é a <strong>mensagem fixa guardada na fila</strong> pra esse lead. O que você salvar aqui fica valendo até você mandar (ou editar de novo) - diferente do ajuste rápido que dá pra fazer na hora do envio, que vale só daquela vez.
+                    Essa é a <strong>mensagem fixa guardada na fila</strong> pra esse lead. O que você salvar aqui fica valendo até você mandar (ou editar de novo). É diferente do <strong>"ajuste de última hora"</strong>, que só existe dentro do modo "Iniciar envio" (a tela que mostra um lead por vez pra confirmar) - lá, qualquer mudança vale só daquele envio, sem alterar o que fica salvo aqui.
                   </div>
                 </div>
               )}
@@ -1472,9 +1472,9 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                     <div style={{ fontSize: 12, color: "#25d366", fontWeight: 600 }}>{currentLead.whatsapp}</div>
                   </div>
                 </div>
-                <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
+                <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#25d366" />Ajuste de última hora</label>
                 <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: -3, marginBottom: 6 }}>
-                  Ajuste rápido - vale só pra esse envio agora, não altera o script salvo na fila.
+                  Vale só pra esse envio agora - não altera o script fixo salvo na fila.
                 </div>
                 <textarea
                   value={message}
