@@ -295,9 +295,7 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
     <div style={{ minHeight: "100vh", background: "#08080a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden" }}>
       <AmbientBackground />
       <div style={{ width: "100%", maxWidth: 360, position: "relative", zIndex: 1 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg, #84cc16, #a3e635)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", filter: "drop-shadow(0 8px 20px rgba(163,230,53,0.35))" }}>
-          <span style={{ fontSize: 28, fontWeight: 900, color: "#0f1a03" }}>F</span>
-        </div>
+        <img src="/logo.png" alt="Funnio" style={{ width: 64, height: 64, display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 20px rgba(163,230,53,0.35))" }} />
         <h1 style={{ textAlign: "center", color: "white", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
         <div style={{ textAlign: "center", color: "#9a9aa3", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
         <div style={{ background: "rgba(22,22,17,0.85)", backdropFilter: "blur(20px)", border: "1px solid #26261f", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6)" }}>
@@ -353,9 +351,7 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 20px 40px" }}>
         <div style={{ maxWidth: 420, width: "100%", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 16, background: "linear-gradient(135deg, #84cc16, #a3e635)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 10px 26px -8px rgba(163,230,53,0.4)" }}>
-              <span style={{ fontSize: 22, fontWeight: 900, color: "#0f1a03" }}>F</span>
-            </div>
+            <img src="/logo.png" alt="Funnio" style={{ width: 52, height: 52, display: "block", margin: "0 auto 14px", filter: "drop-shadow(0 6px 18px rgba(163,230,53,0.35))" }} />
             <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Seu funil</h1>
             <div style={{ color: "#767670", fontSize: 12.5 }}>{email}</div>
           </div>
