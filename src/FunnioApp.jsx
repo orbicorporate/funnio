@@ -1129,7 +1129,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                   <Pencil size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
-                    Essa é a <strong>mensagem fixa guardada na fila</strong> pra esse lead. O que você salvar aqui fica valendo até você mandar (ou editar de novo). É diferente do <strong>"ajuste de última hora"</strong>, que só existe dentro do modo "Iniciar envio" (a tela que mostra um lead por vez pra confirmar) - lá, qualquer mudança vale só daquele envio, sem alterar o que fica salvo aqui.
+                    Você está editando o <strong>script padrão</strong> desse lead. Fica salvo até você mandar ou editar de novo.
                   </div>
                 </div>
               )}
