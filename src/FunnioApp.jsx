@@ -527,8 +527,18 @@ const ToggleSwitch = ({ on, onClick, activeColor = DARK.lime }) => (
   </button>
 );
 
-const OwnerAvatar = ({ name, size = 26 }) => {
+const OwnerAvatar = ({ name, size = 26, avatarUrl }) => {
   const color = RESPONSIBLE_COLORS[name] || "#64748b";
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        title={name}
+        style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, boxShadow: `0 3px 10px -2px ${color}88` }}
+      />
+    );
+  }
   return (
     <div title={name} style={{
       width: size, height: size, borderRadius: "50%",
@@ -1568,11 +1578,13 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
   </div>
 );
 
-const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onClose }) => {
+const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose }) => {
   const [name, setName] = useState("");
   // SDR que o usuário pediu pra remover e que tem leads/reuniões, aguardando escolha de pra quem reatribuir
   const [pendingRemoval, setPendingRemoval] = useState(null);
   const [reassignTo, setReassignTo] = useState("");
+  const [uploadingFor, setUploadingFor] = useState(null);
+  const fileInputRef = useRef(null);
 
   const countFor = (sdrName) =>
     leads.filter((l) => l.owner === sdrName).length + meetings.filter((m) => m.owner === sdrName).length;
@@ -1585,9 +1597,23 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onClose }) => {
     setReassignTo(nextTarget);
   };
 
+  const handlePickPhoto = (sdrName) => {
+    setUploadingFor(sdrName);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite escolher o mesmo arquivo de novo depois
+    if (!file || !uploadingFor) return;
+    await onUpdateAvatar(uploadingFor, file);
+    setUploadingFor(null);
+  };
+
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 110, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(30px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 80px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
         <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 500, color: "#0f172a" }}>Gerenciar SDRs</span>
           <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
@@ -1597,7 +1623,16 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onClose }) => {
             {sdrs.map((s) => (
               <div key={s.name}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 11, background: "rgba(241,245,249,0.6)" }}>
-                  <OwnerAvatar name={s.name} size={26} />
+                  <button
+                    onClick={() => handlePickPhoto(s.name)}
+                    title="Trocar foto"
+                    style={{ position: "relative", border: "none", background: "transparent", padding: 0, cursor: "pointer", flexShrink: 0 }}
+                  >
+                    <OwnerAvatar name={s.name} size={30} avatarUrl={s.avatarUrl} />
+                    <div style={{ position: "absolute", bottom: -2, right: -2, width: 15, height: 15, borderRadius: "50%", background: "#6366f1", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {uploadingFor === s.name ? <Loader2 size={8} color="white" style={{ animation: "spin 1s linear infinite" }} /> : <Pencil size={8} color="white" />}
+                    </div>
+                  </button>
                   <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
                   <button
                     onClick={() => handleRemoveClick(s.name)}
@@ -2581,6 +2616,21 @@ export default function CRM() {
     setSdrs((prev) => prev.filter((s) => s.name !== name));
   };
 
+  // Envia a foto pro Supabase Storage e guarda a URL pública no registro do SDR
+  const updateSdrAvatar = async (name, file) => {
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${Date.now()}_${name.replace(/[^a-zA-Z0-9]/g, "")}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) { setToast("Não consegui enviar a foto. Tente outro arquivo."); return; }
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      setSdrs((prev) => prev.map((s) => (s.name === name ? { ...s, avatarUrl: data.publicUrl } : s)));
+      setToast("Foto atualizada!");
+    } catch {
+      setToast("Não consegui enviar a foto. Tente de novo.");
+    }
+  };
+
   const updateLead = (updated) => setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
   const markContactedToday = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, lastContact: new Date().toISOString() } : l)));
 
@@ -2882,8 +2932,10 @@ export default function CRM() {
                     <Bell size={18} />
                     {(stats.desatendidos.length + stats.hotNoContact.length + stats.weekList.length) > 0 && <span style={{ position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: DARK.lime, border: "2px solid " + DARK.card }} />}
                   </button>
-                  <button onClick={() => setShowSdrManager(true)} title="Gerenciar SDRs" style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15 }}>
-                    {(sdrs[0]?.name || "U").charAt(0)}
+                  <button onClick={() => setShowSdrManager(true)} title="Gerenciar SDRs" style={{ width: 44, height: 44, borderRadius: "50%", background: sdrs[0]?.avatarUrl ? "transparent" : "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15, padding: 0, overflow: "hidden" }}>
+                    {sdrs[0]?.avatarUrl
+                      ? <img src={sdrs[0].avatarUrl} alt={sdrs[0].name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : (sdrs[0]?.name || "U").charAt(0)}
                   </button>
                 </div>
               </div>
@@ -4078,7 +4130,7 @@ export default function CRM() {
 
         {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
-        {showSdrManager && <SdrManager sdrs={sdrs} leads={leads} meetings={meetings} onAdd={addSdr} onRemove={removeSdr} onClose={() => setShowSdrManager(false)} />}
+        {showSdrManager && <SdrManager sdrs={sdrs} leads={leads} meetings={meetings} onAdd={addSdr} onRemove={removeSdr} onUpdateAvatar={updateSdrAvatar} onClose={() => setShowSdrManager(false)} />}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
         {showNotifications && (
           <NotificationsPanel
