@@ -1703,7 +1703,7 @@ const MENU_SECTIONS = [
   { key: "assistente", label: "Assistente de vendas", icon: Sparkles },
 ];
 
-const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName }) => (
+const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones }) => (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 150, display: "flex", animation: "fadeIn 0.15s ease" }}>
     <div onClick={(e) => e.stopPropagation()} style={{ width: "82%", maxWidth: 300, height: "100%", background: "white", boxShadow: "8px 0 30px -8px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", animation: "menuSlideIn 0.2s ease" }}>
       <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5" }}>
@@ -1721,6 +1721,11 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
         <button onClick={onImport} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
           <Upload size={16} /> Importar leads
         </button>
+        {onBulkPhones && (
+          <button onClick={onBulkPhones} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+            <Phone size={16} /> Atualizar telefones em massa
+          </button>
+        )}
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "6px 10px" }}>
@@ -2105,6 +2110,149 @@ ${context}`;
   ];
 
   return callClaudeAPI({ system: systemPrompt, messages, maxTokens: 1500 });
+};
+
+// Normaliza nome de empresa pra comparar (minúsculo, sem acento, sem pontuação) -
+// evita que "Açaí Amazonas" e "acai amazonas" sejam tratados como empresas diferentes.
+const normalizeCompanyName = (s) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+// Interpreta texto colado (ou CSV/Excel convertido pra texto) como pares de
+// "empresa, telefone" - aceita separador por tab, ponto e vírgula, vírgula ou hífen.
+const parseCompanyPhoneRows = (text) => {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const rows = [];
+  for (const line of lines) {
+    let parts = line.split("\t");
+    if (parts.length < 2) parts = line.split(";");
+    if (parts.length < 2) parts = line.split(",");
+    if (parts.length < 2) parts = line.split(/\s+-\s+/);
+    if (parts.length < 2) continue;
+    const company = parts[0].trim();
+    const phoneRaw = parts.slice(1).join(" ").trim();
+    const phoneDigits = phoneRaw.replace(/\D/g, "");
+    if (!company || phoneDigits.length < 8) continue; // ignora cabeçalho / linhas sem telefone válido
+    if (/telefone|whatsapp|phone|celular/i.test(company) && phoneDigits.length < 8) continue; // ignora linha de cabeçalho
+    rows.push({ company, phoneRaw: phoneRaw, phoneDigits });
+  }
+  return rows;
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// ATUALIZAR TELEFONES EM MASSA - cola "empresa + whatsapp" ou sobe um Excel,
+// o app casa pelo nome da empresa com os leads já existentes e atualiza o telefone.
+// ════════════════════════════════════════════════════════════════════════
+const BulkPhoneModal = ({ leads, onClose, onApply }) => {
+  const [rawText, setRawText] = useState("");
+  const [fileLoading, setFileLoading] = useState(false);
+  const [fileError, setFileError] = useState("");
+  const fileInputRef = useRef(null);
+
+  const parsedRows = useMemo(() => parseCompanyPhoneRows(rawText), [rawText]);
+
+  const matches = useMemo(() => {
+    return parsedRows.map((row) => {
+      const norm = normalizeCompanyName(row.company);
+      const lead = leads.find((l) => normalizeCompanyName(l.company) === norm);
+      return { ...row, lead };
+    });
+  }, [parsedRows, leads]);
+
+  const matchedCount = matches.filter((m) => m.lead).length;
+  const unmatchedCount = matches.length - matchedCount;
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setFileLoading(true);
+    setFileError("");
+    try {
+      const csv = await readSpreadsheetAsText(file);
+      setRawText(csv);
+    } catch {
+      setFileError("Não consegui ler esse arquivo. Tenta colar o texto direto, ou confirma que é um .xlsx/.xls/.csv válido.");
+    } finally {
+      setFileLoading(false);
+    }
+  };
+
+  const handleApply = () => {
+    const toApply = matches.filter((m) => m.lead).map((m) => ({ leadId: m.lead.id, phoneDigits: m.phoneDigits }));
+    onApply(toApply);
+    onClose();
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 130, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "88vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(30px)", borderRadius: 22, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+        <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Atualizar telefones em massa</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Cole uma lista de "empresa + WhatsApp", ou suba um Excel/CSV com essas duas colunas. O app casa pelo nome da empresa com os leads que já existem.</div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+        </div>
+
+        <div style={{ padding: "18px 24px", overflowY: "auto", flex: 1 }}>
+          <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} style={{ display: "none" }} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={fileLoading}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}
+          >
+            {fileLoading ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <FileUp size={15} />}
+            {fileLoading ? "Lendo arquivo..." : "Subir Excel/CSV (Empresa | WhatsApp)"}
+          </button>
+          {fileError && <div style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{fileError}</div>}
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Ou cole aqui (uma empresa por linha)</div>
+          <textarea
+            value={rawText}
+            onChange={(e) => setRawText(e.target.value)}
+            placeholder={"Açaí Amazonas, 11987654321\nBFB Foods; (11) 99887-7665\nMarkal\t11912345678"}
+            style={{ ...inputStyle, minHeight: 110, resize: "vertical", fontFamily: "monospace", fontSize: 12.5 }}
+          />
+
+          {matches.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "rgba(34,197,94,0.1)", padding: "4px 10px", borderRadius: 8 }}>✓ {matchedCount} encontrado{matchedCount === 1 ? "" : "s"}</span>
+                {unmatchedCount > 0 && <span style={{ fontSize: 11.5, fontWeight: 700, color: "#dc2626", background: "rgba(239,68,68,0.1)", padding: "4px 10px", borderRadius: 8 }}>✗ {unmatchedCount} não encontrado{unmatchedCount === 1 ? "" : "s"}</span>}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 220, overflowY: "auto" }}>
+                {matches.map((m, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: m.lead ? "rgba(34,197,94,0.06)" : "rgba(239,68,68,0.06)", border: `1px solid ${m.lead ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}` }}>
+                    {m.lead ? <CheckCircle2 size={14} color="#16a34a" style={{ flexShrink: 0 }} /> : <XCircle size={14} color="#dc2626" style={{ flexShrink: 0 }} />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.company}</div>
+                      {!m.lead && <div style={{ fontSize: 10.5, color: "#dc2626" }}>nenhum lead com esse nome</div>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#64748b", flexShrink: 0 }}>{m.phoneDigits}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: "14px 24px", borderTop: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+          <button
+            onClick={handleApply}
+            disabled={matchedCount === 0}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: matchedCount > 0 ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: matchedCount > 0 ? "pointer" : "not-allowed" }}
+          >
+            Atualizar {matchedCount > 0 ? `${matchedCount} telefone${matchedCount === 1 ? "" : "s"}` : ""}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
@@ -2714,6 +2862,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [chatError, setChatError] = useState("");
   const [showSdrManager, setShowSdrManager] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBulkPhoneModal, setShowBulkPhoneModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -2931,6 +3080,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     }));
     setLeads((prev) => [...newLeads, ...prev]);
     setToast(`${newLeads.length} lead${newLeads.length === 1 ? "" : "s"} importado${newLeads.length === 1 ? "" : "s"} com sucesso`);
+  };
+
+  // Aplica telefones em massa: cada item já vem casado com o lead certo (feito no
+  // modal), aqui é só gravar o whatsapp/telefone e registrar uma nota no histórico.
+  const applyBulkPhones = (items) => {
+    if (items.length === 0) return;
+    const byId = Object.fromEntries(items.map((i) => [i.leadId, i.phoneDigits]));
+    const now = new Date().toISOString();
+    setLeads((prev) => prev.map((l) => {
+      const newPhone = byId[l.id];
+      if (!newPhone) return l;
+      return {
+        ...l,
+        whatsapp: newPhone,
+        hasWhatsapp: true,
+        notes: [{ id: "n_bulk_" + Date.now() + "_" + l.id, date: now, text: `[Atualização em massa] WhatsApp definido para ${newPhone}` }, ...(l.notes || [])],
+      };
+    }));
+    setToast(`${items.length} telefone${items.length === 1 ? "" : "s"} atualizado${items.length === 1 ? "" : "s"}`);
   };
 
   const handleQuickContact = (type, lead) => {
@@ -4372,6 +4540,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           />
         )}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
+        {showBulkPhoneModal && <BulkPhoneModal leads={leads} onClose={() => setShowBulkPhoneModal(false)} onApply={applyBulkPhones} />}
         {showNotifications && (
           <NotificationsPanel
             stats={stats}
@@ -4386,6 +4555,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onClose={() => setShowMenu(false)}
             onManageSdrs={() => { setShowMenu(false); setShowSdrManager(true); }}
             onImport={() => { setShowMenu(false); setShowImportModal(true); }}
+            onBulkPhones={() => { setShowMenu(false); setShowBulkPhoneModal(true); }}
             onNewLead={() => { setShowMenu(false); createLead(); }}
             onSwitchWorkspace={onSwitchWorkspace ? () => { setShowMenu(false); onSwitchWorkspace(); } : undefined}
             workspaceName={workspaceName}
