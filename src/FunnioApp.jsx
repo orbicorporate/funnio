@@ -278,6 +278,7 @@ const DEFAULT_REVENUE_GOAL = 50000;
 const GOALS_CONFIG_KEY = "goalsConfig:v1";
 const BADGES_KEY = "earnedBadges:v1";
 const CHAT_HISTORY_KEY = "assistantChat:v1";
+const WA_SEND_HISTORY_KEY = "waSendHistory:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
@@ -967,8 +968,9 @@ const buildWaListDefaultMessage = (lead) => {
     : `Olá! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`;
 };
 
-const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }) => {
+const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogSent }) => {
   const [mode, setMode] = useState("list"); // list | sending | done
+  const [tab, setTab] = useState("fila"); // fila | historico (só usado quando mode === "list")
   const [idx, setIdx] = useState(0);
   const [message, setMessage] = useState("");
   const [sentCount, setSentCount] = useState(0);
@@ -1004,9 +1006,17 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
     setTimeout(() => setShowCoin(false), 900);
   };
 
-  const goNext = () => {
-    if (idx + 1 >= validLeads.length) setMode("done");
-    else setIdx((i) => i + 1);
+  // Só mostra a telinha de "concluído" se pelo menos um envio realmente aconteceu -
+  // se a pessoa só pulou todo mundo (ou saiu no meio), volta pra lista sem comemoração,
+  // e quem não foi enviado continua na fila etiquetado como pendente.
+  const goNext = (justSent) => {
+    const isLast = idx + 1 >= validLeads.length;
+    if (isLast) {
+      if (justSent || sentCount > 0) setMode("done");
+      else setMode("list");
+    } else {
+      setIdx((i) => i + 1);
+    }
   };
 
   const handleSend = () => {
@@ -1015,10 +1025,10 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
     onLogSent(currentLead.id, message);
     setSentCount((c) => c + 1);
     triggerCoin();
-    goNext();
+    goNext(true);
   };
 
-  const handleSkip = () => { setSkippedCount((c) => c + 1); goNext(); };
+  const handleSkip = () => { setSkippedCount((c) => c + 1); goNext(false); };
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
@@ -1055,42 +1065,84 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           {mode === "list" && (
             <>
-              {leadsInList.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                  <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>Lista vazia</div>
-                  <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
-                  <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-                    ← Voltar pros leads
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {withoutPhoneCount > 0 && (
-                    <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
-                      ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem WhatsApp cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} no envio.
-                    </div>
-                  )}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
-                    {leadsInList.map((lead, i) => (
-                      <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
-                        <OwnerAvatar name={lead.company} size={32} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                          <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
-                        </div>
-                        {lead.whatsapp && (
-                          <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <Send size={13} />
+              {/* Seletor de abas: fila pendente x histórico de envios já feitos */}
+              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "fila" ? "#128c4a" : "#94a3b8" }}>
+                  Fila ({leadsInList.length})
+                </button>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "historico" ? "#128c4a" : "#94a3b8" }}>
+                  Histórico ({history.length})
+                </button>
+              </div>
+
+              {tab === "fila" && (
+                leadsInList.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
+                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                      ← Voltar pros leads
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {withoutPhoneCount > 0 && (
+                      <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                        ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem WhatsApp cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} no envio.
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
+                      {leadsInList.map((lead, i) => (
+                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                          <OwnerAvatar name={lead.company} size={32} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                              <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 800, color: "#94a3b8", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
+                          </div>
+                          {lead.whatsapp && (
+                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Send size={13} />
+                            </button>
+                          )}
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <X size={13} />
                           </button>
-                        )}
-                        <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <X size={13} />
-                        </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              )}
+
+              {tab === "historico" && (
+                history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Nenhum envio ainda</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Toda mensagem enviada pela fila fica registrada aqui.</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                    {history.map((h) => (
+                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(37,211,102,0.12)", color: "#128c4a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={15} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
+                            <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.message}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </>
+                )
               )}
             </>
           )}
@@ -1157,7 +1209,7 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
         )}
       </div>
 
-      {mode === "list" && leadsInList.length > 0 && (
+      {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
         <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
           <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
             <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
@@ -3106,6 +3158,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [selected, setSelected] = useState(null);
   const [quickContactLead, setQuickContactLead] = useState(null);
   const [waSendList, setWaSendList] = useState([]);
+  const [waSendHistory, setWaSendHistory] = useState([]);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [toast, setToast] = useState("");
@@ -3126,7 +3179,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(LEADS_KEY, seedLeads), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory]) => {
+      loadData(WA_SEND_HISTORY_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory]) => {
       if (mounted) {
         setLeads(l); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
         setWeeklyGoal(typeof g === "number" && g > 0 ? g : DEFAULT_WEEKLY_GOAL);
@@ -3134,6 +3188,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setGoalsConfig(gc && typeof gc === "object" ? { ...DEFAULT_GOALS_CONFIG, ...gc } : DEFAULT_GOALS_CONFIG);
         setEarnedBadges(Array.isArray(badges) ? badges : []);
         setChatMessages(Array.isArray(chatHistory) ? chatHistory : []);
+        setWaSendHistory(Array.isArray(waHistory) ? waHistory : []);
         setLoaded(true);
       }
     });
@@ -3147,6 +3202,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(GOALS_CONFIG_KEY, goalsConfig); }, [goalsConfig, loaded]);
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
+  useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
 
   // Detecta automaticamente quando um SDR bate um nível de meta (bronze/prata/ouro) e credita a badge.
@@ -3352,8 +3408,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const logWaListSend = (leadId, message) => {
     const now = new Date().toISOString();
+    const lead = leads.find((l) => l.id === leadId);
     setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, lastContact: now, notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])] } : l));
     setWaSendList((prev) => prev.filter((id) => id !== leadId));
+    setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -4793,6 +4851,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {showWaSendScreen && (
           <WaSendListScreen
             leadsInList={waSendList.map((id) => leads.find((l) => l.id === id)).filter(Boolean)}
+            history={waSendHistory}
             onClose={() => setShowWaSendScreen(false)}
             onRemove={(id) => setWaSendList((prev) => prev.filter((x) => x !== id))}
             onClear={() => setWaSendList([])}
