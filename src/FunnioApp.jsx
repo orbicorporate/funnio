@@ -1464,6 +1464,12 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
 
           {mode === "sending" && currentLead && (
             <div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(37,211,102,0.08)", border: "1px solid rgba(37,211,102,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
+                <Pencil size={13} color="#128c4a" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontSize: 11.5, color: "#0d6b3a", lineHeight: 1.4 }}>
+                  Você está ajustando <strong>só esta mensagem</strong>, pra esse envio agora. O script padrão desse lead continua o mesmo.
+                </div>
+              </div>
               <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <OwnerAvatar name={currentLead.company} size={42} />
@@ -1472,10 +1478,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                     <div style={{ fontSize: 12, color: "#25d366", fontWeight: 600 }}>{currentLead.whatsapp}</div>
                   </div>
                 </div>
-                <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#25d366" />Ajuste de última hora</label>
-                <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: -3, marginBottom: 6 }}>
-                  Vale só pra esse envio agora - não altera o script fixo salvo na fila.
-                </div>
+                <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
