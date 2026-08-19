@@ -1578,7 +1578,7 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
   </div>
 );
 
-const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose }) => {
+const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose, authMembers = [], onSync }) => {
   const [name, setName] = useState("");
   // SDR que o usuário pediu pra remover e que tem leads/reuniões, aguardando escolha de pra quem reatribuir
   const [pendingRemoval, setPendingRemoval] = useState(null);
@@ -1614,13 +1614,28 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 110, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(30px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 80px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
-        <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 500, color: "#0f172a" }}>Gerenciar SDRs</span>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
+        <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 500, color: "#0f172a" }}>Gerenciar SDRs</span>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
+          </div>
+          <div style={{ fontSize: 11.5, color: "#9a9aa3", marginTop: 4 }}>
+            Nomes usados pra atribuir leads. O selo verde mostra quem também tem login de verdade no funil.
+          </div>
         </div>
         <div style={{ padding: "18px 22px" }}>
+          {authMembers.length > 0 && (
+            <button
+              onClick={onSync}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "8px 12px", borderRadius: 10, border: "1px dashed rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.06)", color: "#6366f1", fontSize: 12, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}
+            >
+              <Users2 size={13} /> Sincronizar com quem tem login no funil
+            </button>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-            {sdrs.map((s) => (
+            {sdrs.map((s) => {
+              const hasLogin = authMembers.some((m) => m.display_name.toLowerCase() === s.name.toLowerCase());
+              return (
               <div key={s.name}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 11, background: "rgba(241,245,249,0.6)" }}>
                   <button
@@ -1633,7 +1648,17 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                       {uploadingFor === s.name ? <Loader2 size={8} color="white" style={{ animation: "spin 1s linear infinite" }} /> : <Pencil size={8} color="white" />}
                     </div>
                   </button>
-                  <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
+                      {hasLogin && (
+                        <span title="Tem login de verdade no funil" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9.5, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.1)", padding: "1px 6px", borderRadius: 20 }}>
+                          <CheckCircle2 size={9} /> login
+                        </span>
+                      )}
+                    </div>
+                    {!hasLogin && <div style={{ fontSize: 10.5, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
+                  </div>
                   <button
                     onClick={() => handleRemoveClick(s.name)}
                     disabled={sdrs.length <= 1}
@@ -1658,7 +1683,8 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <input
@@ -2475,7 +2501,7 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
 // APP
 // ════════════════════════════════════════════════════════════════════════
 
-export default function CRM() {
+export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId } = {}) {
   const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
   const [leads, setLeads] = useState([]);
   const [meetings, setMeetings] = useState([]);
@@ -2522,12 +2548,16 @@ export default function CRM() {
   // Sincroniza as cores dos SDRs (usadas por OwnerAvatar/cards) com a lista editável
   RESPONSIBLE_COLORS = Object.fromEntries(sdrs.map((s) => [s.name, s.color]));
 
+  // Cada pessoa tem sua própria conversa com o assistente - antes era uma só compartilhada
+  // por todo o funil, o que fazia mensagens de gente diferente se misturarem/sobrescreverem.
+  const chatHistoryKey = currentUserId ? `${CHAT_HISTORY_KEY}:${currentUserId}` : CHAT_HISTORY_KEY;
+
   useEffect(() => {
     let mounted = true;
     Promise.all([
       loadData(LEADS_KEY, seedLeads), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
-      loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(CHAT_HISTORY_KEY, []),
+      loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
     ]).then(([l, m, s, g, rg, gc, badges, chatHistory]) => {
       if (mounted) {
         setLeads(l); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
@@ -2548,7 +2578,7 @@ export default function CRM() {
   useEffect(() => { if (loaded) saveData(REVENUE_GOAL_KEY, revenueGoal); }, [revenueGoal, loaded]);
   useEffect(() => { if (loaded) saveData(GOALS_CONFIG_KEY, goalsConfig); }, [goalsConfig, loaded]);
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
-  useEffect(() => { if (loaded) saveData(CHAT_HISTORY_KEY, chatMessages); }, [chatMessages, loaded]);
+  useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
 
   // Detecta automaticamente quando um SDR bate um nível de meta (bronze/prata/ouro) e credita a badge.
@@ -2625,10 +2655,27 @@ export default function CRM() {
       if (uploadError) { setToast("Não consegui enviar a foto. Tente outro arquivo."); return; }
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       setSdrs((prev) => prev.map((s) => (s.name === name ? { ...s, avatarUrl: data.publicUrl } : s)));
+      // Se esse nome bater com alguém que tem login de verdade no funil, a foto
+      // já fica sincronizada lá também - não fica presa só nessa lista local.
+      if (onSyncMemberAvatar && authMembers.some((m) => m.display_name.toLowerCase() === name.toLowerCase())) {
+        onSyncMemberAvatar(name, data.publicUrl);
+      }
       setToast("Foto atualizada!");
     } catch {
       setToast("Não consegui enviar a foto. Tente de novo.");
     }
+  };
+
+  // Adiciona de uma vez qualquer pessoa que já tem login no funil mas ainda não
+  // está na lista de SDRs (então não consegue receber leads atribuídos a ela).
+  const syncSdrsWithAuthMembers = () => {
+    const missing = authMembers.filter((m) => !sdrs.some((s) => s.name.toLowerCase() === m.display_name.toLowerCase()));
+    if (missing.length === 0) { setToast("Já está tudo sincronizado."); return; }
+    setSdrs((prev) => [
+      ...prev,
+      ...missing.map((m, i) => ({ name: m.display_name, color: m.color || SDR_PALETTE[(prev.length + i) % SDR_PALETTE.length], avatarUrl: m.avatar_url || undefined })),
+    ]);
+    setToast(`${missing.length} pessoa${missing.length === 1 ? "" : "s"} adicionada${missing.length === 1 ? "" : "s"}.`);
   };
 
   const updateLead = (updated) => setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
@@ -4130,7 +4177,14 @@ export default function CRM() {
 
         {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
-        {showSdrManager && <SdrManager sdrs={sdrs} leads={leads} meetings={meetings} onAdd={addSdr} onRemove={removeSdr} onUpdateAvatar={updateSdrAvatar} onClose={() => setShowSdrManager(false)} />}
+        {showSdrManager && (
+          <SdrManager
+            sdrs={sdrs} leads={leads} meetings={meetings}
+            onAdd={addSdr} onRemove={removeSdr} onUpdateAvatar={updateSdrAvatar}
+            onClose={() => setShowSdrManager(false)}
+            authMembers={authMembers} onSync={syncSdrsWithAuthMembers}
+          />
+        )}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
         {showNotifications && (
           <NotificationsPanel
