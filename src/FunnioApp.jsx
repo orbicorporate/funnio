@@ -1086,8 +1086,14 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   return (
     <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 660, background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.9)", boxShadow: "0 30px 90px -20px rgba(76, 29, 149, 0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-        <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+        <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)", position: "relative", overflow: "hidden" }}>
+          {/* Brilho de fundo que muda de cor com a temperatura do lead - dá vida ao topo do painel */}
+          <div style={{
+            position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%",
+            background: `radial-gradient(circle, ${TEMP_CONFIG[draft.temperature]?.color || "#6d5ef8"}30, transparent 70%)`,
+            filter: "blur(10px)", pointerEvents: "none", animation: "glowPulse 3.5s ease-in-out infinite", transition: "background 0.4s ease",
+          }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, position: "relative" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: "#94a3b8", marginBottom: 4 }}>Empresa</div>
               <input value={draft.company} onChange={(e) => update({ company: e.target.value })} style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 26, fontWeight: 500, color: "#0f172a", border: "none", background: "transparent", outline: "none", width: "100%", letterSpacing: -0.5, padding: 0, marginBottom: 6 }} />
@@ -1135,10 +1141,25 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button onClick={() => onQuickContact("whatsapp", draft)} disabled={!draft.whatsapp} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "rgba(37, 211, 102, 0.1)" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#16a34a" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600 }}><MessageCircle size={15} /> WhatsApp</button>
-            <button onClick={() => onQuickContact("email", draft)} disabled={!draft.email} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "rgba(59, 130, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.email ? "#2563eb" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600 }}><Mail size={15} /> Email</button>
-            <button onClick={() => onQuickContact("phone", draft)} disabled={!draft.phone} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "rgba(139, 92, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.phone ? "#7c3aed" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600 }}><Phone size={15} /> Ligar</button>
+          <div style={{ display: "flex", gap: 8, marginTop: 18, position: "relative" }}>
+            <button
+              onClick={() => onQuickContact("whatsapp", draft)} disabled={!draft.whatsapp}
+              onMouseEnter={(e) => { if (draft.whatsapp) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "rgba(37, 211, 102, 0.1)" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#16a34a" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.whatsapp ? "0 4px 14px -8px rgba(37,211,102,0.5)" : "none" }}
+            ><MessageCircle size={15} /> WhatsApp</button>
+            <button
+              onClick={() => onQuickContact("email", draft)} disabled={!draft.email}
+              onMouseEnter={(e) => { if (draft.email) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "rgba(59, 130, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.email ? "#2563eb" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.email ? "0 4px 14px -8px rgba(59,130,246,0.5)" : "none" }}
+            ><Mail size={15} /> Email</button>
+            <button
+              onClick={() => onQuickContact("phone", draft)} disabled={!draft.phone}
+              onMouseEnter={(e) => { if (draft.phone) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "rgba(139, 92, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.phone ? "#7c3aed" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.phone ? "0 4px 14px -8px rgba(139,92,246,0.5)" : "none" }}
+            ><Phone size={15} /> Ligar</button>
           </div>
         </div>
 
@@ -1150,7 +1171,19 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 {Object.entries(TEMP_CONFIG).map(([key, cfg]) => {
                   const active = draft.temperature === key;
                   return (
-                    <button key={key} onClick={() => update({ temperature: key })} style={{ flex: 1, padding: "8px 6px", borderRadius: 10, border: `1px solid ${active ? cfg.color : "rgba(148,163,184,0.25)"}`, background: active ? cfg.bg : "rgba(255,255,255,0.6)", color: active ? cfg.color : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: active ? 700 : 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    <button
+                      key={key}
+                      onClick={() => update({ temperature: key })}
+                      style={{
+                        flex: 1, padding: "8px 6px", borderRadius: 10, border: `1px solid ${active ? cfg.color : "rgba(148,163,184,0.25)"}`,
+                        background: active ? cfg.bg : "rgba(255,255,255,0.6)", color: active ? cfg.color : "#64748b", cursor: "pointer",
+                        fontSize: 12, fontWeight: active ? 700 : 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                        boxShadow: active ? `0 0 0 3px ${cfg.ring}` : "none",
+                        transform: active ? "scale(1.03)" : "scale(1)",
+                        animation: active ? "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" : "none",
+                        transition: "transform 0.15s ease, box-shadow 0.2s ease",
+                      }}
+                    >
                       <TempDot temp={key} size={8} />{cfg.label}
                     </button>
                   );
@@ -1173,6 +1206,33 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               </select>
             </div>
           </div>
+
+          {draft.stage !== "Perdida" && (() => {
+            const HAPPY_PATH = STAGE_OPTIONS.filter((s) => s !== "Perdida");
+            const currentIdx = HAPPY_PATH.indexOf(draft.stage);
+            const pct = HAPPY_PATH.length > 1 ? (currentIdx / (HAPPY_PATH.length - 1)) * 100 : 0;
+            return (
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>Progresso no funil</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#6d5ef8" }}>{currentIdx + 1} / {HAPPY_PATH.length}</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 6, background: "rgba(148,163,184,0.15)", overflow: "hidden", position: "relative" }}>
+                  <div style={{
+                    height: "100%", borderRadius: 6, width: `${pct}%`,
+                    background: draft.stage === "Conquistado" ? "linear-gradient(90deg, #22c55e, #16a34a)" : "linear-gradient(90deg, #a3e635, #6d5ef8)",
+                    transition: "width 0.5s cubic-bezier(0.4, 0, 0.2, 1)", animation: "stageBarFill 0.6s ease-out",
+                    boxShadow: "0 0 10px rgba(109,94,248,0.4)",
+                  }} />
+                </div>
+              </div>
+            );
+          })()}
+          {draft.stage === "Perdida" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18, fontSize: 11.5, fontWeight: 700, color: "#dc2626" }}>
+              <XCircle size={13} /> Negociação perdida
+            </div>
+          )}
 
           {draft.stage === "Conquistado" && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18, padding: "12px 14px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
@@ -1417,7 +1477,19 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           ) : (
             <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
           )}
-          <button onClick={handleSave} style={{ padding: "11px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99, 102, 241, 0.5)" }}>Salvar alterações</button>
+          <button
+            onClick={handleSave}
+            style={{
+              padding: "11px 24px", borderRadius: 12, border: "none",
+              background: draft.stage === "Conquistado" ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              boxShadow: draft.stage === "Conquistado" ? "0 8px 22px -8px rgba(34, 197, 94, 0.55)" : "0 8px 22px -8px rgba(99, 102, 241, 0.5)",
+              animation: draft.stage === "Conquistado" && draft.stage !== lead.stage ? "celebrate 0.5s ease-out" : "none",
+              transition: "background 0.3s ease, box-shadow 0.3s ease",
+            }}
+          >
+            {draft.stage === "Conquistado" ? "🎉 Salvar alterações" : "Salvar alterações"}
+          </button>
         </div>
       </div>
     </div>
@@ -2984,6 +3056,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap');
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.08); } }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes stageBarFill { from { width: 0%; } }
+        @keyframes celebrate { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 60% { transform: scale(0.97); } 100% { transform: scale(1); } }
         @keyframes blob { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(40px, -30px) scale(1.08); } 66% { transform: translate(-30px, 30px) scale(0.94); } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 8px 28px -8px rgba(99,102,241,0.35); } 50% { box-shadow: 0 12px 36px -6px rgba(99,102,241,0.55); } }
