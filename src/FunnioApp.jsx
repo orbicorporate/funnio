@@ -968,6 +968,118 @@ const buildWaListDefaultMessage = (lead) => {
     : `Olá! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`;
 };
 
+// Biblioteca de scripts de reativação - agrupados por situação do lead, sem
+// cara de vendedor, focados em gerar resposta. {nome} e {empresa} são trocados
+// pelos dados reais na hora de montar a mensagem.
+const SCRIPT_LIBRARY = [
+  {
+    key: "sumiu", title: "Conversou, gostou, mas sumiu", color: "#6d5ef8", icon: MessageCircle,
+    template: "Oi, {nome}! Lembrei da nossa conversa esses dias. Como ficou aquela frente de marketing da {empresa}? Vocês chegaram a tocar alguma coisa por aí?",
+  },
+  {
+    key: "proposta", title: "Recebeu proposta e não fechou", color: "#0ea5e9", icon: FileText,
+    template: "Faz um tempo desde que conversamos e imagino que bastante coisa tenha mudado por aí. Como estão as coisas na {empresa} hoje? Seria interessante batermos um papo com novos dados e ver o que faz sentido planejar?",
+  },
+  {
+    key: "antigo", title: "Lead antigo, trazer de volta", color: "#f59e0b", icon: Clock,
+    template: "Oi, quanto tempo! Como estão as coisas por aí? Faz tempo que a gente conversou sobre o marketing, queria saber se topa retomar o assunto - podemos dar uma consultoria trazendo dados e sugestões pras suas redes sociais e performance. Se topar eu preparo tudo, sem compromisso.",
+  },
+  {
+    key: "agoranao", title: "Disse \"agora não\"", color: "#ec4899", icon: XCircle,
+    template: "Oi, {nome}! Quando conversamos, não era muito o momento de vocês mexerem nisso. Mudou alguma coisa de lá pra cá? O que acha de te darmos uma breve consultoria sem compromisso?",
+  },
+  {
+    key: "comparando", title: "Estava comparando fornecedores", color: "#10b981", icon: Users2,
+    template: "Oi, {nome}! Tudo bem? Vocês acabaram encontrando uma solução boa pra aquela frente de marketing?",
+  },
+  {
+    key: "intimidade", title: "Já tem intimidade", color: "#f0431f", icon: Flame,
+    template: "Fala, {nome}! Gostaria de retomar nossa conversa sobre o marketing? Podemos trabalhar em um planejamento novo, topa?",
+  },
+  {
+    key: "ideia", title: "Reativação com uma ideia", color: "#8b5cf6", icon: Sparkles,
+    template: "{Nome}, tive uma ideia esses dias que tem bastante a cara da {empresa}. Não sei se vocês já estão fazendo algo parecido.",
+  },
+  {
+    key: "senior", title: "Lead grande / decisor sênior", color: "#0f172a", icon: Building2,
+    template: "Olá, {nome}. Faz algum tempo desde nossa última conversa e fiquei curioso pra saber como evoluiu aquela frente na {empresa}. Chegaram a avançar?",
+  },
+  {
+    key: "coringa", title: "Coringa (serve pra qualquer um)", color: "#64748b", icon: Rocket,
+    template: "Oi, {nome}! Lembrei da nossa conversa esses dias e fiquei curioso pra saber como as coisas evoluíram por aí. Como está a {empresa}?",
+  },
+  {
+    key: "consultoria", title: "Bônus: consultoria pura", color: "#16a34a", icon: Target,
+    template: "Oi, {nome}! Lembrei da nossa conversa sobre o marketing e queria te oferecer algo: uma consultoria mais avançada com dados de buscas reais do seu público, uma pesquisa SEO e um direcionamento de estratégia de conteúdo. Sem compromisso, você pode usar a favor do seu próximo planejamento - topa marcar essa call?",
+  },
+];
+
+// Troca {nome}/{Nome} e {empresa}/{Empresa} pelos dados reais do lead. Se não
+// tiver nome de contato cadastrado, remove a saudação com nome com elegância.
+const fillScriptTemplate = (template, lead) => {
+  const firstName = (lead.contactName || "").trim().split(" ")[0];
+  let result = template
+    .replace(/\{nome\}/gi, firstName || "")
+    .replace(/\{empresa\}/gi, lead.company || "sua empresa");
+  if (!firstName) {
+    result = result
+      .replace(/^Oi, !\s*/i, "Oi! ")
+      .replace(/^, tive/i, "Tive")
+      .replace(/,\s+!/g, "!");
+  }
+  return result.replace(/\s{2,}/g, " ").trim();
+};
+
+// Tela colorida de escolha de script - abre ao tocar no aviãozinho num lead.
+// Mostra os 10 tipos de abordagem já com o texto preenchido pro lead específico,
+// pra escolher rapidinho qual mais combina com a situação.
+const ScriptPickerModal = ({ lead, onClose, onSelect }) => {
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 160, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>Escolha um script</div>
+              <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
+            </div>
+            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
+            {SCRIPT_LIBRARY.map((s) => {
+              const filled = fillScriptTemplate(s.template, lead);
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => onSelect(filled)}
+                  style={{
+                    textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
+                    background: "white", cursor: "pointer", display: "flex", gap: 12, transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                    boxShadow: `0 2px 10px -6px ${s.color}40`,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
+                >
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <s.icon size={16} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogSent }) => {
   const [mode, setMode] = useState("list"); // list | sending | done
   const [tab, setTab] = useState("fila"); // fila | historico (só usado quando mode === "list")
@@ -982,7 +1094,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
   const currentLead = validLeads[idx];
 
   useEffect(() => {
-    if (mode === "sending" && currentLead) setMessage(buildWaListDefaultMessage(currentLead));
+    if (mode === "sending" && currentLead) setMessage(currentLead.waMessage || buildWaListDefaultMessage(currentLead));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, mode]);
 
@@ -996,8 +1108,9 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
   // usado pelo botão de envio rápido em cada linha da lista.
   const sendDirect = (lead) => {
     const num = cleanPhone(lead.whatsapp);
-    window.open(`https://wa.me/${num}?text=${encodeURIComponent(buildWaListDefaultMessage(lead))}`, "_blank");
-    onLogSent(lead.id, buildWaListDefaultMessage(lead));
+    const msg = lead.waMessage || buildWaListDefaultMessage(lead);
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+    onLogSent(lead.id, msg);
     triggerCoin();
   };
 
@@ -3157,7 +3270,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const [selected, setSelected] = useState(null);
   const [quickContactLead, setQuickContactLead] = useState(null);
-  const [waSendList, setWaSendList] = useState([]);
+  const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
+  const [scriptPickerLead, setScriptPickerLead] = useState(null);
   const [waSendHistory, setWaSendHistory] = useState([]);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -3402,15 +3516,28 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     });
   };
 
-  const toggleWaList = (leadId) => {
-    setWaSendList((prev) => prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]);
+  // Toca no aviãozinho: se o lead já está na fila, remove direto. Se não está,
+  // abre a tela de escolha de script em vez de adicionar com mensagem genérica.
+  const handlePaperPlaneClick = (lead) => {
+    if (waSendList.some((x) => x.leadId === lead.id)) {
+      setWaSendList((prev) => prev.filter((x) => x.leadId !== lead.id));
+    } else {
+      setScriptPickerLead(lead);
+    }
+  };
+
+  const addToWaListWithScript = (message) => {
+    if (!scriptPickerLead) return;
+    setWaSendList((prev) => [...prev.filter((x) => x.leadId !== scriptPickerLead.id), { leadId: scriptPickerLead.id, message }]);
+    setScriptPickerLead(null);
+    setToast("Adicionado à lista de envio!");
   };
 
   const logWaListSend = (leadId, message) => {
     const now = new Date().toISOString();
     const lead = leads.find((l) => l.id === leadId);
     setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, lastContact: now, notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])] } : l));
-    setWaSendList((prev) => prev.filter((id) => id !== leadId));
+    setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
   };
 
@@ -4068,7 +4195,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.includes(lead.id)} onToggleWaList={toggleWaList} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} />)}
                 </div>
               )}
 
@@ -4850,12 +4977,22 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
         {showWaSendScreen && (
           <WaSendListScreen
-            leadsInList={waSendList.map((id) => leads.find((l) => l.id === id)).filter(Boolean)}
+            leadsInList={waSendList.map((item) => {
+              const lead = leads.find((l) => l.id === item.leadId);
+              return lead ? { ...lead, waMessage: item.message } : null;
+            }).filter(Boolean)}
             history={waSendHistory}
             onClose={() => setShowWaSendScreen(false)}
-            onRemove={(id) => setWaSendList((prev) => prev.filter((x) => x !== id))}
+            onRemove={(id) => setWaSendList((prev) => prev.filter((x) => x.leadId !== id))}
             onClear={() => setWaSendList([])}
             onLogSent={logWaListSend}
+          />
+        )}
+        {scriptPickerLead && (
+          <ScriptPickerModal
+            lead={scriptPickerLead}
+            onClose={() => setScriptPickerLead(null)}
+            onSelect={addToWaListWithScript}
           />
         )}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
