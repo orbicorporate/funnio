@@ -3,6 +3,13 @@ import { supabase } from "./supabaseClient.js";
 import FunnioApp from "./FunnioApp.jsx";
 import { LogOut, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
 
+// ════════════════════════════════════════════════════════════════════════
+// Ponte de armazenamento: o CRM (FunnioApp) já foi construído em cima de uma
+// API window.storage.get/set (pensada originalmente pra artefatos do Claude).
+// Aqui a implementamos de verdade, salvando cada chave como uma linha no
+// Supabase, isolada por workspace_id — sem precisar tocar na lógica interna
+// do CRM, que continua igual (dashboard, leads, metas, assistente etc.)
+// ════════════════════════════════════════════════════════════════════════
 function installStorageBridge(workspaceId) {
   window.storage = {
     async get(key) {
@@ -29,7 +36,7 @@ function installStorageBridge(workspaceId) {
 }
 
 export default function Root() {
-  const [session, setSession] = useState(undefined);
+  const [session, setSession] = useState(undefined); // undefined = ainda checando
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [bridgeReady, setBridgeReady] = useState(false);
@@ -41,6 +48,18 @@ export default function Root() {
   const [showMenu, setShowMenu] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [pendingInviteCode, setPendingInviteCode] = useState("");
+
+  // Se a pessoa abriu o link de convite (ex: funnio.vercel.app/?convite=ABC123),
+  // já deixa o código pronto e a aba de "entrar com convite" selecionada.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeFromUrl = params.get("convite");
+    if (codeFromUrl) {
+      setPendingInviteCode(codeFromUrl.toUpperCase());
+      setTab("join");
+    }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -71,6 +90,7 @@ export default function Root() {
     }
   }, [activeWorkspace]);
 
+  // Reabrir automaticamente o último workspace usado, se a pessoa ainda for membro dele
   useEffect(() => {
     if (session && workspaces.length > 0 && !activeWorkspace) {
       const savedId = localStorage.getItem("funnio_active_ws");
@@ -136,12 +156,37 @@ export default function Root() {
     setInviteCode(error ? "" : data);
   };
 
+  const [showMembers, setShowMembers] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [membersError, setMembersError] = useState("");
+
+  const loadMembers = useCallback(async () => {
+    if (!activeWorkspace) return;
+    const { data, error } = await supabase.rpc("crm_workspace_members", { ws_id: activeWorkspace.id });
+    if (!error) setMembers(data || []);
+  }, [activeWorkspace]);
+
+  const handleOpenMembers = async () => {
+    setShowMenu(false);
+    setShowMembers(true);
+    setMembersError("");
+    await loadMembers();
+  };
+
+  const handleRemoveMember = async (targetUserId) => {
+    setMembersError("");
+    const { error } = await supabase.rpc("crm_remove_member", { ws_id: activeWorkspace.id, target_user_id: targetUserId });
+    if (error) { setMembersError(error.message); return; }
+    await loadMembers();
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("funnio_active_ws");
     setActiveWorkspace(null);
   };
 
+  // ═════════ Telas ═════════
   if (session === undefined) {
     return <CenteredMessage>Carregando...</CenteredMessage>;
   }
@@ -171,6 +216,7 @@ export default function Root() {
         busy={busy}
         tab={tab}
         setTab={setTab}
+        defaultCode={pendingInviteCode}
       />
     );
   }
@@ -184,12 +230,23 @@ export default function Root() {
         setShow={setShowMenu}
         onSwitch={() => { setActiveWorkspace(null); setShowMenu(false); }}
         onLogout={handleLogout}
-        onInvite={handleCreateInvite}
-        inviteCode={inviteCode}
-        clearInvite={() => setInviteCode("")}
-        copied={copied}
-        setCopied={setCopied}
+        onMembers={handleOpenMembers}
       />
+      {showMembers && (
+        <MembersPanel
+          members={members}
+          isOwner={activeWorkspace.role === "owner"}
+          myUserId={session.user.id}
+          error={membersError}
+          onRemove={handleRemoveMember}
+          onClose={() => setShowMembers(false)}
+          onInvite={handleCreateInvite}
+          inviteCode={inviteCode}
+          clearInvite={() => setInviteCode("")}
+          copied={copied}
+          setCopied={setCopied}
+        />
+      )}
     </div>
   );
 }
@@ -226,10 +283,10 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
   );
 }
 
-function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout, error, busy, tab, setTab }) {
+function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout, error, busy, tab, setTab, defaultCode }) {
   const [wsName, setWsName] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(defaultCode || "");
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #0a0a0a, #14140f)", padding: "40px 20px", fontFamily: '"Open Sans", Arial, sans-serif' }}>
       <div style={{ maxWidth: 420, margin: "0 auto" }}>
@@ -268,6 +325,11 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
             </>
           ) : (
             <>
+              {defaultCode && (
+                <div style={{ background: "rgba(163,230,53,0.1)", border: "1px solid rgba(163,230,53,0.3)", color: "#a3e635", padding: "8px 12px", borderRadius: 10, fontSize: 11.5, marginBottom: 10 }}>
+                  Código {defaultCode} preenchido automaticamente pelo link. Só falta seu nome!
+                </div>
+              )}
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome (como vai aparecer pro time)" style={inputStyle} />
               <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Código do convite" style={{ ...inputStyle, textTransform: "uppercase" }} />
               <button disabled={busy} onClick={() => onJoin(displayName, code)} style={primaryBtnStyle}>{busy ? "..." : "Entrar no funil"}</button>
@@ -280,38 +342,103 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
   );
 }
 
-function WorkspaceMenu({ workspaceName, show, setShow, onSwitch, onLogout, onInvite, inviteCode, clearInvite, copied, setCopied }) {
+function WorkspaceMenu({ workspaceName, show, setShow, onSwitch, onLogout, onMembers }) {
   return (
     <>
       <button
         onClick={() => setShow((s) => !s)}
         title={workspaceName}
-        style={{ position: "fixed", top: 10, right: 10, zIndex: 999, width: 34, height: 34, borderRadius: "50%", background: "rgba(20,20,20,0.85)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", color: "#a3e635", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+        style={{ position: "fixed", top: "calc(12px + env(safe-area-inset-top))", right: 12, zIndex: 999999, width: 40, height: 40, borderRadius: "50%", background: "#141416", backdropFilter: "blur(8px)", border: "2px solid #a3e635", color: "#a3e635", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 6px 18px -6px rgba(0,0,0,0.5)" }}
       >
-        <Users size={15} />
+        <Users size={17} />
       </button>
       {show && (
-        <div style={{ position: "fixed", top: 50, right: 10, zIndex: 999, width: 230, background: "#161611", border: "1px solid #26261f", borderRadius: 16, padding: 14, boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "fixed", top: "calc(58px + env(safe-area-inset-top))", right: 12, zIndex: 999999, width: 220, background: "#161611", border: "1px solid #26261f", borderRadius: 16, padding: 14, boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5)" }}>
           <div style={{ color: "#767670", fontSize: 10.5, fontWeight: 700, marginBottom: 10, textTransform: "uppercase" }}>{workspaceName}</div>
-          {!inviteCode ? (
-            <button onClick={onInvite} style={menuBtnStyle}><Copy size={13} /> Convidar pro funil</button>
-          ) : (
-            <div style={{ background: "#1e1e17", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
-              <div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 800, letterSpacing: 2, color: "#a3e635", textAlign: "center", marginBottom: 6 }}>{inviteCode}</div>
-              <button
-                onClick={() => { navigator.clipboard.writeText(inviteCode); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-                style={{ ...menuBtnStyle, justifyContent: "center", background: "#26261f" }}
-              >
-                {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? "Copiado!" : "Copiar código"}
-              </button>
-              <button onClick={clearInvite} style={{ ...menuBtnStyle, justifyContent: "center", color: "#767670" }}>Fechar</button>
-            </div>
-          )}
+          <button onClick={onMembers} style={menuBtnStyle}><Users size={13} /> Gerenciar membros</button>
           <button onClick={onSwitch} style={menuBtnStyle}><ArrowLeftRight size={13} /> Trocar de funil</button>
           <button onClick={onLogout} style={{ ...menuBtnStyle, color: "#f87171" }}><LogOut size={13} /> Sair</button>
         </div>
       )}
     </>
+  );
+}
+
+// Painel único de gerenciamento: convidar (código + link + WhatsApp), ver todo mundo
+// que já está no funil, e remover alguém (só o dono vê o botão de remover).
+function MembersPanel({ members, isOwner, myUserId, error, onRemove, onClose, onInvite, inviteCode, clearInvite, copied, setCopied }) {
+  const [copiedLink, setCopiedLink] = useState(false);
+  const inviteLink = inviteCode ? `${window.location.origin}/?convite=${inviteCode}` : "";
+  const whatsappText = inviteCode
+    ? `Entra no nosso funil no Funnio! Código: ${inviteCode} — ou clica direto aqui: ${inviteLink}`
+    : "";
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", zIndex: 999998, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "85vh", overflowY: "auto", background: "#161611", borderRadius: "22px 22px 0 0", padding: 22, fontFamily: '"Open Sans", Arial, sans-serif' }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: "white" }}>Gerenciar funil</div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #26261f", background: "transparent", color: "#e5e5e0", cursor: "pointer", fontSize: 14 }}>✕</button>
+        </div>
+
+        {/* Convidar */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#767670", textTransform: "uppercase", marginBottom: 8 }}>Adicionar pessoa</div>
+        {!inviteCode ? (
+          <button onClick={onInvite} style={{ ...menuBtnStyle, justifyContent: "center", background: "#26261f", marginBottom: 20 }}><Copy size={13} /> Gerar convite</button>
+        ) : (
+          <div style={{ background: "#1e1e17", borderRadius: 12, padding: "12px 14px", marginBottom: 20 }}>
+            <div style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 800, letterSpacing: 2, color: "#a3e635", textAlign: "center", marginBottom: 10 }}>{inviteCode}</div>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(whatsappText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...menuBtnStyle, justifyContent: "center", background: "#22c55e", color: "white", textDecoration: "none", marginBottom: 4 }}
+            >
+              Enviar pelo WhatsApp
+            </a>
+            <button
+              onClick={() => { navigator.clipboard.writeText(inviteLink); setCopiedLink(true); setTimeout(() => setCopiedLink(false), 1500); }}
+              style={{ ...menuBtnStyle, justifyContent: "center", background: "#26261f" }}
+            >
+              {copiedLink ? <Check size={13} /> : <Copy size={13} />} {copiedLink ? "Link copiado!" : "Copiar link"}
+            </button>
+            <button
+              onClick={() => { navigator.clipboard.writeText(inviteCode); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              style={{ ...menuBtnStyle, justifyContent: "center", background: "transparent", color: "#767670" }}
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? "Copiado!" : "Copiar só o código"}
+            </button>
+            <button onClick={clearInvite} style={{ ...menuBtnStyle, justifyContent: "center", color: "#767670" }}>Fechar convite</button>
+          </div>
+        )}
+
+        {/* Lista de membros */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#767670", textTransform: "uppercase", marginBottom: 8 }}>Quem já está no funil ({members.length})</div>
+        {error && <div style={{ background: "rgba(226,72,63,0.1)", border: "1px solid rgba(226,72,63,0.3)", color: "#f87171", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 12 }}>{error}</div>}
+        {members.length === 0 ? (
+          <div style={{ color: "#767670", fontSize: 13 }}>Carregando membros...</div>
+        ) : (
+          members.map((m) => (
+            <div key={m.user_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1e1e17", borderRadius: 12, padding: "10px 12px", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 30, height: 30, borderRadius: "50%", background: m.color || "#6d5ef8", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 12 }}>
+                  {(m.display_name || "?").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{m.display_name}{m.user_id === myUserId ? " (você)" : ""}</div>
+                  <div style={{ color: "#767670", fontSize: 11 }}>{m.role === "owner" ? "Dono do funil" : "Membro"}</div>
+                </div>
+              </div>
+              {isOwner && m.user_id !== myUserId && (
+                <button onClick={() => onRemove(m.user_id)} style={{ border: "none", background: "rgba(239,68,68,0.12)", color: "#f87171", fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}>
+                  Remover
+                </button>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 
