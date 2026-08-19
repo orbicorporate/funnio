@@ -1532,12 +1532,15 @@ const MENU_SECTIONS = [
   { key: "assistente", label: "Assistente de vendas", icon: Sparkles },
 ];
 
-const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead }) => (
+const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName }) => (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 150, display: "flex", animation: "fadeIn 0.15s ease" }}>
     <div onClick={(e) => e.stopPropagation()} style={{ width: "82%", maxWidth: 300, height: "100%", background: "white", boxShadow: "8px 0 30px -8px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", animation: "menuSlideIn 0.2s ease" }}>
-      <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, color: "#14141a" }}>Menu</div>
-        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={14} /></button>
+      <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, color: "#14141a" }}>Menu</div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={14} /></button>
+        </div>
+        {workspaceName && <div style={{ fontSize: 11.5, color: "#9a9aa3", marginTop: 2 }}>{workspaceName}</div>}
       </div>
 
       <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1569,10 +1572,15 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
         })}
       </div>
 
-      <div style={{ padding: "12px", borderTop: "1px solid #f1f2f5" }}>
+      <div style={{ padding: "12px", borderTop: "1px solid #f1f2f5", display: "flex", flexDirection: "column", gap: 2 }}>
         <button onClick={onManageSdrs} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
           <Settings2 size={17} color="#6b6b75" /> Gerenciar SDRs
         </button>
+        {onSwitchWorkspace && (
+          <button onClick={onSwitchWorkspace} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+            <Users2 size={17} color="#6b6b75" /> Trocar de funil
+          </button>
+        )}
       </div>
     </div>
   </div>
@@ -2501,7 +2509,7 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
 // APP
 // ════════════════════════════════════════════════════════════════════════
 
-export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId } = {}) {
+export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId, workspaceName, onSwitchWorkspace } = {}) {
   const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
   const [leads, setLeads] = useState([]);
   const [meetings, setMeetings] = useState([]);
@@ -2987,7 +2995,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               </div>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: DARK.lime, marginBottom: 6 }}>Sales Intelligence · B2B</div>
-              <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: -0.5, margin: 0, color: "white", lineHeight: 1.15, marginBottom: 16 }}>Visão geral do funil</h1>
+              <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: -0.5, margin: 0, color: "white", lineHeight: 1.15, marginBottom: workspaceName ? 3 : 16 }}>Visão geral do funil</h1>
+              {workspaceName && <div style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.55)", marginBottom: 16 }}>{workspaceName}</div>}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button onClick={createLead} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "none", background: DARK.lime, color: "#14141a", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
                   <Plus size={13} /> Novo lead
@@ -4201,6 +4210,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onManageSdrs={() => { setShowMenu(false); setShowSdrManager(true); }}
             onImport={() => { setShowMenu(false); setShowImportModal(true); }}
             onNewLead={() => { setShowMenu(false); createLead(); }}
+            onSwitchWorkspace={onSwitchWorkspace ? () => { setShowMenu(false); onSwitchWorkspace(); } : undefined}
+            workspaceName={workspaceName}
           />
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
