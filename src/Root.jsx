@@ -352,8 +352,9 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
         <div style={{ maxWidth: 420, width: "100%", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <img src="/logo.png" alt="Funnio" style={{ height: 76, width: "auto", display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 22px rgba(163,230,53,0.35))" }} />
-            <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Seu funil</h1>
-            <div style={{ color: "#767670", fontSize: 12.5 }}>{email}</div>
+            <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
+            <div style={{ color: "#a3e635", fontSize: 12.5, fontWeight: 600, marginBottom: 2 }}>Seu funil de vendas</div>
+            <div style={{ color: "#767670", fontSize: 12 }}>{email}</div>
           </div>
 
           {workspaces.length > 0 && (
