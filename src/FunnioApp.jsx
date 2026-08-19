@@ -2807,6 +2807,7 @@ export default function CRM() {
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 8px 28px -8px rgba(99,102,241,0.35); } 50% { box-shadow: 0 12px 36px -6px rgba(99,102,241,0.55); } }
         @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes ledSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
         @keyframes badgePop { 0% { opacity: 0; transform: scale(0.7) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes badgeBounce { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
@@ -3550,9 +3551,7 @@ export default function CRM() {
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><ArrowLeft size={18} /></button>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(109,94,248,0.5)" }}>
-                  <Sparkles size={18} color="white" />
-                </div>
+                <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(215,250,60,0.4)" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, margin: 0, color: "#14141a" }}>Assistente de vendas</h1>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#9a9aa3" }}>
@@ -3584,9 +3583,7 @@ export default function CRM() {
               >
                 {chatMessages.length === 0 && (
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                      <Sparkles size={13} color="white" />
-                    </div>
+                    <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, marginTop: 2 }} />
                     <div style={{
                       maxWidth: "85%", padding: "13px 16px", borderRadius: "4px 16px 16px 16px",
                       background: "white", border: "1px solid #eef0f3", boxShadow: "0 2px 8px -4px rgba(20,20,26,0.08)",
@@ -3622,9 +3619,7 @@ export default function CRM() {
                   return (
                     <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 8, marginTop: prevSameRole ? 3 : 12 }}>
                       {!isUser && (
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, visibility: prevSameRole ? "hidden" : "visible" }}>
-                          <Sparkles size={11} color="white" />
-                        </div>
+                        <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0, visibility: prevSameRole ? "hidden" : "visible" }} />
                       )}
                       <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "78%" }}>
                         <div style={{
@@ -3648,9 +3643,7 @@ export default function CRM() {
 
                 {chatLoading && (
                   <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-end", gap: 8, marginTop: 12 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Sparkles size={11} color="white" />
-                    </div>
+                    <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0 }} />
                     <div style={{ padding: "12px 16px", borderRadius: "4px 16px 16px 16px", background: "white", border: "1px solid #eef0f3", display: "flex", alignItems: "center", gap: 4 }}>
                       {[0, 1, 2].map((d) => (
                         <span key={d} style={{ width: 6, height: 6, borderRadius: "50%", background: "#c4c4cc", animation: `typingDot 1.1s ease-in-out ${d * 0.15}s infinite` }} />
@@ -4106,19 +4099,24 @@ export default function CRM() {
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
 
-        {/* ── BOTÃO FLUTUANTE: ASSISTENTE DE IA ── */}
+        {/* ── BOTÃO FLUTUANTE: ASSISTENTE DE IA (logo com anel de LED girando) ── */}
         {view !== "assistente" && (
           <button
             onClick={() => setView("assistente")}
             title="Assistente de vendas com IA"
             style={{
-              position: "fixed", right: 18, bottom: 90, width: 54, height: 54, borderRadius: "50%",
-              border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              boxShadow: "0 10px 28px -8px rgba(109,94,248,0.6)", zIndex: 85,
+              position: "fixed", right: 18, bottom: 90, width: 58, height: 58, borderRadius: "50%",
+              border: "none", background: "transparent", padding: 0, cursor: "pointer",
+              boxShadow: "0 10px 28px -8px rgba(215,250,60,0.55)", zIndex: 85,
             }}
           >
-            <Sparkles size={22} />
+            <div style={{
+              width: "100%", height: "100%", borderRadius: "50%", padding: 3, boxSizing: "border-box",
+              background: "conic-gradient(from 0deg, transparent 0%, #d7fa3c 14%, transparent 30%, transparent 100%)",
+              animation: "ledSpin 2.4s linear infinite",
+            }}>
+              <img src="/funnio-icon-round.png" alt="Assistente Funnio" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
+            </div>
           </button>
         )}
 
