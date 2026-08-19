@@ -199,6 +199,14 @@ export default function Root() {
     setActiveWorkspace(null);
   };
 
+  // Trocar de funil precisa esquecer o "último funil salvo", senão o app reabre
+  // o mesmo funil sozinho na hora seguinte (efeito de auto-retomar) e parece que
+  // o botão não fez nada.
+  const handleSwitchWorkspace = () => {
+    localStorage.removeItem("funnio_active_ws");
+    setActiveWorkspace(null);
+  };
+
   // ═════════ Telas ═════════
   if (session === undefined) {
     return <CenteredMessage>Carregando...</CenteredMessage>;
@@ -242,13 +250,13 @@ export default function Root() {
         onSyncMemberAvatar={syncMemberAvatar}
         currentUserId={session.user.id}
         workspaceName={activeWorkspace.name}
-        onSwitchWorkspace={() => setActiveWorkspace(null)}
+        onSwitchWorkspace={handleSwitchWorkspace}
       />
       <WorkspaceMenu
         workspaceName={activeWorkspace.name}
         show={showMenu}
         setShow={setShowMenu}
-        onSwitch={() => { setActiveWorkspace(null); setShowMenu(false); }}
+        onSwitch={() => { handleSwitchWorkspace(); setShowMenu(false); }}
         onLogout={handleLogout}
         onMembers={handleOpenMembers}
       />
