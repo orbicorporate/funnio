@@ -1272,8 +1272,11 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>Situação atual</label>
-            <textarea value={draft.feedback || ""} onChange={(e) => update({ feedback: e.target.value })} placeholder="Descreva a situação atual do lead..." style={{ ...inputStyle, minHeight: 60, resize: "vertical", fontFamily: "inherit" }} />
+            <label style={labelStyle}>Resumo (aparece no card da lista)</label>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, marginTop: -4 }}>
+              Um resumo curto pra bater o olho na lista. Pra registrar cada conversa com data, use o histórico mais abaixo.
+            </div>
+            <textarea value={draft.feedback || ""} onChange={(e) => update({ feedback: e.target.value })} placeholder="Ex: esperando aprovação do orçamento..." style={{ ...inputStyle, minHeight: 60, resize: "vertical", fontFamily: "inherit" }} />
           </div>
 
           <div style={{ marginBottom: 18 }}>
@@ -1325,8 +1328,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div>
-            <label style={{ ...labelStyle, marginBottom: 2 }}>Histórico de conversas</label>
-            <span style={hintStyle}>Toda vez que você usar os botões de WhatsApp/Email/Ligar, um registro é adicionado aqui automaticamente.</span>
+            <label style={{ ...labelStyle, marginBottom: 2 }}>Histórico de conversas (linha do tempo)</label>
+            <span style={hintStyle}>Cada conversa fica registrada aqui com data - diferente do resumo acima, que é só um texto curto. Usar os botões de WhatsApp/Email/Ligar já adiciona um registro automaticamente.</span>
             <div style={{ display: "flex", gap: 8, marginBottom: 12, marginTop: 6 }}>
               <input value={newNote} onChange={(e) => setNewNote(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addNote()} placeholder="Registrar manualmente uma conversa ou anotação..." style={inputStyle} />
               <button onClick={addNote} disabled={!newNote.trim()} style={{ padding: "0 18px", borderRadius: 10, border: "none", background: newNote.trim() ? "#0f172a" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 600, cursor: newNote.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}>Adicionar</button>
