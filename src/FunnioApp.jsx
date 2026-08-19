@@ -3605,7 +3605,7 @@ export default function CRM() {
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><ArrowLeft size={18} /></button>
                 <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(215,250,60,0.4)" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, margin: 0, color: "#14141a" }}>Assistente de vendas</h1>
+                  <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, margin: 0, color: "#14141a" }}>Olá, sou o gestor IA do seu Funnio</h1>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "#9a9aa3" }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1fa971", flexShrink: 0 }} />
                     Online · conhece seu funil em tempo real
