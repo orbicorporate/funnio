@@ -1260,7 +1260,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>Feedback / Situação atual</label>
+            <label style={labelStyle}>Situação atual</label>
             <textarea value={draft.feedback || ""} onChange={(e) => update({ feedback: e.target.value })} placeholder="Descreva a situação atual do lead..." style={{ ...inputStyle, minHeight: 60, resize: "vertical", fontFamily: "inherit" }} />
           </div>
 
