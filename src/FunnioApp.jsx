@@ -3679,11 +3679,11 @@ export default function CRM() {
                           borderRadius: isUser
                             ? (prevSameRole ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
                             : (prevSameRole ? "4px 16px 16px 4px" : "4px 16px 16px 16px"),
-                          background: isUser ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "white",
-                          color: isUser ? "white" : "#14141a",
+                          background: isUser ? "linear-gradient(135deg, #d7fa3c, #c4e82a)" : "white",
+                          color: isUser ? "#14141a" : "#14141a",
                           border: isUser ? "none" : "1px solid #eef0f3",
                           fontSize: 13.5, lineHeight: 1.55, whiteSpace: "pre-wrap",
-                          boxShadow: isUser ? "0 4px 12px -6px rgba(109,94,248,0.5)" : "0 2px 8px -4px rgba(20,20,26,0.08)",
+                          boxShadow: isUser ? "0 4px 12px -6px rgba(215,250,60,0.5)" : "0 2px 8px -4px rgba(20,20,26,0.08)",
                         }}>
                           {m.content}
                         </div>
@@ -3728,7 +3728,7 @@ export default function CRM() {
                           key={suggestion}
                           onClick={() => sendChatMessage(suggestion)}
                           disabled={chatLoading}
-                          style={{ flexShrink: 0, whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 20, border: "1px solid #e2e4e9", background: "white", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.5 : 1, boxShadow: "0 4px 14px -6px rgba(20,20,26,0.15)" }}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 20, border: "1px solid #e2e4e9", background: "white", color: "#6d5ef8", fontSize: 11.5, fontWeight: 500, cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.5 : 1, boxShadow: "0 4px 14px -6px rgba(20,20,26,0.15)" }}
                         >
                           {suggestion}
                         </button>
