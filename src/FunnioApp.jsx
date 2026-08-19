@@ -3078,10 +3078,7 @@ export default function CRM() {
                             </div>
                             <div>
                               <div style={{ fontSize: 16, fontWeight: 800, color: "#e2483f", lineHeight: 1.2 }}>{remaining} lead{remaining === 1 ? "" : "s"} restante{remaining === 1 ? "" : "s"}</div>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: "#6b6b75" }}>para atingir sua meta semanal</div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#e2483f", fontWeight: 700, marginTop: 3 }}>
-                                <TrendingUp size={12} /> Média necessária: ~{avgPerDay} abordagem{avgPerDay === 1 ? "" : "ns"} por dia
-                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#6b6b75" }}>para bater a meta semanal</div>
                             </div>
                           </div>
                           <button onClick={() => setView("semana")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 12, border: "1px solid #eef0f3", background: "white", color: "#14141a", fontSize: 12.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
