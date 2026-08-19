@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
+import { supabase } from "./supabaseClient.js";
 import {
   Phone, Mail, MessageCircle, Plus, Search, Clock, Users, Flame, Snowflake,
   Thermometer, X, Trash2, AlertCircle, CheckCircle2, XCircle, TrendingUp,
@@ -1724,14 +1725,20 @@ const parseClaudeResponseText = async (response) => {
 // Chama a API da Claude de forma robusta: uma nova tentativa automática e silenciosa
 // se a resposta vier corrompida ou vazia (bem raro, mas acontece por causa de rede
 // instável), e só mostra erro pro usuário se as duas tentativas falharem.
+// Chama a IA através da Edge Function do Supabase (ai-proxy), que guarda a chave
+// da Anthropic em segredo no servidor - o navegador nunca vê essa chave, só o token
+// de sessão do próprio usuário logado, que a função exige pra funcionar.
 const callClaudeAPI = async ({ system, messages, maxTokens }) => {
   const doRequest = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw friendlyError("Sua sessão expirou. Atualize a página e entre novamente.");
+
     let response;
     try {
-      response = await fetch("https://api.anthropic.com/v1/messages", {
+      response = await fetch("https://spdqghchvimjytycdmjk.supabase.co/functions/v1/ai-proxy", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: maxTokens, system, messages }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ max_tokens: maxTokens, system, messages }),
       });
     } catch {
       throw friendlyError("Não consegui conectar à IA. Verifique sua internet e tente de novo.");
