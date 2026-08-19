@@ -3502,8 +3502,9 @@ export default function CRM() {
 
               <div
                 style={{
-                  display: "flex", flexDirection: "column", gap: 4, marginBottom: 12, minHeight: 240,
+                  display: "flex", flexDirection: "column", gap: 4, marginBottom: 12,
                   borderRadius: 20, padding: "16px 14px",
+                  paddingBottom: 110,
                   backgroundImage: "radial-gradient(circle at 1px 1px, rgba(20,20,26,0.05) 1px, transparent 0)",
                   backgroundSize: "16px 16px",
                   background: "rgba(255,255,255,0.4)",
@@ -3595,42 +3596,49 @@ export default function CRM() {
                 )}
               </div>
 
-              {chatMessages.length > 0 && (
-                <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 10 }}>
-                  {[
-                    "Crie script de abordagem",
-                    "O que eu preciso fazer essa semana?",
-                    "Quem eu deveria priorizar hoje?",
-                    "Resumo das negociações antigas",
-                  ].map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      onClick={() => sendChatMessage(suggestion)}
-                      disabled={chatLoading}
-                      style={{ flexShrink: 0, whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 20, border: "1px solid #e2e4e9", background: "white", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.5 : 1 }}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Barra inferior fixa: chips de sugestão + campo de digitar, sempre grudados
+                  no fundo da tela (acima do menu), nunca soltos no meio de espaço vazio. */}
+              <div style={{ position: "fixed", bottom: 76, left: 0, right: 0, zIndex: 80, padding: "0 16px" }}>
+                <div style={{ maxWidth: 480, margin: "0 auto" }}>
+                  {chatMessages.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8 }}>
+                      {[
+                        "Crie script de abordagem",
+                        "O que eu preciso fazer essa semana?",
+                        "Quem eu deveria priorizar hoje?",
+                        "Resumo das negociações antigas",
+                      ].map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          onClick={() => sendChatMessage(suggestion)}
+                          disabled={chatLoading}
+                          style={{ flexShrink: 0, whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 20, border: "1px solid #e2e4e9", background: "white", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.5 : 1, boxShadow: "0 4px 14px -6px rgba(20,20,26,0.15)" }}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-              <div style={{ position: "sticky", bottom: 90, display: "flex", gap: 8, marginBottom: 20, background: "rgba(245,243,255,0.9)", backdropFilter: "blur(8px)", padding: "6px", borderRadius: 18 }}>
-                <input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(chatInput); } }}
-                  placeholder="Escreva uma mensagem..."
-                  disabled={chatLoading}
-                  style={{ flex: 1, padding: "13px 16px", borderRadius: 14, border: "1.5px solid #dcdfe6", background: "white", fontSize: 13.5, outline: "none", color: "#14141a" }}
-                />
-                <button
-                  onClick={() => sendChatMessage(chatInput)}
-                  disabled={!chatInput.trim() || chatLoading}
-                  style={{ width: 48, borderRadius: 14, border: "none", background: chatInput.trim() && !chatLoading ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#eef0f3", color: chatInput.trim() && !chatLoading ? "white" : "#b4b6bc", cursor: chatInput.trim() && !chatLoading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-                >
-                  <ChevronRight size={19} />
-                </button>
+                  <div style={{ display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(245,243,255,0.95)", backdropFilter: "blur(10px)", padding: "8px", borderRadius: 20, boxShadow: "0 10px 30px -10px rgba(20,20,26,0.25)" }}>
+                    <textarea
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(chatInput); } }}
+                      placeholder="Escreva uma mensagem..."
+                      disabled={chatLoading}
+                      rows={2}
+                      style={{ flex: 1, padding: "14px 16px", borderRadius: 16, border: "1.5px solid #dcdfe6", background: "white", fontSize: 14, outline: "none", color: "#14141a", resize: "none", fontFamily: "inherit", lineHeight: 1.4, maxHeight: 110 }}
+                    />
+                    <button
+                      onClick={() => sendChatMessage(chatInput)}
+                      disabled={!chatInput.trim() || chatLoading}
+                      style={{ width: 52, height: 52, borderRadius: 16, border: "none", background: chatInput.trim() && !chatLoading ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#eef0f3", color: chatInput.trim() && !chatLoading ? "white" : "#b4b6bc", cursor: chatInput.trim() && !chatLoading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </>
           )}
