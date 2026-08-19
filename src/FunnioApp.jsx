@@ -8,7 +8,7 @@ import {
   Share2, Video, FileText, SlidersHorizontal, BarChart3, Users2, ClipboardList,
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
-  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal,
+  Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -893,7 +893,7 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
           <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{lead.company}</div>
           <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
         </div>
-        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>Toque no contato pra abrir, ou no ícone pra copiar.</div>
+        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>Toque na seta pra abrir, ou no quadradinho pra copiar.</div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {rows.map((r) => (
@@ -901,24 +901,29 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
               <div style={{ width: 34, height: 34, borderRadius: "50%", background: r.value ? r.color + "18" : "#eef0f3", color: r.value ? r.color : "#c4c4cc", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <r.icon size={15} />
               </div>
-              <button
-                onClick={() => r.value && onDispatch(r.dispatchType, lead)}
-                disabled={!r.value}
-                style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: r.value ? "pointer" : "default", padding: 0 }}
-              >
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 10.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.3 }}>{r.label}</div>
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: r.value ? "#0f172a" : "#c4c4cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {r.value || "não cadastrado"}
                 </div>
-              </button>
+              </div>
               {r.value && (
-                <button
-                  onClick={() => copy(r.key, r.value)}
-                  title="Copiar"
-                  style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: copiedField === r.key ? "#22c55e" : "rgba(148,163,184,0.12)", color: copiedField === r.key ? "white" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
-                >
-                  {copiedField === r.key ? <Check size={14} /> : <Copy size={14} />}
-                </button>
+                <>
+                  <button
+                    onClick={() => copy(r.key, r.value)}
+                    title="Copiar"
+                    style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: copiedField === r.key ? "#22c55e" : "rgba(148,163,184,0.12)", color: copiedField === r.key ? "white" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
+                  >
+                    {copiedField === r.key ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                  <button
+                    onClick={() => onDispatch(r.dispatchType, lead)}
+                    title={`Abrir ${r.label}`}
+                    style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: r.color + "18", color: r.color, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
+                  >
+                    <ArrowUpRight size={15} />
+                  </button>
+                </>
               )}
             </div>
           ))}
