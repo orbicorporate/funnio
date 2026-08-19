@@ -637,6 +637,13 @@ const LabelWithHint = ({ children, hint }) => (
     {hint && <span style={hintStyle}>{hint}</span>}
   </>
 );
+// Selinho de ícone colorido usado ao lado dos títulos de seção do painel de lead,
+// pra dar mais identidade visual a cada bloco (temperatura, estágio, contato...)
+const SecIcon = ({ icon: Icon, color }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 17, height: 17, borderRadius: 6, background: color + "1f", color, marginRight: 6, verticalAlign: -3 }}>
+    <Icon size={10.5} strokeWidth={2.5} />
+  </span>
+);
 const inputStyle = {
   width: "100%", padding: "9px 12px", borderRadius: 10,
   border: "1px solid rgba(148, 163, 184, 0.25)", background: "rgba(255, 255, 255, 0.75)",
@@ -1168,10 +1175,10 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
         </div>
 
-        <div style={{ padding: "20px 28px", maxHeight: "55vh", overflowY: "auto" }}>
+        <div style={{ padding: "20px 28px", maxHeight: "55vh", overflowY: "auto", background: "linear-gradient(180deg, rgba(109,94,248,0.025), transparent 200px)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
             <div>
-              <label style={labelStyle}>Temperatura</label>
+              <label style={labelStyle}><SecIcon icon={Flame} color="#f0431f" />Temperatura</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {Object.entries(TEMP_CONFIG).map(([key, cfg]) => {
                   const active = draft.temperature === key;
@@ -1196,7 +1203,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               </div>
             </div>
             <div>
-              <LabelWithHint hint="Etapa do processo comercial">Estágio</LabelWithHint>
+              <label style={{ ...labelStyle, marginBottom: 2 }}><SecIcon icon={Target} color="#6d5ef8" />Estágio</label><span style={hintStyle}>Etapa do processo comercial</span>
               <select
                 value={draft.stage}
                 onChange={(e) => {
@@ -1314,7 +1321,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           )}
 
           <div style={{ marginBottom: 18 }}>
-            <label style={{ ...labelStyle, marginBottom: 2 }}>Fase da conversa</label>
+            <label style={{ ...labelStyle, marginBottom: 2 }}><SecIcon icon={Users} color="#ec4899" />Fase da conversa</label>
             <span style={hintStyle}>Em que ponto está a comunicação (não muda o estágio comercial acima)</span>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {CONVERSATION_PHASES.map((p) => {
@@ -1398,7 +1405,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>Resumo (aparece no card da lista)</label>
+            <label style={labelStyle}><SecIcon icon={MessageCircle} color="#f59e0b" />Resumo (aparece no card da lista)</label>
             <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, marginTop: -4 }}>
               Um resumo curto pra bater o olho na lista. Pra registrar cada conversa com data, use o histórico mais abaixo.
             </div>
@@ -1406,7 +1413,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>Último contato</label>
+            <label style={labelStyle}><SecIcon icon={Clock} color="#0ea5e9" />Último contato</label>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 type="date"
@@ -1430,7 +1437,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={labelStyle}>Próxima ação</label>
+            <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
             <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8 }}>
               <div>
                 <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando</span>
@@ -1454,20 +1461,31 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div>
-            <label style={{ ...labelStyle, marginBottom: 2 }}>Histórico de conversas (linha do tempo)</label>
+            <label style={{ ...labelStyle, marginBottom: 2 }}><SecIcon icon={ClipboardList} color="#8b5cf6" />Histórico de conversas (linha do tempo)</label>
             <span style={hintStyle}>Cada conversa fica registrada aqui com data - diferente do resumo acima, que é só um texto curto. Usar os botões de WhatsApp/Email/Ligar já adiciona um registro automaticamente.</span>
             <div style={{ display: "flex", gap: 8, marginBottom: 12, marginTop: 6 }}>
               <input value={newNote} onChange={(e) => setNewNote(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addNote()} placeholder="Registrar manualmente uma conversa ou anotação..." style={inputStyle} />
               <button onClick={addNote} disabled={!newNote.trim()} style={{ padding: "0 18px", borderRadius: 10, border: "none", background: newNote.trim() ? "#0f172a" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 600, cursor: newNote.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}>Adicionar</button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
               {(draft.notes || []).length === 0 && <div style={{ fontSize: 13, color: "#94a3b8", padding: "16px 0", textAlign: "center" }}>Nenhuma anotação ainda.</div>}
-              {(draft.notes || []).map((note) => (
-                <div key={note.id} style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(241, 245, 249, 0.55)", border: "1px solid rgba(148, 163, 184, 0.15)" }}>
-                  <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, fontWeight: 600 }}>{formatDateFull(note.date)}</div>
-                  <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.5 }}>{note.text}</div>
-                </div>
-              ))}
+              {(draft.notes || []).map((note, idx) => {
+                const isAuto = /^Contato via/.test(note.text);
+                const dotColor = isAuto ? "#6d5ef8" : "#f59e0b";
+                const isLast = idx === (draft.notes || []).length - 1;
+                return (
+                  <div key={note.id} style={{ display: "flex", gap: 10, paddingBottom: isLast ? 0 : 14, position: "relative" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: dotColor, boxShadow: `0 0 0 3px ${dotColor}22`, marginTop: 4, flexShrink: 0 }} />
+                      {!isLast && <div style={{ width: 2, flex: 1, background: "linear-gradient(180deg, " + dotColor + "55, rgba(148,163,184,0.15))", marginTop: 2 }} />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, padding: "10px 14px", borderRadius: 12, background: isAuto ? "rgba(109,94,248,0.06)" : "rgba(245,158,11,0.06)", border: `1px solid ${isAuto ? "rgba(109,94,248,0.15)" : "rgba(245,158,11,0.18)"}`, marginBottom: 2 }}>
+                      <div style={{ fontSize: 11, color: dotColor, marginBottom: 4, fontWeight: 700 }}>{formatDateFull(note.date)}</div>
+                      <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.5 }}>{note.text}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
