@@ -2994,7 +2994,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   </button>
                 </div>
               </div>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: DARK.lime, marginBottom: 6 }}>Sales Intelligence · B2B</div>
+              <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: 1.5, textTransform: "uppercase", color: DARK.lime, marginBottom: 6 }}>Sales Intelligence · B2B</div>
               <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: -0.5, margin: 0, color: "white", lineHeight: 1.15, marginBottom: workspaceName ? 3 : 16 }}>Visão geral do funil</h1>
               {workspaceName && <div style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.55)", marginBottom: 16 }}>{workspaceName}</div>}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -4048,7 +4048,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "relatorios" && (
             <>
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "#6d5ef8", marginBottom: 6 }}>Sales Intelligence · B2B</div>
+                <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: 1.5, textTransform: "uppercase", color: "#6d5ef8", marginBottom: 6 }}>Sales Intelligence · B2B</div>
                 <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Relatórios</h1>
                 <div style={{ fontSize: 13, color: "#9a9aa3", marginTop: 4 }}>Calculado automaticamente a partir dos seus leads e reuniões</div>
               </div>
