@@ -973,6 +973,7 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
   const [message, setMessage] = useState("");
   const [sentCount, setSentCount] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
+  const [showCoin, setShowCoin] = useState(false);
 
   const validLeads = leadsInList.filter((l) => l.whatsapp);
   const withoutPhoneCount = leadsInList.length - validLeads.length;
@@ -983,10 +984,24 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, mode]);
 
-  const startSending = () => {
+  const startSending = (fromIdx = 0) => {
     if (validLeads.length === 0) return;
-    setIdx(0); setSentCount(0); setSkippedCount(0);
+    setIdx(fromIdx); setSentCount(0); setSkippedCount(0);
     setMode("sending");
+  };
+
+  // Abre o WhatsApp direto pra um lead específico sem entrar no modo de fila -
+  // usado pelo botão de envio rápido em cada linha da lista.
+  const sendDirect = (lead) => {
+    const num = cleanPhone(lead.whatsapp);
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(buildWaListDefaultMessage(lead))}`, "_blank");
+    onLogSent(lead.id, buildWaListDefaultMessage(lead));
+    triggerCoin();
+  };
+
+  const triggerCoin = () => {
+    setShowCoin(true);
+    setTimeout(() => setShowCoin(false), 900);
   };
 
   const goNext = () => {
@@ -999,6 +1014,7 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, "_blank");
     onLogSent(currentLead.id, message);
     setSentCount((c) => c + 1);
+    triggerCoin();
     goNext();
   };
 
@@ -1006,127 +1022,155 @@ const WaSendListScreen = ({ leadsInList, onClose, onRemove, onClear, onLogSent }
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
-      {/* Cabeçalho verde - tema WhatsApp em todas as telas dessa tela */}
-      <div style={{ background: "linear-gradient(135deg, #25d366, #128c4a)", padding: "18px 20px", color: "white", flexShrink: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Send size={17} />
-            </div>
-            <div>
-              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>Lista de envio WhatsApp</div>
-              <div style={{ fontSize: 11.5, opacity: 0.85 }}>
-                {mode === "list" && `${leadsInList.length} lead${leadsInList.length === 1 ? "" : "s"} na lista`}
-                {mode === "sending" && `Enviando ${idx + 1} de ${validLeads.length}`}
-                {mode === "done" && "Envio concluído"}
+      {/* Cabeçalho verde - tema WhatsApp em todas as telas dessa tela. Conteúdo com
+          largura máxima e centralizado, senão em tela larga o botão de fechar
+          fica "perdido" longe do título. */}
+      <div style={{ background: "linear-gradient(135deg, #25d366, #128c4a)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ArrowLeft size={17} />
+              </button>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16.5, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Lista de envio WhatsApp</div>
+                <div style={{ fontSize: 11.5, opacity: 0.85 }}>
+                  {mode === "list" && `${leadsInList.length} lead${leadsInList.length === 1 ? "" : "s"} na lista`}
+                  {mode === "sending" && `Enviando ${idx + 1} de ${validLeads.length}`}
+                  {mode === "done" && "Envio concluído"}
+                </div>
               </div>
             </div>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={17} /></button>
+          {mode === "sending" && (
+            <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+            </div>
+          )}
         </div>
-        {mode === "sending" && (
-          <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
-          </div>
-        )}
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-        {mode === "list" && (
-          <>
-            {leadsInList.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
-                <div style={{ fontSize: 14, fontWeight: 600 }}>Lista vazia</div>
-                <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
-              </div>
-            ) : (
-              <>
-                {withoutPhoneCount > 0 && (
-                  <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
-                    ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem WhatsApp cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} no envio.
-                  </div>
-                )}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
-                  {leadsInList.map((lead) => (
-                    <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
-                      <OwnerAvatar name={lead.company} size={32} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                        <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
-                      </div>
-                      <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <X size={13} />
-                      </button>
+      <div style={{ flex: 1, overflowY: "auto", padding: 20, position: "relative" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          {mode === "list" && (
+            <>
+              {leadsInList.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Lista vazia</div>
+                  <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
+                  <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                    ← Voltar pros leads
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {withoutPhoneCount > 0 && (
+                    <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                      ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem WhatsApp cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} no envio.
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        )}
+                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
+                    {leadsInList.map((lead, i) => (
+                      <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                        <OwnerAvatar name={lead.company} size={32} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                          <div style={{ fontSize: 11, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
+                        </div>
+                        {lead.whatsapp && (
+                          <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Send size={13} />
+                          </button>
+                        )}
+                        <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <X size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
 
-        {mode === "sending" && currentLead && (
-          <div style={{ maxWidth: 480, margin: "0 auto" }}>
-            <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                <OwnerAvatar name={currentLead.company} size={42} />
-                <div>
-                  <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0f172a" }}>{currentLead.company}</div>
-                  <div style={{ fontSize: 12, color: "#25d366", fontWeight: 600 }}>{currentLead.whatsapp}</div>
+          {mode === "sending" && currentLead && (
+            <div>
+              <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <OwnerAvatar name={currentLead.company} size={42} />
+                  <div>
+                    <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0f172a" }}>{currentLead.company}</div>
+                    <div style={{ fontSize: 12, color: "#25d366", fontWeight: 600 }}>{currentLead.whatsapp}</div>
+                  </div>
                 </div>
+                <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={5}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
+                />
               </div>
-              <label style={{ ...labelStyle }}><SecIcon icon={MessageCircle} color="#25d366" />Mensagem</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={5}
-                style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
-              />
-            </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
-                Pular
-              </button>
-              <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.6)" }}>
-                <Send size={15} /> Abrir WhatsApp e continuar
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                  Pular
+                </button>
+                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.6)", position: "relative" }}>
+                  <Send size={15} /> Abrir WhatsApp e continuar
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
+                {idx > 0 && (
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    ← Voltar pro anterior
+                  </button>
+                )}
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  Sair da fila
+                </button>
+              </div>
             </div>
-            {idx > 0 && (
-              <button onClick={() => setIdx((i) => i - 1)} style={{ width: "100%", marginTop: 10, padding: "8px 0", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                ← Voltar pro anterior
-              </button>
-            )}
-          </div>
-        )}
+          )}
 
-        {mode === "done" && (
-          <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
-            <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
-            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
-              {sentCount} mensage{sentCount === 1 ? "m aberta" : "ns abertas"} no WhatsApp{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
+          {mode === "done" && (
+            <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
+              <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
+                {sentCount} mensage{sentCount === 1 ? "m aberta" : "ns abertas"} no WhatsApp{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
+              </div>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+                Fechar
+              </button>
             </div>
-            <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
-              Fechar
-            </button>
+          )}
+        </div>
+
+        {/* Moedinha dourada que sobe e some a cada envio - reforço positivo rápido */}
+        {showCoin && (
+          <div style={{ position: "fixed", left: "50%", bottom: "30%", transform: "translateX(-50%)", fontSize: 28, pointerEvents: "none", animation: "coinFloat 0.9s ease-out forwards", zIndex: 210 }}>
+            🪙
           </div>
         )}
       </div>
 
       {mode === "list" && leadsInList.length > 0 && (
         <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
-          <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            Limpar lista
-          </button>
-          <button
-            onClick={startSending}
-            disabled={validLeads.length === 0}
-            style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
-          >
-            <Send size={15} /> Iniciar envio ({validLeads.length})
-          </button>
+          <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
+            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              Limpar lista
+            </button>
+            <button
+              onClick={() => startSending(0)}
+              disabled={validLeads.length === 0}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
+            >
+              <Send size={15} /> Iniciar envio ({validLeads.length})
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -3456,6 +3500,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
         @keyframes stageBarFill { from { width: 0%; } }
         @keyframes celebrate { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 60% { transform: scale(0.97); } 100% { transform: scale(1); } }
+        @keyframes coinFloat { 0% { opacity: 0; transform: translate(-50%, 0) scale(0.5) rotate(0deg); } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1.2) rotate(90deg); } 100% { opacity: 0; transform: translate(-50%, -90px) scale(1) rotate(360deg); } }
         @keyframes blob { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(40px, -30px) scale(1.08); } 66% { transform: translate(-30px, 30px) scale(0.94); } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 8px 28px -8px rgba(99,102,241,0.35); } 50% { box-shadow: 0 12px 36px -6px rgba(99,102,241,0.55); } }
