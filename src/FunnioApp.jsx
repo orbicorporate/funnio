@@ -868,6 +868,66 @@ const CircleContactBtn = ({ icon: Icon, color, onClick, dark, hasData }) => {
   );
 };
 
+// Janela simplificada de contato: mostra WhatsApp/telefone/email juntos, com botão
+// de copiar em cada um. Tocar no valor abre o WhatsApp/discador/email de verdade.
+const QuickContactModal = ({ lead, onClose, onDispatch }) => {
+  const [copiedField, setCopiedField] = useState("");
+
+  const copy = (field, value) => {
+    if (!value) return;
+    navigator.clipboard?.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(""), 1400);
+  };
+
+  const rows = [
+    { key: "whatsapp", icon: MessageCircle, color: "#25d366", label: "WhatsApp", value: lead.whatsapp, dispatchType: "whatsapp" },
+    { key: "phone", icon: Phone, color: "#6d5ef8", label: "Telefone", value: lead.phone, dispatchType: "phone" },
+    { key: "email", icon: Mail, color: "#3b82f6", label: "Email", value: lead.email, dispatchType: "email" },
+  ];
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 120, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 20, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{lead.company}</div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
+        </div>
+        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 16 }}>Toque no contato pra abrir, ou no ícone pra copiar.</div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {rows.map((r) => (
+            <div key={r.key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: r.value ? r.color + "0d" : "#f8fafc", border: `1px solid ${r.value ? r.color + "33" : "#eef0f3"}` }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: r.value ? r.color + "18" : "#eef0f3", color: r.value ? r.color : "#c4c4cc", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <r.icon size={15} />
+              </div>
+              <button
+                onClick={() => r.value && onDispatch(r.dispatchType, lead)}
+                disabled={!r.value}
+                style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: r.value ? "pointer" : "default", padding: 0 }}
+              >
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.3 }}>{r.label}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: r.value ? "#0f172a" : "#c4c4cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {r.value || "não cadastrado"}
+                </div>
+              </button>
+              {r.value && (
+                <button
+                  onClick={() => copy(r.key, r.value)}
+                  title="Copiar"
+                  style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: copiedField === r.key ? "#22c55e" : "rgba(148,163,184,0.12)", color: copiedField === r.key ? "white" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
+                >
+                  {copiedField === r.key ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ════════════════════════════════════════════════════════════════════════
 // DESATENDIDO CARD (tela dedicada)
 // ════════════════════════════════════════════════════════════════════════
@@ -2563,6 +2623,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [selected, setSelected] = useState(null);
+  const [quickContactLead, setQuickContactLead] = useState(null);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [toast, setToast] = useState("");
 
@@ -3422,7 +3483,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={handleQuickContact} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} />)}
                 </div>
               )}
 
@@ -3455,7 +3516,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, color: "#475569" }}>Nenhuma negociação antiga por aqui 🎉</div>
                 </Glass>
               ) : (
-                desatendidosFiltered.map((lead) => <DesatendidoCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={handleQuickContact} onToggleWeekDone={toggleWeekDone} onToggleSuper={toggleSuperAttention} />)
+                desatendidosFiltered.map((lead) => <DesatendidoCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekDone={toggleWeekDone} onToggleSuper={toggleSuperAttention} />)
               )}
             </>
           )}
@@ -4201,6 +4262,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         </div>
 
         {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
+        {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
         {selectedMeeting && <MeetingDetail meeting={selectedMeeting} leads={leads} onClose={() => setSelectedMeeting(null)} onSave={saveMeeting} onDelete={deleteMeeting} sdrs={sdrs} />}
         {showSdrManager && (
           <SdrManager
