@@ -329,11 +329,11 @@ function AmbientBackground() {
         @keyframes ambientDrift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,25px) scale(1.1); } }
         @keyframes ledTwinkle { 0%,100% { opacity: 0.15; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.3); } }
       `}</style>
-      <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "55%", height: "55%", borderRadius: "50%", background: "radial-gradient(circle, rgba(215,250,60,0.16), transparent 70%)", filter: "blur(30px)", animation: "ambientDrift1 14s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", bottom: "-15%", right: "-10%", width: "60%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle, rgba(163,230,53,0.13), transparent 70%)", filter: "blur(35px)", animation: "ambientDrift2 18s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", top: "35%", left: "60%", width: "35%", height: "35%", borderRadius: "50%", background: "radial-gradient(circle, rgba(234,240,80,0.1), transparent 70%)", filter: "blur(25px)", animation: "ambientDrift1 20s ease-in-out infinite reverse" }} />
+      <div style={{ position: "absolute", top: "-15%", left: "-15%", width: "65%", height: "65%", borderRadius: "50%", background: "radial-gradient(circle, rgba(215,250,60,0.28), transparent 70%)", filter: "blur(40px)", animation: "ambientDrift1 14s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: "-20%", right: "-15%", width: "70%", height: "70%", borderRadius: "50%", background: "radial-gradient(circle, rgba(163,230,53,0.24), transparent 70%)", filter: "blur(45px)", animation: "ambientDrift2 18s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", top: "30%", left: "55%", width: "45%", height: "45%", borderRadius: "50%", background: "radial-gradient(circle, rgba(234,240,80,0.18), transparent 70%)", filter: "blur(35px)", animation: "ambientDrift1 20s ease-in-out infinite reverse" }} />
       {dots.map((d, i) => (
-        <div key={i} style={{ position: "absolute", top: d.top, left: d.left, width: 4, height: 4, borderRadius: "50%", background: "#d7fa3c", boxShadow: "0 0 8px 2px rgba(215,250,60,0.6)", animation: `ledTwinkle ${2.5 + (i % 3)}s ease-in-out ${d.delay} infinite` }} />
+        <div key={i} style={{ position: "absolute", top: d.top, left: d.left, width: 5, height: 5, borderRadius: "50%", background: "#d7fa3c", boxShadow: "0 0 12px 3px rgba(215,250,60,0.75)", animation: `ledTwinkle ${2.5 + (i % 3)}s ease-in-out ${d.delay} infinite` }} />
       ))}
     </div>
   );
@@ -343,56 +343,72 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
   const [wsName, setWsName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [code, setCode] = useState(defaultCode || "");
+  const wsColors = ["#6d5ef8", "#a3e635", "#f59e0b", "#38bdf8", "#ec4899"];
   return (
-    <div style={{ minHeight: "100vh", background: "#08080a", padding: "40px 20px", fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#08080a", fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <AmbientBackground />
-      <div style={{ maxWidth: 420, margin: "0 auto", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <div>
-            <h1 style={{ color: "white", fontSize: 20, fontWeight: 800, margin: 0 }}>Seu funil</h1>
-            <div style={{ color: "#9a9aa3", fontSize: 12.5 }}>{email}</div>
-          </div>
-          <button onClick={onLogout} style={{ background: "transparent", border: "none", color: "#a3e635", fontSize: 12.5, cursor: "pointer" }}>Sair</button>
-        </div>
 
-        {workspaces.length > 0 && (
-          <div style={{ background: "rgba(22,22,17,0.85)", backdropFilter: "blur(20px)", border: "1px solid #26261f", borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.5)" }}>
-            <div style={{ color: "#9a9aa3", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>SEUS FUNIS</div>
-            {workspaces.map((w) => (
-              <div key={w.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1e1e17", borderRadius: 12, padding: "10px 12px", marginBottom: 8 }}>
-                <div>
-                  <div style={{ color: "white", fontWeight: 700, fontSize: 13.5 }}>{w.name}</div>
-                  <div style={{ color: "#767670", fontSize: 11 }}>{w.member_count} pessoa{w.member_count === 1 ? "" : "s"} · {w.role === "owner" ? "dono" : "membro"}</div>
-                </div>
-                <button onClick={() => onOpen(w)} style={{ background: "#a3e635", color: "#0f1a03", border: "none", borderRadius: 9, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Entrar</button>
+      <button onClick={onLogout} style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: "none", color: "#a3e635", fontSize: 12.5, fontWeight: 600, cursor: "pointer", zIndex: 2 }}>Sair</button>
+
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 20px 40px" }}>
+        <div style={{ maxWidth: 420, width: "100%", position: "relative", zIndex: 1 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 16, background: "linear-gradient(135deg, #84cc16, #a3e635)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 10px 26px -8px rgba(163,230,53,0.4)" }}>
+              <span style={{ fontSize: 22, fontWeight: 900, color: "#0f1a03" }}>F</span>
+            </div>
+            <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Seu funil</h1>
+            <div style={{ color: "#767670", fontSize: 12.5 }}>{email}</div>
+          </div>
+
+          {workspaces.length > 0 && (
+            <div style={{ background: "rgba(22,22,17,0.85)", backdropFilter: "blur(20px)", border: "1px solid #26261f", borderRadius: 20, padding: 18, marginBottom: 18, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.55)" }}>
+              <div style={{ color: "#767670", fontSize: 11, fontWeight: 700, letterSpacing: 0.6, marginBottom: 12, textTransform: "uppercase" }}>Seus funis</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {workspaces.map((w, i) => (
+                  <div
+                    key={w.id}
+                    onClick={() => onOpen(w)}
+                    style={{ display: "flex", alignItems: "center", gap: 12, background: "#1a1a15", border: "1px solid transparent", borderRadius: 14, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s ease" }}
+                  >
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: wsColors[i % wsColors.length] + "22", color: wsColors[i % wsColors.length], display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+                      {w.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: "white", fontWeight: 700, fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
+                      <div style={{ color: "#767670", fontSize: 11 }}>{w.member_count} pessoa{w.member_count === 1 ? "" : "s"} · {w.role === "owner" ? "dono" : "membro"}</div>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); onOpen(w); }} style={{ background: "#a3e635", color: "#0f1a03", border: "none", borderRadius: 9, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Entrar</button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-
-        <div style={{ background: "rgba(22,22,17,0.85)", backdropFilter: "blur(20px)", border: "1px solid #26261f", borderRadius: 18, padding: 18, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.5)" }}>
-          <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-            <div onClick={() => setTab("create")} style={{ flex: 1, textAlign: "center", padding: 8, borderRadius: 10, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "create" ? "#26261f" : "transparent", color: tab === "create" ? "#a3e635" : "#767670" }}>Criar novo funil</div>
-            <div onClick={() => setTab("join")} style={{ flex: 1, textAlign: "center", padding: 8, borderRadius: 10, fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "join" ? "#26261f" : "transparent", color: tab === "join" ? "#a3e635" : "#767670" }}>Entrar com convite</div>
-          </div>
-          {tab === "create" ? (
-            <>
-              <input value={wsName} onChange={(e) => setWsName(e.target.value)} placeholder="Nome do funil (ex: Vendas 2026)" style={inputStyle} />
-              <button disabled={busy} onClick={() => onCreate(wsName)} style={primaryBtnStyle}>{busy ? "..." : "Criar funil"}</button>
-            </>
-          ) : (
-            <>
-              {defaultCode && (
-                <div style={{ background: "rgba(163,230,53,0.1)", border: "1px solid rgba(163,230,53,0.3)", color: "#a3e635", padding: "8px 12px", borderRadius: 10, fontSize: 11.5, marginBottom: 10 }}>
-                  Código {defaultCode} preenchido automaticamente pelo link. Só falta seu nome!
-                </div>
-              )}
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome (como vai aparecer pro time)" style={inputStyle} />
-              <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Código do convite" style={{ ...inputStyle, textTransform: "uppercase" }} />
-              <button disabled={busy} onClick={() => onJoin(displayName, code)} style={primaryBtnStyle}>{busy ? "..." : "Entrar no funil"}</button>
-            </>
+            </div>
           )}
-          {error && <div style={{ background: "rgba(226,72,63,0.1)", border: "1px solid rgba(226,72,63,0.3)", color: "#f87171", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginTop: 10 }}>{error}</div>}
+
+          <div style={{ background: "rgba(22,22,17,0.85)", backdropFilter: "blur(20px)", border: "1px solid #26261f", borderRadius: 20, padding: 20, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.55)" }}>
+            <div style={{ display: "flex", gap: 4, marginBottom: 18, background: "#0f0f0b", borderRadius: 12, padding: 4 }}>
+              <button onClick={() => setTab("create")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "create" ? "#26261f" : "transparent", color: tab === "create" ? "#a3e635" : "#767670", transition: "all 0.15s ease" }}>Criar novo funil</button>
+              <button onClick={() => setTab("join")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "join" ? "#26261f" : "transparent", color: tab === "join" ? "#a3e635" : "#767670", transition: "all 0.15s ease" }}>Entrar com convite</button>
+            </div>
+            {tab === "create" ? (
+              <>
+                <div style={{ fontSize: 11.5, color: "#767670", marginBottom: 10 }}>Dá um nome pro seu novo funil de vendas.</div>
+                <input value={wsName} onChange={(e) => setWsName(e.target.value)} placeholder="Nome do funil (ex: Vendas 2026)" style={inputStyle} />
+                <button disabled={busy} onClick={() => onCreate(wsName)} style={primaryBtnStyle}>{busy ? "..." : "Criar funil"}</button>
+              </>
+            ) : (
+              <>
+                {defaultCode && (
+                  <div style={{ background: "rgba(163,230,53,0.1)", border: "1px solid rgba(163,230,53,0.3)", color: "#a3e635", padding: "9px 12px", borderRadius: 10, fontSize: 11.5, marginBottom: 12 }}>
+                    Código {defaultCode} preenchido automaticamente pelo link. Só falta seu nome!
+                  </div>
+                )}
+                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Seu nome (como vai aparecer pro time)" style={inputStyle} />
+                <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Código do convite" style={{ ...inputStyle, textTransform: "uppercase" }} />
+                <button disabled={busy} onClick={() => onJoin(displayName, code)} style={primaryBtnStyle}>{busy ? "..." : "Entrar no funil"}</button>
+              </>
+            )}
+            {error && <div style={{ background: "rgba(226,72,63,0.1)", border: "1px solid rgba(226,72,63,0.3)", color: "#f87171", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginTop: 10 }}>{error}</div>}
+          </div>
         </div>
       </div>
     </div>
