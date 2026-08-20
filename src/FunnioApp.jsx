@@ -4712,25 +4712,38 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 const sortedHot = [...stats.hotNoContact].sort((a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999));
                 const mostUrgent = sortedHot[0];
                 const urgentDays = daysSince(mostUrgent.lastContact);
-                const urgentLabel = urgentDays === null ? "nunca contatado" : `há ${urgentDays} dias sem contato`;
+                // Frase completa por caso, em vez de encaixar um sufixo no meio - "está nunca contatado" não faz sentido em português
+                const urgentPhrase = urgentDays === null ? "nunca foi contatado" : `está há ${urgentDays} dia${urgentDays === 1 ? "" : "s"} sem contato`;
                 const extra = stats.hotNoContact.length - 1;
                 return (
-                  <div
-                    onClick={() => { setChatInput(`Quais desses ${stats.hotNoContact.length} leads quentes sem contato eu deveria priorizar hoje?`); setView("assistente"); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", cursor: "pointer", marginBottom: 14 }}
-                  >
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
-                      <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>
-                        {stats.hotNoContact.length} lead{stats.hotNoContact.length === 1 ? "" : "s"} quente{stats.hotNoContact.length === 1 ? "" : "s"} esfriando
+                  <div style={{ borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", marginBottom: 14, overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px" }}>
+                      <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
+                        <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
                       </div>
-                      <div style={{ fontSize: 11, color: "#6b6b75", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        <strong style={{ color: "#6d5ef8" }}>{mostUrgent.company}</strong> está {urgentLabel}{extra > 0 ? ` · +${extra} outro${extra === 1 ? "" : "s"}` : ""}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>
+                          {stats.hotNoContact.length} lead{stats.hotNoContact.length === 1 ? "" : "s"} quente{stats.hotNoContact.length === 1 ? "" : "s"} esfriando
+                        </div>
+                        <div style={{ fontSize: 11, color: "#6b6b75", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <strong style={{ color: "#6d5ef8" }}>{mostUrgent.company}</strong> {urgentPhrase}{extra > 0 ? ` · +${extra} outro${extra === 1 ? "" : "s"}` : ""}
+                        </div>
                       </div>
                     </div>
-                    <ChevronRight size={16} color="#6d5ef8" style={{ flexShrink: 0 }} />
+                    <div style={{ display: "flex", borderTop: "1px solid rgba(109,94,248,0.15)" }}>
+                      <button
+                        onClick={() => { setChatInput(`Quais desses ${stats.hotNoContact.length} leads quentes sem contato eu deveria priorizar hoje?`); setView("assistente"); }}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", borderRight: "1px solid rgba(109,94,248,0.15)", background: "transparent", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        <Sparkles size={12} /> Perguntar ao assistente
+                      </button>
+                      <button
+                        onClick={() => { setQuickStage(null); setSearch(""); setTempFilter("hot"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setSuperOnly(false); scrollToGrid(); }}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", background: "transparent", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        <Flame size={12} /> Ver lista completa
+                      </button>
+                    </div>
                   </div>
                 );
               })()}
@@ -5596,8 +5609,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {sdrs.map((s) => (
                   <Chip key={s.name} active={achievementsFilterSdr === s.name} onClick={() => setAchievementsFilterSdr(s.name)} color={s.color}>{s.name}</Chip>
                 ))}
-                <button onClick={() => setView("metas")} style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 9, border: "1px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
-                  <Settings2 size={12} /> Configurar metas
+                <button onClick={() => setView("metas")} style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#6d5ef8", color: "white", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 16px -6px rgba(109,94,248,0.6)" }}>
+                  <Settings2 size={13} /> Configurar metas
                 </button>
               </Glass>
 
