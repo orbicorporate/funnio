@@ -146,6 +146,96 @@ const STAGE_COLORS = {
   "Proposta": "#f59e0b", "Conquistado": "#10b981", "Perdida": "#94a3b8",
 };
 
+// ════════════════════════════════════════════════════════════════════════
+// TOUR GUIADO - onboarding com spotlight nos elementos reais da tela.
+// Cada passo aponta pra um elemento marcado com data-tour="..." no JSX;
+// passos sem "target" (boas-vindas/final) mostram um card centralizado.
+// ════════════════════════════════════════════════════════════════════════
+const TOUR_STEPS = [
+  { id: "welcome", title: "Bem-vindo ao Funnio! 🎉", text: "Vamos fazer um tour rápido pelas principais áreas do seu funil. Leva menos de um minuto - você pode pular a qualquer momento.", target: null },
+  { id: "menu", title: "Menu lateral", text: "Aqui você gerencia SDRs, importa leads em massa, troca de funil e mais.", target: '[data-tour="menu"]' },
+  { id: "new-lead", title: "Adicionar leads", text: "Cadastre um lead na mão por aqui, ou use \"Importar leads\" pra subir uma planilha inteira de uma vez.", target: '[data-tour="new-lead"]' },
+  { id: "leads-grid", title: "Seus leads", text: "Cada card é um lead. Toque nele pra ver detalhes, mudar estágio, temperatura e registrar contatos.", target: '[data-tour="leads-grid"]' },
+  { id: "week-card", title: "Abordar essa semana", text: "Marque quem você precisa contatar nos próximos dias. Ao contatar por qualquer canal, o Funnio marca como feito sozinho.", target: '[data-tour="week-card"]' },
+  { id: "assistant", title: "Assistente de IA", text: "Seu gestor de vendas com IA. Pergunte sobre seus leads ou peça sugestões de abordagem a qualquer momento.", target: '[data-tour="assistant-btn"]' },
+  { id: "nav", title: "Navegação", text: "Home, Leads, Calendário de reuniões e Relatórios - tudo a um toque de distância aqui embaixo.", target: '[data-tour="bottom-nav"]' },
+  { id: "done", title: "Pronto! 🚀", text: "Deixamos um lead de exemplo (com a etiqueta \"Exemplo\") no seu funil pra você explorar à vontade. Quando terminar, é só excluir - abra o lead e toque em \"Excluir\".", target: null },
+];
+
+const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => {
+  const [rect, setRect] = useState(null);
+  const step = steps[stepIndex];
+  const isLast = stepIndex === steps.length - 1;
+  const isFirst = stepIndex === 0;
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  useEffect(() => {
+    if (!step.target) { setRect(null); return; }
+    let cancelled = false;
+    const measure = () => {
+      const el = document.querySelector(step.target);
+      if (!el) { setRect(null); return; }
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => { if (!cancelled) setRect(el.getBoundingClientRect()); }, 300);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => { cancelled = true; window.removeEventListener("resize", measure); };
+  }, [stepIndex]);
+
+  const pad = 10;
+  const spotStyle = rect
+    ? {
+        position: "fixed", top: rect.top - pad, left: rect.left - pad,
+        width: rect.width + pad * 2, height: rect.height + pad * 2,
+        borderRadius: 18, boxShadow: "0 0 0 9999px rgba(10,10,15,0.8)",
+        border: "2px solid #d7fa3c", zIndex: 998, pointerEvents: "none",
+        transition: "top 0.35s cubic-bezier(0.4,0,0.2,1), left 0.35s cubic-bezier(0.4,0,0.2,1), width 0.35s ease, height 0.35s ease",
+      }
+    : { position: "fixed", inset: 0, background: "rgba(10,10,15,0.84)", zIndex: 998, transition: "opacity 0.3s ease" };
+
+  let tooltipStyle = { position: "fixed", zIndex: 999, width: 300, transition: "top 0.35s ease, bottom 0.35s ease, left 0.35s ease" };
+  if (rect) {
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const placeBelow = spaceBelow > 210;
+    if (placeBelow) tooltipStyle.top = rect.bottom + pad + 16;
+    else tooltipStyle.bottom = window.innerHeight - rect.top + pad + 16;
+    let left = rect.left + rect.width / 2 - 150;
+    left = Math.max(16, Math.min(window.innerWidth - 316, left));
+    tooltipStyle.left = left;
+  } else {
+    tooltipStyle.top = "50%"; tooltipStyle.left = "50%"; tooltipStyle.transform = "translate(-50%, -50%)";
+  }
+
+  return (
+    <>
+      <div style={spotStyle} />
+      <div style={tooltipStyle}>
+        <div style={{ background: "white", borderRadius: 18, padding: "18px 20px", boxShadow: "0 24px 60px -16px rgba(0,0,0,0.55)" }}>
+          <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+            {steps.map((s, i) => (
+              <div key={s.id} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= stepIndex ? "#d7fa3c" : "#eef0f3", transition: "background 0.2s ease" }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{step.title}</div>
+          <div style={{ fontSize: 12.5, color: "#5c5c66", lineHeight: 1.5, marginBottom: 16 }}>{step.text}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button onClick={onSkip} style={{ border: "none", background: "transparent", color: "#9a9aa3", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}>Pular tour</button>
+            <div style={{ display: "flex", gap: 8 }}>
+              {!isFirst && <button onClick={onPrev} style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #eef0f3", background: "white", color: "#5c5c66", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Voltar</button>}
+              <button onClick={isLast ? onFinish : onNext} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#14141a", color: "#d7fa3c", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>{isLast ? "Concluir" : "Próximo"}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // Cores das etiquetas de status/fase, batendo com a tela "Todos os leads"
 const STATUS_PILL = {
   "Desatendido": { label: "Negociação antiga", bg: "#fde2e2", fg: "#e2483f", darkBg: "#3a1f1f", darkFg: "#ff7a70" },
@@ -741,6 +831,11 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
         {/* Cabeçalho: nome + dono à esquerda, selo hexagonal de temperatura + estrela à direita */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
+            {lead.isExample && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(245,158,11,0.22)" : "#fff7e6", color: dark ? "#fbbf24" : "#b45309", fontWeight: 800, fontSize: 10 }}>
+                <Sparkles size={10} /> Exemplo
+              </div>
+            )}
             {lead.superAttention && (
               <div className="lc-superbadge" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(109,94,248,0.22)" : "#f3f0fe", color: dark ? "#b3a8fd" : "#6d5ef8", fontWeight: 700 }}>
                 <StarImgIcon size={11} /> Super lead
@@ -2355,7 +2450,7 @@ const MENU_SECTIONS = [
   { key: "assistente", label: "Assistente de vendas", icon: Sparkles },
 ];
 
-const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones }) => (
+const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones, onStartTour }) => (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 150, display: "flex", animation: "fadeIn 0.15s ease" }}>
     <div onClick={(e) => e.stopPropagation()} style={{ width: "82%", maxWidth: 300, height: "100%", background: "white", boxShadow: "8px 0 30px -8px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", animation: "menuSlideIn 0.2s ease" }}>
       <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5" }}>
@@ -2404,6 +2499,11 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
         <button onClick={onManageSdrs} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
           <Settings2 size={17} color="#6b6b75" /> Gerenciar SDRs
         </button>
+        {onStartTour && (
+          <button onClick={onStartTour} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+            <Rocket size={17} color="#6b6b75" /> Ver tour novamente
+          </button>
+        )}
         {onSwitchWorkspace && (
           <button onClick={onSwitchWorkspace} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
             <Users2 size={17} color="#6b6b75" /> Trocar de funil
@@ -3497,6 +3597,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [achievementsFilterSdr, setAchievementsFilterSdr] = useState("all");
   const [expandedHistoryMetric, setExpandedHistoryMetric] = useState(null);
   const [loaded, setLoaded] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
 
   const [search, setSearch] = useState("");
   const [tempFilter, setTempFilter] = useState("all");
@@ -3542,13 +3644,32 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => {
     let mounted = true;
     Promise.all([
-      loadData(LEADS_KEY, seedLeads), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
+      loadData(LEADS_KEY, []), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
       loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []),
     ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist]) => {
       if (mounted) {
-        setLeads(l); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
+        // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
+        // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
+        const tourKey = `funnio_tour_seen:${workspaceName || "ws"}:${currentUserId || "anon"}`;
+        const tourAlreadySeen = (() => { try { return !!window.localStorage.getItem(tourKey); } catch { return false; } })();
+        let leadsToUse = l;
+        if ((!l || l.length === 0) && !tourAlreadySeen) {
+          const exampleSdrName = (s && s[0]?.name) || (seedSDRs[0]?.name) || "Você";
+          leadsToUse = [{
+            id: "l_example_" + Date.now(), company: "Empresa Exemplo Ltda", owner: exampleSdrName,
+            stage: "Apresentação", feedback: "Este é um lead de exemplo pra você explorar o Funnio - toque nele pra ver os detalhes. Pode excluir quando quiser.",
+            status: "Atendido", contactName: "Fulano de Tal", email: "contato@empresaexemplo.com.br",
+            phone: "", whatsapp: "5511999999999", hasWhatsapp: true, hasEmail: true, hasPhone: false,
+            phase: "none", temperature: "warm", lastContact: null, nextAction: null,
+            weekDone: false, weekTag: null, superAttention: false, wonDate: null,
+            dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: "Outro canal", originOther: "Exemplo",
+            createdAt: new Date().toISOString(), notes: [], isExample: true,
+          }];
+          setTimeout(() => { setTourStep(0); setTourActive(true); }, 700);
+        }
+        setLeads(leadsToUse); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
         setWeeklyGoal(typeof g === "number" && g > 0 ? g : DEFAULT_WEEKLY_GOAL);
         setRevenueGoal(typeof rg === "number" && rg > 0 ? rg : DEFAULT_REVENUE_GOAL);
         setGoalsConfig(gc && typeof gc === "object" ? { ...DEFAULT_GOALS_CONFIG, ...gc } : DEFAULT_GOALS_CONFIG);
@@ -3991,6 +4112,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setTimeout(() => document.getElementById("leads-grid")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   };
 
+  const finishTour = () => {
+    const tourKey = `funnio_tour_seen:${workspaceName || "ws"}:${currentUserId || "anon"}`;
+    try { window.localStorage.setItem(tourKey, "1"); } catch { /* silent */ }
+    setTourActive(false);
+  };
+  const startTour = () => {
+    setShowMenu(false); setView("dashboard");
+    setTimeout(() => { setTourStep(0); setTourActive(true); }, 250);
+  };
+
   const dayMeetings = meetings.filter((m) => isSameDay(m.date, agendaDate)).sort((a, b) => new Date(a.date) - new Date(b.date));
   const meetingCounts = {
     reuniao: dayMeetings.filter((m) => m.type === "reuniao").length,
@@ -4082,7 +4213,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               borderRadius: 26, padding: "20px 22px 24px", marginBottom: 16, position: "relative", overflow: "hidden",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <button onClick={() => setShowMenu(true)} style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <button onClick={() => setShowMenu(true)} data-tour="menu" style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Menu size={19} />
                 </button>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -4101,7 +4232,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: -0.5, margin: 0, color: "white", lineHeight: 1.15, marginBottom: workspaceName ? 3 : 16 }}>Visão geral do funil</h1>
               {workspaceName && <div style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.55)", marginBottom: 16 }}>{workspaceName}</div>}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={createLead} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "none", background: DARK.lime, color: "#14141a", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+                <button onClick={createLead} data-tour="new-lead" className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "none", background: DARK.lime, color: "#14141a", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
                   <Plus size={13} /> Novo lead
                 </button>
                 <button onClick={() => setShowImportModal(true)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
@@ -4267,7 +4398,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 const avgPerDay = Math.ceil(remaining / daysLeftInWeek);
 
                 return (
-                  <div style={{ borderRadius: 22, overflow: "hidden", marginBottom: 20, boxShadow: "0 8px 28px -14px rgba(20,20,26,0.18)" }}>
+                  <div data-tour="week-card" style={{ borderRadius: 22, overflow: "hidden", marginBottom: 20, boxShadow: "0 8px 28px -14px rgba(20,20,26,0.18)" }}>
                     {/* Topo: hero lima com imagem real de fundo */}
                     <div
                       onClick={() => setView("semana")}
@@ -4518,7 +4649,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 13, color: "#94a3b8" }}>{leads.length === 0 ? "Comece adicionando seu primeiro lead" : "Tente ajustar os filtros"}</div>
                 </Glass>
               ) : (
-                <div id="leads-grid" className="leads-grid">
+                <div id="leads-grid" data-tour="leads-grid" className="leads-grid">
                   {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} />)}
                 </div>
               )}
@@ -5212,18 +5343,33 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Contatos ({reportStats.label})</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.contactedInPeriod}</div>
                 </Glass>
-                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Leads adicionados ({reportStats.label})</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.leadsAddedInPeriod}</div>
-                </Glass>
-                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Contatados via WhatsApp ({reportStats.label})</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: "#25d366", marginTop: 4 }}>{reportStats.whatsappContactedInPeriod}</div>
-                </Glass>
-                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Mudaram de estágio ({reportStats.label})</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: "#8b5cf6", marginTop: 4 }}>{reportStats.stageChangedInPeriod}</div>
-                </Glass>
+              </div>
+
+              {/* Trio de destaque - leads adicionados / WhatsApp / mudanças de estágio, com visual premium */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
+                {[
+                  { label: "Leads adicionados", sub: reportStats.label, value: reportStats.leadsAddedInPeriod, icon: UserPlus, c1: "#6d5ef8", c2: "#a78bfa" },
+                  { label: "Contatados via WhatsApp", sub: reportStats.label, value: reportStats.whatsappContactedInPeriod, icon: MessageCircle, c1: "#128c4a", c2: "#25d366" },
+                  { label: "Mudaram de estágio", sub: reportStats.label, value: reportStats.stageChangedInPeriod, icon: Repeat, c1: "#7c3aed", c2: "#c084fc" },
+                ].map((card, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: "relative", overflow: "hidden", borderRadius: 18, padding: "16px 18px",
+                      background: `linear-gradient(135deg, ${card.c1}, ${card.c2})`,
+                      boxShadow: `0 10px 26px -12px ${card.c1}88`,
+                    }}
+                  >
+                    <div style={{ position: "absolute", top: -18, right: -18, width: 84, height: 84, borderRadius: "50%", background: "rgba(255,255,255,0.14)" }} />
+                    <div style={{ position: "absolute", bottom: -26, right: 18, width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                      <card.icon size={17} color="white" />
+                    </div>
+                    <div style={{ fontSize: 30, fontWeight: 800, color: "white", lineHeight: 1 }}>{card.value}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.95)", marginTop: 8 }}>{card.label}</div>
+                    <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.75)", marginTop: 1 }}>{card.sub}</div>
+                  </div>
+                ))}
               </div>
 
               {/* Feed de atividades - tudo que aconteceu na plataforma no período selecionado */}
@@ -5430,6 +5576,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onNewLead={() => { setShowMenu(false); createLead(); }}
             onSwitchWorkspace={onSwitchWorkspace ? () => { setShowMenu(false); onSwitchWorkspace(); } : undefined}
             workspaceName={workspaceName}
+            onStartTour={startTour}
+          />
+        )}
+        {tourActive && (
+          <TourOverlay
+            steps={TOUR_STEPS}
+            stepIndex={tourStep}
+            onNext={() => setTourStep((s) => Math.min(TOUR_STEPS.length - 1, s + 1))}
+            onPrev={() => setTourStep((s) => Math.max(0, s - 1))}
+            onSkip={finishTour}
+            onFinish={finishTour}
           />
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
@@ -5457,6 +5614,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {view !== "assistente" && (
           <button
             onClick={() => setView("assistente")}
+            data-tour="assistant-btn"
             title="Assistente de vendas com IA"
             style={{
               position: "fixed", right: 18, bottom: 90, width: 58, height: 58, borderRadius: "50%",
@@ -5475,7 +5633,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         )}
 
         {/* ── BARRA DE NAVEGAÇÃO INFERIOR FIXA ── */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #eef0f3", padding: "10px 12px calc(10px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around", zIndex: 90, boxShadow: "0 -8px 24px -12px rgba(20,20,26,0.12)" }}>
+        <div data-tour="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #eef0f3", padding: "10px 12px calc(10px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around", zIndex: 90, boxShadow: "0 -8px 24px -12px rgba(20,20,26,0.12)" }}>
           {[
             { key: "dashboard", label: "Home", icon: HomeIcon },
             { key: "leads-tab", label: "Leads", icon: Users },
