@@ -298,8 +298,8 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
         <img src="/logo.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(163,230,53,0.4))" }} />
         <h1 style={{ textAlign: "center", color: "white", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
         <div style={{ textAlign: "center", color: "#9a9aa3", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
-        <div style={{ background: "rgba(255,255,255,0.10)", backdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6)" }}>
-          {error && <div style={{ background: "rgba(226,72,63,0.1)", border: "1px solid rgba(226,72,63,0.3)", color: "#f87171", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>{error}</div>}
+        <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.5)" }}>
+          {error && <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>{error}</div>}
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" style={inputStyle} />
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Senha (mín. 6 caracteres)" style={{ ...inputStyle, marginBottom: 16 }} onKeyDown={(e) => e.key === "Enter" && onSubmit(email, password)} />
           <button disabled={busy} onClick={() => onSubmit(email, password)} style={primaryBtnStyle}>{busy ? "..." : isLogin ? "Entrar" : "Criar conta"}</button>
@@ -358,21 +358,21 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
           </div>
 
           {workspaces.length > 0 && (
-            <div style={{ background: "rgba(255,255,255,0.10)", backdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: 18, marginBottom: 18, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.55)" }}>
-              <div style={{ color: "#767670", fontSize: 11, fontWeight: 700, letterSpacing: 0.6, marginBottom: 12, textTransform: "uppercase" }}>Seus funis</div>
+            <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 18, marginBottom: 18, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.45)" }}>
+              <div style={{ color: "#8a8a93", fontSize: 11, fontWeight: 700, letterSpacing: 0.6, marginBottom: 12, textTransform: "uppercase" }}>Seus funis</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {workspaces.map((w, i) => (
                   <div
                     key={w.id}
                     onClick={() => onOpen(w)}
-                    style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.06)", border: "1px solid transparent", borderRadius: 14, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s ease" }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, background: "#f6f7f9", border: "1px solid #eef0f3", borderRadius: 14, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s ease" }}
                   >
                     <div style={{ width: 38, height: 38, borderRadius: 11, background: wsColors[i % wsColors.length] + "22", color: wsColors[i % wsColors.length], display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
                       {w.name.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ color: "white", fontWeight: 700, fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
-                      <div style={{ color: "#767670", fontSize: 11 }}>{w.member_count} pessoa{w.member_count === 1 ? "" : "s"} · {w.role === "owner" ? "dono" : "membro"}</div>
+                      <div style={{ color: "#14141a", fontWeight: 700, fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
+                      <div style={{ color: "#8a8a93", fontSize: 11 }}>{w.member_count} pessoa{w.member_count === 1 ? "" : "s"} · {w.role === "owner" ? "dono" : "membro"}</div>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); onOpen(w); }} style={{ background: "#a3e635", color: "#0f1a03", border: "none", borderRadius: 9, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>Entrar</button>
                   </div>
@@ -381,21 +381,21 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
             </div>
           )}
 
-          <div style={{ background: "rgba(255,255,255,0.10)", backdropFilter: "blur(24px) saturate(160%)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 20, padding: 20, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.55)" }}>
-            <div style={{ display: "flex", gap: 4, marginBottom: 18, background: "rgba(0,0,0,0.25)", borderRadius: 12, padding: 4 }}>
-              <button onClick={() => setTab("create")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "create" ? "rgba(255,255,255,0.12)" : "transparent", color: tab === "create" ? "#a3e635" : "#767670", transition: "all 0.15s ease" }}>Criar novo funil</button>
-              <button onClick={() => setTab("join")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "join" ? "rgba(255,255,255,0.12)" : "transparent", color: tab === "join" ? "#a3e635" : "#767670", transition: "all 0.15s ease" }}>Entrar com convite</button>
+          <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 20, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.45)" }}>
+            <div style={{ display: "flex", gap: 4, marginBottom: 18, background: "#f1f2f5", borderRadius: 12, padding: 4 }}>
+              <button onClick={() => setTab("create")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "create" ? "white" : "transparent", color: tab === "create" ? "#5b8c0a" : "#8a8a93", boxShadow: tab === "create" ? "0 2px 8px -3px rgba(20,20,26,0.2)" : "none", transition: "all 0.15s ease" }}>Criar novo funil</button>
+              <button onClick={() => setTab("join")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "join" ? "white" : "transparent", color: tab === "join" ? "#5b8c0a" : "#8a8a93", boxShadow: tab === "join" ? "0 2px 8px -3px rgba(20,20,26,0.2)" : "none", transition: "all 0.15s ease" }}>Entrar com convite</button>
             </div>
             {tab === "create" ? (
               <>
-                <div style={{ fontSize: 11.5, color: "#767670", marginBottom: 10 }}>Dá um nome pro seu novo funil de vendas.</div>
+                <div style={{ fontSize: 11.5, color: "#8a8a93", marginBottom: 10 }}>Dá um nome pro seu novo funil de vendas.</div>
                 <input value={wsName} onChange={(e) => setWsName(e.target.value)} placeholder="Nome do funil (ex: Vendas 2026)" style={inputStyle} />
                 <button disabled={busy} onClick={() => onCreate(wsName)} style={primaryBtnStyle}>{busy ? "..." : "Criar funil"}</button>
               </>
             ) : (
               <>
                 {defaultCode && (
-                  <div style={{ background: "rgba(163,230,53,0.1)", border: "1px solid rgba(163,230,53,0.3)", color: "#a3e635", padding: "9px 12px", borderRadius: 10, fontSize: 11.5, marginBottom: 12 }}>
+                  <div style={{ background: "rgba(101,163,13,0.1)", border: "1px solid rgba(101,163,13,0.3)", color: "#4d7c0f", padding: "9px 12px", borderRadius: 10, fontSize: 11.5, marginBottom: 12 }}>
                     Código {defaultCode} preenchido automaticamente pelo link. Só falta seu nome!
                   </div>
                 )}
@@ -404,7 +404,7 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
                 <button disabled={busy} onClick={() => onJoin(displayName, code)} style={primaryBtnStyle}>{busy ? "..." : "Entrar no funil"}</button>
               </>
             )}
-            {error && <div style={{ background: "rgba(226,72,63,0.1)", border: "1px solid rgba(226,72,63,0.3)", color: "#f87171", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginTop: 10 }}>{error}</div>}
+            {error && <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginTop: 10 }}>{error}</div>}
           </div>
         </div>
       </div>
@@ -513,8 +513,8 @@ function MembersPanel({ members, isOwner, myUserId, error, onRemove, onClose, on
 }
 
 const inputStyle = {
-  width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid rgba(255,255,255,0.14)",
-  fontSize: 14, marginBottom: 10, background: "rgba(0,0,0,0.25)", color: "white", outline: "none",
+  width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #e2e4e9",
+  fontSize: 14, marginBottom: 10, background: "#f6f7f9", color: "#14141a", outline: "none",
 };
 const primaryBtnStyle = {
   width: "100%", padding: "12px 18px", borderRadius: 12, border: "none",
@@ -523,7 +523,7 @@ const primaryBtnStyle = {
 };
 const linkBtnStyle = {
   width: "100%", padding: 10, background: "transparent", border: "none",
-  color: "#a3e635", fontSize: 12.5, cursor: "pointer", marginTop: 4,
+  color: "#5b8c0a", fontSize: 12.5, fontWeight: 700, cursor: "pointer", marginTop: 4,
 };
 const menuBtnStyle = {
   width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 10px",
