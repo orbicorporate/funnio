@@ -113,6 +113,7 @@ const WEEK_VIA_CONFIG = {
   whatsapp: { label: "Via WhatsApp", color: "#25d366", icon: MessageCircle },
   "whatsapp-lista": { label: "Via lista de envio WhatsApp", color: "#128c4a", icon: Send },
   email: { label: "Via Email", color: "#3b82f6", icon: Mail },
+  "email-lista": { label: "Via lista de envio de e-mail", color: "#1d4ed8", icon: Mail },
   phone: { label: "Via Telefone", color: "#8b5cf6", icon: Phone },
 };
 
@@ -427,6 +428,7 @@ const GOALS_CONFIG_KEY = "goalsConfig:v1";
 const BADGES_KEY = "earnedBadges:v1";
 const CHAT_HISTORY_KEY = "assistantChat:v1";
 const WA_SEND_HISTORY_KEY = "waSendHistory:v1";
+const EMAIL_SEND_HISTORY_KEY = "emailSendHistory:v1";
 const WEEK_HISTORY_KEY = "weekCompletionHistory:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
@@ -850,7 +852,7 @@ const ChannelLabel = ({ label, checked, onToggle, disabled }) => (
 // LEAD CARD (grid principal)
 // ════════════════════════════════════════════════════════════════════════
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, onToggleWaList }) => {
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, onToggleWaList, inEmailList, onToggleEmailList }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1010,6 +1012,21 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
               }}
             >
               {inWaList ? <Check size={15} /> : <Send size={13} />}
+            </button>
+          )}
+          {lead.email && onToggleEmailList && (
+            <button
+              onClick={() => onToggleEmailList(lead.id)}
+              title={inEmailList ? "Remover da lista de envio de e-mail" : "Adicionar à lista de envio de e-mail"}
+              style={{
+                width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${inEmailList ? "#3b82f6" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
+                background: inEmailList ? "#3b82f6" : (dark ? "rgba(255,255,255,0.06)" : "white"),
+                color: inEmailList ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                transition: "all 0.15s ease", transform: inEmailList ? "scale(1.05)" : "scale(1)",
+              }}
+            >
+              {inEmailList ? <Check size={15} /> : <Mail size={13} />}
             </button>
           )}
           <CircleContactBtn icon={MessageCircle} color="#25d366" dark={dark} hasData={!!lead.whatsapp} onClick={() => (lead.whatsapp ? onQuickContact("whatsapp", lead) : onOpen(lead))} />
@@ -1326,6 +1343,177 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                 style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
               >
                 {initialMessage ? "Salvar na fila" : "Usar essa mensagem"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Biblioteca de scripts de e-mail com cases reais (números, resultados) - mesma lógica
+// da biblioteca de WhatsApp, mas com assunto + corpo, agrupados pelo case de origem.
+// {nome} e {empresa} são trocados pelos dados reais do lead na hora de montar o e-mail.
+const EMAIL_SCRIPT_LIBRARY = [
+  {
+    key: "jg1", caseTitle: "Case Jardineira Grill", category: "Mercado geral · SEO + conteúdo + performance", color: "#16a34a", icon: TrendingUp,
+    subject: "Como geramos 10 mil acessos em 60 dias",
+    body: "Oi, {nome}. Tudo bem?\n\nComo geramos 10 mil acessos ao site em 60 dias — além de 4.609 solicitações de rota e 1.815 ligações?\n\nEsse foi um dos resultados recentes de um trabalho combinando SEO, conteúdo, redes sociais e performance, com uma estratégia pensada para transformar presença digital em procura real pelo negócio.\n\nO ponto principal é que não olhamos apenas para alcance ou tráfego. A pergunta é: quantas pessoas o marketing está realmente levando até a empresa?\n\nOlhando para a {empresa}, acredito que existam oportunidades interessantes que poderíamos mapear também.\n\nSe topar, analisamos o cenário digital de vocês, levantamos alguns dados e oportunidades e apresentamos nossa leitura em uma conversa rápida.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "jg2", caseTitle: "Case Jardineira Grill", category: "Alimentos e bebidas · restaurantes / food service", color: "#16a34a", icon: TrendingUp,
+    subject: "4.609 pedidos de rota em apenas 60 dias",
+    body: "Oi, {nome}. Tudo bem?\n\n4.609 pessoas solicitaram uma rota até o estabelecimento e outras 1.815 fizeram uma ligação em apenas 60 dias.\n\nAlém disso, foram 10 mil acessos ao site, com crescimento orgânico de 29,1% no período.\n\nEsses são alguns dos resultados que alcançamos com a Jardineira Grill, trabalhando de forma integrada SEO, conteúdo, redes sociais e performance.\n\nNo mercado de alimentos e bebidas, gostamos de olhar além de curtidas e alcance.\n\nA pergunta é: quantas pessoas o marketing está realmente levando até o seu negócio?\n\nAcredito que seria interessante fazermos essa leitura para a {empresa}. Podemos preparar uma análise inicial com dados de busca, presença local, SEO, conteúdo e oportunidades de aquisição.\n\nSe fizer sentido, eu preparo por aqui.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "jg3", caseTitle: "Case Jardineira Grill", category: "Negócios locais · geração de demanda", color: "#16a34a", icon: TrendingUp,
+    subject: "6.424 ações de intenção em 60 dias",
+    body: "Oi, {nome}. Tudo bem?\n\nEm 60 dias, uma operação nossa gerou 6.424 ações de alta intenção: 4.609 pedidos de rota e 1.815 ligações.\n\nIsso sem contar os 10 mil acessos ao site no mesmo período.\n\nO que mais nos interessa nesse tipo de projeto é justamente aproximar marketing de comportamento real: procurar a empresa, pedir rota, ligar, visitar e comprar.\n\nLembrei da {empresa} porque talvez exista espaço para construir essa mesma lógica de aquisição por aí.\n\nSe topar, podemos levantar alguns dados do mercado e mostrar onde enxergamos as oportunidades mais interessantes, sem compromisso.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "rs1", caseTitle: "Case Run Solar — EUA", category: "Mercado geral · Google Ads", color: "#f59e0b", icon: Target,
+    subject: "1.060 conversões em 90 dias",
+    body: "Oi, {nome}. Tudo bem?\n\nComo geramos 1.060 conversões em 90 dias, com CPC médio de apenas US$ 0,52?\n\nEsse foi um dos resultados que alcançamos em uma operação de Google Ads nos Estados Unidos.\n\nNo período, a campanha também gerou 2,55 mil cliques e 27,8 mil impressões, com foco em transformar busca em oportunidade comercial real.\n\nNão trabalhamos mídia apenas para aumentar tráfego. A estratégia é estruturada para encontrar demanda, reduzir desperdício e gerar conversões com eficiência.\n\nOlhando para a {empresa}, acredito que podemos identificar oportunidades parecidas.\n\nSe topar, podemos analisar rapidamente o cenário de buscas e as campanhas de vocês e trazer alguns dados e sugestões em uma conversa.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "rs2", caseTitle: "Case Run Solar — EUA", category: "Energia solar · geração de leads", color: "#f59e0b", icon: Target,
+    subject: "1.060 conversões no mercado solar em 90 dias",
+    body: "Oi, {nome}. Tudo bem?\n\n1.060 conversões em 90 dias, com CPC médio de US$ 0,52.\n\nEsse foi o resultado de uma operação de Google Ads que conduzimos para a Run Solar, nos Estados Unidos.\n\nForam 2,55 mil cliques e 27,8 mil impressões em um mercado competitivo, com campanhas estruturadas para capturar pessoas já procurando soluções de energia solar.\n\nNo setor solar, não basta aparecer. É preciso estar presente no momento em que o cliente está pesquisando, comparando e pronto para pedir uma proposta.\n\nAcredito que podemos fazer uma leitura interessante da operação da {empresa}, incluindo volume de buscas, concorrência, oportunidades de palavras-chave e possíveis ganhos de performance.\n\nSe fizer sentido, preparamos essa análise e te apresentamos.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "rs3", caseTitle: "Case Run Solar — EUA", category: "Performance · eficiência de mídia", color: "#f59e0b", icon: Target,
+    subject: "US$ 0,52 por clique em um mercado competitivo",
+    body: "Oi, {nome}. Tudo bem?\n\nUS$ 0,52 de CPC médio e 1.060 conversões em 90 dias.\n\nEsse foi o desempenho de uma operação de Google Ads que gerenciamos nos Estados Unidos para a Run Solar.\n\nMais do que o volume, o que chama atenção é a eficiência: 2,55 mil cliques, 27,8 mil impressões e uma campanha desenhada para capturar demanda com o menor desperdício possível.\n\nMuitas empresas já investem em Google. A questão é se estão comprando clique ou construindo aquisição.\n\nSe você quiser, podemos olhar a operação da {empresa}, comparar o cenário com o mercado e apontar onde vemos espaço para melhorar custo, conversão e qualidade das oportunidades.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "im1", caseTitle: "Case Instituto Médico Masculino", category: "Saúde · clínicas / performance", color: "#0ea5e9", icon: Building2,
+    subject: "1.722 conversas em 90 dias",
+    body: "Oi, {nome}. Tudo bem?\n\nComo geramos 1.722 conversas com potenciais pacientes em apenas 90 dias?\n\nEsse foi um dos resultados recentes de uma operação de performance que conduzimos para uma rede de clínicas no Brasil.\n\nCom aproximadamente R$ 11,3 mil investidos, conseguimos gerar conversas diretamente pelas campanhas, com custo médio geral próximo de R$ 6,57 por conversa iniciada — e campanhas chegando a R$ 4,58.\n\nPara nós, performance na área da saúde não é simplesmente gerar clique, alcance ou impressão.\n\nÉ fazer o investimento em mídia virar pessoas realmente entrando em contato com a clínica.\n\nOlhando para a {empresa}, acredito que podemos encontrar algumas oportunidades interessantes também.\n\nSe topar, analisamos operação, concorrentes, campanhas e demanda digital e trazemos uma leitura objetiva em uma conversa.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "im2", caseTitle: "Case Instituto Médico Masculino", category: "Clínicas e consultórios · aquisição de pacientes", color: "#0ea5e9", icon: Building2,
+    subject: "Quanto custa gerar uma nova conversa para sua clínica?",
+    body: "Oi, {nome}. Tudo bem?\n\nQuanto custa hoje fazer um potencial paciente entrar em contato com a {empresa}?\n\nEm uma operação recente para uma rede de clínicas brasileira, geramos 1.722 conversas em 90 dias, com aproximadamente R$ 11,3 mil de investimento em mídia.\n\nAlgumas campanhas chegaram a um custo de apenas R$ 4,58 por conversa iniciada.\n\nÉ esse número que gostamos de acompanhar.\n\nPorque, para uma clínica, não adianta simplesmente comprar tráfego. O marketing precisa ajudar a transformar mídia em novas oportunidades para a agenda.\n\nAcredito que seria interessante fazermos essa mesma leitura para a {empresa}: entender demanda, concorrência, custo de aquisição e onde existe espaço para melhorar a performance.\n\nSe fizer sentido, podemos preparar uma análise inicial e apresentar para vocês.\n\nAbraço,\nPedro",
+  },
+];
+
+// Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
+// de WhatsApp, mas com campo de assunto além do corpo.
+const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect }) => {
+  const isEditingExisting = initialBody !== undefined && initialBody !== null;
+  const [step, setStep] = useState(isEditingExisting ? "edit" : "pick");
+  const [draftSubject, setDraftSubject] = useState(initialSubject || "");
+  const [draftBody, setDraftBody] = useState(initialBody || "");
+  const [pickedTitle, setPickedTitle] = useState("");
+
+  const pickScript = (s) => {
+    setDraftSubject(fillScriptTemplate(s.subject, lead));
+    setDraftBody(fillScriptTemplate(s.body, lead));
+    setPickedTitle(`${s.caseTitle} · ${s.category}`);
+    setStep("edit");
+  };
+
+  const confirm = () => {
+    if (!draftBody.trim()) return;
+    onSelect(draftSubject.trim(), draftBody.trim());
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(10,30,50,0.5)", backdropFilter: "blur(6px)", zIndex: 160, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um case" : (isEditingExisting ? "Editar e-mail do envio" : "Editar e-mail")}</div>
+              <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
+            </div>
+            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+          </div>
+        </div>
+
+        {step === "pick" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
+              {EMAIL_SCRIPT_LIBRARY.map((s) => {
+                const filledSubject = fillScriptTemplate(s.subject, lead);
+                const filledBody = fillScriptTemplate(s.body, lead);
+                return (
+                  <div
+                    key={s.key}
+                    style={{
+                      textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
+                      background: "white", transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                      boxShadow: `0 2px 10px -6px ${s.color}40`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
+                  >
+                    <button
+                      onClick={() => onSelect(filledSubject, filledBody)}
+                      title="Usar esse case direto"
+                      style={{ width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", gap: 12 }}
+                    >
+                      <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <s.icon size={16} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 2 }}>{s.caseTitle}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: "#14141a", marginBottom: 3 }}>{filledSubject}</div>
+                        <div style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{filledBody}</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => pickScript(s)}
+                      style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10, paddingTop: 10, border: "none", borderTop: `1px solid ${s.color}18`, background: "transparent", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", width: "100%" }}
+                    >
+                      <Pencil size={11} /> Editar antes de usar
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {step === "edit" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+            <div style={{ maxWidth: 520, margin: "0 auto" }}>
+              {!isEditingExisting && (
+                <button onClick={() => setStep("pick")} style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", color: "#3b82f6", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 14 }}>
+                  ← {pickedTitle ? `Trocar (era: ${pickedTitle})` : "Escolher outro case"}
+                </button>
+              )}
+              {isEditingExisting && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                  <Pencil size={13} color="#3b82f6" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: 11.5, color: "#1d4ed8", lineHeight: 1.4 }}>
+                    Essa edição vale só pra esse envio pendente - não altera o script padrão da biblioteca.
+                  </div>
+                </div>
+              )}
+              <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+                <label style={{ ...labelStyle }}><SecIcon icon={Mail} color="#3b82f6" />Assunto</label>
+                <input
+                  value={draftSubject}
+                  onChange={(e) => setDraftSubject(e.target.value)}
+                  placeholder="Assunto do e-mail"
+                  style={{ ...inputStyle, marginBottom: 14 }}
+                />
+                <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#3b82f6" />Corpo do e-mail</label>
+                <textarea
+                  value={draftBody}
+                  onChange={(e) => setDraftBody(e.target.value)}
+                  rows={10}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
+                />
+              </div>
+              <button
+                onClick={confirm}
+                disabled={!draftBody.trim()}
+                style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
+              >
+                {isEditingExisting ? "Salvar na fila" : "Usar esse e-mail"}
               </button>
             </div>
           </div>
@@ -1728,6 +1916,291 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
               style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
             >
               <Send size={15} /> Iniciar envio ({validLeads.length})
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// LISTA DE ENVIO DE E-MAIL - mesmo padrão da lista de WhatsApp, mas abre o
+// app de e-mail do usuário via link "mailto:" com assunto e corpo preenchidos.
+// ════════════════════════════════════════════════════════════════════════
+const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogSent, onEditEmail }) => {
+  const [editingLead, setEditingLead] = useState(null);
+  const [mode, setMode] = useState("list"); // list | sending | done
+  const [tab, setTab] = useState("fila");
+  const [idx, setIdx] = useState(0);
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [sentCount, setSentCount] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
+  const [showCoin, setShowCoin] = useState(false);
+
+  const validLeads = leadsInList.filter((l) => l.email);
+  const withoutEmailCount = leadsInList.length - validLeads.length;
+  const currentLead = validLeads[idx];
+
+  useEffect(() => {
+    if (mode === "sending" && currentLead) {
+      setSubject(currentLead.emailSubject || `Sobre a ${currentLead.company}`);
+      setBody(currentLead.emailBody || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, mode]);
+
+  const startSending = (fromIdx = 0) => {
+    if (validLeads.length === 0) return;
+    setIdx(fromIdx); setSentCount(0); setSkippedCount(0);
+    setMode("sending");
+  };
+
+  const triggerCoin = () => { setShowCoin(true); setTimeout(() => setShowCoin(false), 900); };
+
+  const openMailto = (lead, subj, bod) => {
+    window.location.href = `mailto:${encodeURIComponent(lead.email)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(bod)}`;
+  };
+
+  const sendDirect = (lead) => {
+    const subj = lead.emailSubject || `Sobre a ${lead.company}`;
+    const bod = lead.emailBody || "";
+    openMailto(lead, subj, bod);
+    onLogSent(lead.id, subj, bod);
+    triggerCoin();
+  };
+
+  const goNext = (justSent) => {
+    const isLast = idx + 1 >= validLeads.length;
+    if (isLast) {
+      if (justSent || sentCount > 0) setMode("done");
+      else setMode("list");
+    } else {
+      setIdx((i) => i + 1);
+    }
+  };
+
+  const handleSend = () => {
+    openMailto(currentLead, subject, body);
+    onLogSent(currentLead.id, subject, body);
+    setSentCount((c) => c + 1);
+    triggerCoin();
+    goNext(true);
+  };
+
+  const handleSkip = () => { setSkippedCount((c) => c + 1); goNext(false); };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
+      <div style={{ background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ArrowLeft size={17} />
+              </button>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16.5, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Lista de envio de e-mail</div>
+                <div style={{ fontSize: 11.5, opacity: 0.85 }}>
+                  {mode === "list" && `${leadsInList.length} lead${leadsInList.length === 1 ? "" : "s"} na lista`}
+                  {mode === "sending" && `Enviando ${idx + 1} de ${validLeads.length}`}
+                  {mode === "done" && "Envio concluído"}
+                </div>
+              </div>
+            </div>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+          </div>
+          {mode === "sending" && (
+            <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: 20, position: "relative" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          {mode === "list" && (
+            <>
+              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "fila" ? "#1d4ed8" : "#94a3b8" }}>
+                  Fila ({leadsInList.length})
+                </button>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "historico" ? "#1d4ed8" : "#94a3b8" }}>
+                  Histórico ({history.length})
+                </button>
+              </div>
+
+              {tab === "fila" && (
+                leadsInList.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <Mail size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no ícone de e-mail num lead pra adicionar aqui.</div>
+                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                      ← Voltar pros leads
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {withoutEmailCount > 0 && (
+                      <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                        ⚠ {withoutEmailCount} lead{withoutEmailCount === 1 ? "" : "s"} sem e-mail cadastrado - não {withoutEmailCount === 1 ? "entra" : "entram"} no envio.
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
+                      {leadsInList.map((lead, i) => (
+                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.email ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                          <OwnerAvatar name={lead.company} size={32} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                              <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 800, color: "#94a3b8", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: lead.email ? "#94a3b8" : "#b45309", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.emailSubject || lead.email || "sem e-mail cadastrado"}</div>
+                          </div>
+                          {lead.email && (
+                            <button onClick={() => setEditingLead(lead)} title="Editar e-mail" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(59,130,246,0.12)", color: "#3b82f6", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Pencil size={13} />
+                            </button>
+                          )}
+                          {lead.email && (
+                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(14,165,233,0.12)", color: "#0284c7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Send size={13} />
+                            </button>
+                          )}
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              )}
+
+              {tab === "historico" && (
+                history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Nenhum envio ainda</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Todo e-mail enviado pela fila fica registrado aqui.</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                    {history.map((h) => (
+                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(59,130,246,0.12)", color: "#1d4ed8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={15} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
+                            <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.subject}</div>
+                          <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.body}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </>
+          )}
+
+          {mode === "sending" && currentLead && (
+            <div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 12 }}>
+                <Pencil size={13} color="#1d4ed8" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ fontSize: 11.5, color: "#1d4ed8", lineHeight: 1.4 }}>
+                  Você está ajustando <strong>só este e-mail</strong>, pra esse envio agora. O script padrão desse lead continua o mesmo.
+                </div>
+              </div>
+              <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <OwnerAvatar name={currentLead.company} size={42} />
+                  <div>
+                    <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0f172a" }}>{currentLead.company}</div>
+                    <div style={{ fontSize: 12, color: "#3b82f6", fontWeight: 600 }}>{currentLead.email}</div>
+                  </div>
+                </div>
+                <label style={{ ...labelStyle }}><SecIcon icon={Mail} color="#3b82f6" />Assunto</label>
+                <input value={subject} onChange={(e) => setSubject(e.target.value)} style={{ ...inputStyle, marginBottom: 14 }} />
+                <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#3b82f6" />Corpo do e-mail</label>
+                <textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  rows={9}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                  Pular
+                </button>
+                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(59,130,246,0.6)", position: "relative" }}>
+                  <Mail size={15} /> Abrir e-mail e continuar
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
+                {idx > 0 && (
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    ← Voltar pro anterior
+                  </button>
+                )}
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  Sair da fila
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === "done" && (
+            <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
+              <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
+                {sentCount} e-mail{sentCount === 1 ? " aberto" : "s abertos"} no seu app de e-mail{skippedCount > 0 ? `, ${skippedCount} pulado${skippedCount === 1 ? "" : "s"}` : ""}.
+              </div>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+                Fechar
+              </button>
+            </div>
+          )}
+        </div>
+
+        {showCoin && (
+          <div style={{ position: "fixed", left: "50%", bottom: "30%", transform: "translateX(-50%)", fontSize: 28, pointerEvents: "none", animation: "coinFloat 0.9s ease-out forwards", zIndex: 210 }}>
+            🪙
+          </div>
+        )}
+
+        {editingLead && (
+          <EmailScriptPickerModal
+            lead={editingLead}
+            initialSubject={editingLead.emailSubject || `Sobre a ${editingLead.company}`}
+            initialBody={editingLead.emailBody || ""}
+            onClose={() => setEditingLead(null)}
+            onSelect={(subj, bod) => { onEditEmail(editingLead.id, subj, bod); setEditingLead(null); }}
+          />
+        )}
+      </div>
+
+      {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
+        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
+            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              Limpar lista
+            </button>
+            <button
+              onClick={() => startSending(0)}
+              disabled={validLeads.length === 0}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(59,130,246,0.6)" : "none" }}
+            >
+              <Mail size={15} /> Iniciar envio ({validLeads.length})
             </button>
           </div>
         </div>
@@ -4004,6 +4477,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
   const [scriptPickerLead, setScriptPickerLead] = useState(null);
   const [waSendHistory, setWaSendHistory] = useState([]);
+  const [emailSendList, setEmailSendList] = useState([]); // { leadId, subject, body }[]
+  const [emailScriptPickerLead, setEmailScriptPickerLead] = useState(null);
+  const [emailSendHistory, setEmailSendHistory] = useState([]);
+  const [showEmailSendScreen, setShowEmailSendScreen] = useState(false);
   const [weekHistory, setWeekHistory] = useState([]);
   const [showWeekHistory, setShowWeekHistory] = useState(false);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
@@ -4026,8 +4503,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(LEADS_KEY, []), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
-      loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist]) => {
+      loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -4056,6 +4533,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setChatMessages(Array.isArray(chatHistory) ? chatHistory : []);
         setWaSendHistory(Array.isArray(waHistory) ? waHistory : []);
         setWeekHistory(Array.isArray(weekHist) ? weekHist : []);
+        setEmailSendHistory(Array.isArray(emailHistory) ? emailHistory : []);
         setLoaded(true);
       }
     });
@@ -4070,6 +4548,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_HISTORY_KEY, weekHistory); }, [weekHistory, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
 
@@ -4376,6 +4855,43 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
     if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "whatsapp-lista"); }
+  };
+
+  // Fila de envio de e-mail - mesma lógica da fila de WhatsApp, mas guardando
+  // assunto + corpo por lead em vez de só uma mensagem.
+  const handleMailIconClick = (lead) => {
+    if (emailSendList.some((x) => x.leadId === lead.id)) {
+      setEmailSendList((prev) => prev.filter((x) => x.leadId !== lead.id));
+    } else {
+      setEmailScriptPickerLead(lead);
+    }
+  };
+
+  const addToEmailListWithScript = (subject, body) => {
+    if (!emailScriptPickerLead) return;
+    setEmailSendList((prev) => [...prev.filter((x) => x.leadId !== emailScriptPickerLead.id), { leadId: emailScriptPickerLead.id, subject, body }]);
+    setEmailScriptPickerLead(null);
+    setToast("Adicionado à lista de envio de e-mail!");
+  };
+
+  const editEmailListMessage = (leadId, subject, body) => {
+    setEmailSendList((prev) => prev.map((x) => (x.leadId === leadId ? { ...x, subject, body } : x)));
+    setToast("E-mail atualizado!");
+  };
+
+  const logEmailListSend = (leadId, subject, body) => {
+    const now = new Date().toISOString();
+    const lead = leads.find((l) => l.id === leadId);
+    setLeads((prev) => prev.map((l) => l.id === leadId ? {
+      ...l,
+      lastContact: now,
+      weekDone: l.weekTag ? true : l.weekDone,
+      weekDoneVia: (l.weekTag && !l.weekDone) ? "email-lista" : l.weekDoneVia,
+      notes: [{ id: "n_email_" + Date.now(), date: now, text: `Contato via Email (lista de envio): "${subject}"` }, ...(l.notes || [])],
+    } : l));
+    setEmailSendList((prev) => prev.filter((x) => x.leadId !== leadId));
+    setEmailSendHistory((prev) => [{ id: "eh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", email: lead?.email || "", subject, body, date: now, by: currentUserId }, ...prev].slice(0, 300));
+    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "email-lista"); }
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -5095,7 +5611,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} onToggleEmailList={() => handleMailIconClick(lead)} />)}
                 </div>
               )}
 
@@ -5984,6 +6500,27 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onSelect={addToWaListWithScript}
           />
         )}
+        {showEmailSendScreen && (
+          <EmailSendListScreen
+            leadsInList={emailSendList.map((item) => {
+              const lead = leads.find((l) => l.id === item.leadId);
+              return lead ? { ...lead, emailSubject: item.subject, emailBody: item.body } : null;
+            }).filter(Boolean)}
+            history={emailSendHistory}
+            onClose={() => setShowEmailSendScreen(false)}
+            onRemove={(id) => setEmailSendList((prev) => prev.filter((x) => x.leadId !== id))}
+            onClear={() => setEmailSendList([])}
+            onLogSent={logEmailListSend}
+            onEditEmail={editEmailListMessage}
+          />
+        )}
+        {emailScriptPickerLead && (
+          <EmailScriptPickerModal
+            lead={emailScriptPickerLead}
+            onClose={() => setEmailScriptPickerLead(null)}
+            onSelect={addToEmailListWithScript}
+          />
+        )}
         {showWeekHistory && (
           <WeekHistoryScreen
             history={weekHistory}
@@ -6053,6 +6590,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             <Send size={19} />
             <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
               {waSendList.length}
+            </span>
+          </button>
+        )}
+
+        {/* ── BOTÃO FLUTUANTE: LISTA DE ENVIO DE E-MAIL (só aparece com itens na lista) ── */}
+        {emailSendList.length > 0 && view !== "assistente" && (
+          <button
+            onClick={() => setShowEmailSendScreen(true)}
+            title="Lista de envio de e-mail"
+            style={{
+              position: "fixed", right: 148, bottom: 90, width: 50, height: 50, borderRadius: "50%",
+              border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              boxShadow: "0 10px 26px -8px rgba(59,130,246,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          >
+            <Mail size={19} />
+            <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
+              {emailSendList.length}
             </span>
           </button>
         )}
