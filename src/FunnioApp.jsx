@@ -3058,6 +3058,45 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
   );
 };
 
+// Motivos mais comuns de uma extração ruim/incompleta na importação por IA, e como resolver
+// cada um - mostrado no painel de ajuda dentro do ImportModal.
+const IMPORT_HELP_ITEMS = [
+  { icon: Mail, color: "#3b82f6", title: "Faltam campos como e-mail ou cargo", text: "A IA nunca inventa dado que não existe na planilha. Se uma coluna não existir na origem (ex: não tem coluna de e-mail), o campo fica em branco de propósito. Você pode completar na tela de revisão antes de confirmar." },
+  { icon: Building2, color: "#8b5cf6", title: "Planilha com várias abas", text: "Se sua planilha tem uma aba por categoria, o Funnio já lê todas as abas com dado e usa o nome da aba como Setor quando não há coluna de setor explícita. Confira se o nome das abas faz sentido como setor." },
+  { icon: ClipboardList, color: "#f59e0b", title: "Linhas de cabeçalho ou divisórias coloridas somem", text: "Linhas usadas só como título de seção (uma faixa colorida escrito, por exemplo, \"C-Level\") são ignoradas de propósito - só linhas com nome de empresa viram lead. Se um grupo inteiro sumiu, confira se a linha da empresa não ficou colada na linha de título por causa de célula mesclada." },
+  { icon: Users, color: "#ec4899", title: "Nome do contato veio vazio", text: "Se a planilha só tem o CARGO (ex: \"CEO\") e não o nome da pessoa, o campo Contato fica vazio de propósito - cargo e nome são coisas diferentes. Preencha o cargo no campo Cargo, e o nome (se tiver) direto na revisão." },
+  { icon: Upload, color: "#06b6d4", title: "Arquivo grande, só processou uma parte", text: "Pra não travar, cada importação processa até ~300 linhas de uma vez. Se aparecer o aviso de que só as primeiras linhas foram processadas, é só importar de novo com o restante do arquivo." },
+  { icon: Repeat, color: "#10b981", title: "Um lote falhou por rede instável", text: "Às vezes um pedaço do arquivo falha ao processar por causa da conexão. Os leads que deram certo aparecem normalmente na revisão - só reimporte o restante depois." },
+  { icon: Pencil, color: "#6d5ef8", title: "Nada disso resolveu?", text: "Você pode editar qualquer campo direto na tela de revisão antes de confirmar, remover linhas erradas com a lixeira, ou colar o texto manualmente em vez de subir o arquivo - copiar e colar direto do Excel às vezes funciona melhor que o arquivo original." },
+];
+
+const ImportHelpPanel = ({ onClose }) => (
+  <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 140, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
+    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "85vh", overflowY: "auto", background: "white", borderRadius: "22px 22px 0 0", padding: 22, boxShadow: "0 -20px 60px -12px rgba(0,0,0,0.35)", animation: "menuSlideIn 0.2s ease" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+        <div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: "#14141a" }}>A extração não ficou boa?</div>
+          <div style={{ fontSize: 12.5, color: "#9a9aa3", marginTop: 2 }}>Motivos mais comuns e como resolver cada um</div>
+        </div>
+        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", flexShrink: 0 }}><X size={14} /></button>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        {IMPORT_HELP_ITEMS.map((item) => (
+          <div key={item.title} style={{ display: "flex", gap: 12, padding: "13px 0", borderTop: "1px solid #f1f2f5" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: item.color + "15", color: item.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <item.icon size={15} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a", marginBottom: 3 }}>{item.title}</div>
+              <div style={{ fontSize: 12, color: "#6b6b75", lineHeight: 1.5 }}>{item.text}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
   const [step, setStep] = useState("input"); // input | loading | review  (erro agora é um banner dentro de "input", não um passo separado)
   const [pastedText, setPastedText] = useState("");
@@ -3066,6 +3105,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
   const [progress, setProgress] = useState(null); // { done, total } durante processamento em lotes
   const [draftLeads, setDraftLeads] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [showImportHelp, setShowImportHelp] = useState(false);
 
   // Evita atualizar estado depois que o modal foi fechado/desmontado no meio de uma chamada assíncrona
   const mountedRef = useRef(true);
@@ -3221,11 +3261,14 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
           {step === "input" && (
             <>
               {errorMsg && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(226,72,63,0.08)", border: "1px solid rgba(226,72,63,0.25)", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(226,72,63,0.08)", border: "1px solid rgba(226,72,63,0.25)", marginBottom: 10 }}>
                   <AlertCircle size={16} color="#e2483f" style={{ flexShrink: 0, marginTop: 1 }} />
                   <div style={{ fontSize: 12.5, color: "#7f1d1d", lineHeight: 1.5 }}>{errorMsg}</div>
                 </div>
               )}
+              <button onClick={() => setShowImportHelp(true)} style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 16 }}>
+                <AlertCircle size={13} /> A extração não ficou boa? Entenda como resolver
+              </button>
 
               <label
                 htmlFor="import-file-input"
@@ -3318,7 +3361,10 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>{draftLeads.length} lead{draftLeads.length === 1 ? "" : "s"} encontrado{draftLeads.length === 1 ? "" : "s"}</span>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <button onClick={() => setShowImportHelp(true)} style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    <AlertCircle size={12} /> Não ficou bom? Entenda
+                  </button>
                   <button onClick={() => toggleAll(true)} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Marcar todos</button>
                   <button onClick={() => toggleAll(false)} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Desmarcar todos</button>
                 </div>
@@ -3381,6 +3427,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
           </div>
         )}
       </div>
+      {showImportHelp && <ImportHelpPanel onClose={() => setShowImportHelp(false)} />}
     </div>
   );
 };
