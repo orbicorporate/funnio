@@ -2490,7 +2490,7 @@ const MENU_SECTIONS = [
   { key: "assistente", label: "Assistente de vendas", icon: Sparkles },
 ];
 
-const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones, onStartTour }) => (
+const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones, onBulkManage, onStartTour }) => (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 150, display: "flex", animation: "fadeIn 0.15s ease" }}>
     <div onClick={(e) => e.stopPropagation()} style={{ width: "82%", maxWidth: 300, height: "100%", background: "white", boxShadow: "8px 0 30px -8px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", animation: "menuSlideIn 0.2s ease" }}>
       <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5" }}>
@@ -2511,6 +2511,11 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
         {onBulkPhones && (
           <button onClick={onBulkPhones} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
             <Phone size={16} /> Atualizar telefones em massa
+          </button>
+        )}
+        {onBulkManage && (
+          <button onClick={onBulkManage} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+            <Trash2 size={16} /> Gerenciar leads em massa
           </button>
         )}
       </div>
@@ -3051,6 +3056,205 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
             style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: matchedCount > 0 ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: matchedCount > 0 ? "pointer" : "not-allowed" }}
           >
             Atualizar {matchedCount > 0 ? `${matchedCount} telefone${matchedCount === 1 ? "" : "s"}` : ""}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// GERENCIAR LEADS EM MASSA - filtra por data, responsável, estágio, setor ou
+// por lote de importação (detectado automaticamente pelo id), pra desfazer
+// uma importação errada ou corrigir vários leads de uma vez.
+// ════════════════════════════════════════════════════════════════════════
+const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [ownerF, setOwnerF] = useState("all");
+  const [stageF, setStageF] = useState("all");
+  const [sectorF, setSectorF] = useState("");
+  const [searchF, setSearchF] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [bulkOwner, setBulkOwner] = useState("");
+  const [bulkStage, setBulkStage] = useState("");
+
+  // Detecta lotes de importação a partir do padrão de id "l_imp_<timestamp>_<i>"
+  // gerado no confirmImport - assim dá pra selecionar "aquela importação de terça" inteira.
+  const importBatches = useMemo(() => {
+    const map = {};
+    leads.forEach((l) => {
+      const m = /^l_imp_(\d+)_/.exec(l.id);
+      if (!m) return;
+      const batch = m[1];
+      if (!map[batch]) map[batch] = { batch, count: 0, date: l.createdAt };
+      map[batch].count++;
+    });
+    return Object.values(map).sort((a, b) => Number(b.batch) - Number(a.batch));
+  }, [leads]);
+
+  const filtered = useMemo(() => {
+    return leads.filter((l) => {
+      if (selectedBatch) {
+        const m = /^l_imp_(\d+)_/.exec(l.id);
+        return !!m && m[1] === selectedBatch;
+      }
+      if (dateFrom && (!l.createdAt || new Date(l.createdAt) < new Date(dateFrom + "T00:00:00"))) return false;
+      if (dateTo && (!l.createdAt || new Date(l.createdAt) > new Date(dateTo + "T23:59:59"))) return false;
+      if (ownerF !== "all" && l.owner !== ownerF) return false;
+      if (stageF !== "all" && l.stage !== stageF) return false;
+      if (sectorF.trim() && !(l.sector || "").toLowerCase().includes(sectorF.trim().toLowerCase())) return false;
+      if (searchF.trim() && !l.company.toLowerCase().includes(searchF.trim().toLowerCase())) return false;
+      return true;
+    });
+  }, [leads, selectedBatch, dateFrom, dateTo, ownerF, stageF, sectorF, searchF]);
+
+  // Sempre que o filtro muda, tira da seleção quem não está mais na lista filtrada
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const filteredIds = new Set(filtered.map((l) => l.id));
+      const next = new Set([...prev].filter((id) => filteredIds.has(id)));
+      return next;
+    });
+  }, [filtered]);
+
+  const toggleOne = (id) => setSelectedIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const selectAllFiltered = () => setSelectedIds(new Set(filtered.map((l) => l.id)));
+  const clearSelection = () => setSelectedIds(new Set());
+  const clearFilters = () => { setDateFrom(""); setDateTo(""); setOwnerF("all"); setStageF("all"); setSectorF(""); setSearchF(""); setSelectedBatch(null); };
+
+  const selectedCount = selectedIds.size;
+
+  const handleDelete = () => {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    onDelete([...selectedIds]);
+    setConfirmDelete(false);
+    setSelectedIds(new Set());
+  };
+
+  const applyBulkOwner = () => { if (bulkOwner && selectedCount) { onBulkEdit([...selectedIds], { owner: bulkOwner }); setBulkOwner(""); } };
+  const applyBulkStage = () => { if (bulkStage && selectedCount) { onBulkEdit([...selectedIds], { stage: bulkStage }); setBulkStage(""); } };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 130, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(30px)", borderRadius: 22, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+        <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Gerenciar leads em massa</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Filtre por data, responsável, estágio ou lote de importação, selecione e exclua ou edite vários de uma vez.</div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+        </div>
+
+        <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
+          {importBatches.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Importações recentes</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {importBatches.slice(0, 8).map((b) => (
+                  <button
+                    key={b.batch}
+                    onClick={() => setSelectedBatch(selectedBatch === b.batch ? null : b.batch)}
+                    style={{
+                      padding: "7px 12px", borderRadius: 10, cursor: "pointer", fontSize: 11.5, fontWeight: 700,
+                      border: `1.5px solid ${selectedBatch === b.batch ? "#6d5ef8" : "#e2e4e9"}`,
+                      background: selectedBatch === b.batch ? "rgba(109,94,248,0.1)" : "white",
+                      color: selectedBatch === b.batch ? "#6d5ef8" : "#64748b",
+                    }}
+                  >
+                    Import de {formatDateShort(b.date)} {b.date ? new Date(b.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : ""} · {b.count} lead{b.count === 1 ? "" : "s"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ opacity: selectedBatch ? 0.4 : 1, pointerEvents: selectedBatch ? "none" : "auto", transition: "opacity 0.15s ease" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Ou filtre manualmente</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <div>
+                <div style={{ fontSize: 10.5, color: "#94a3b8", marginBottom: 3 }}>Criado de</div>
+                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 10.5, color: "#94a3b8", marginBottom: 3 }}>até</div>
+                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+              </div>
+              <select value={ownerF} onChange={(e) => setOwnerF(e.target.value)} style={selectStyle}>
+                <option value="all">Todos os responsáveis</option>
+                {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+              </select>
+              <select value={stageF} onChange={(e) => setStageF(e.target.value)} style={selectStyle}>
+                <option value="all">Todos os estágios</option>
+                {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input value={sectorF} onChange={(e) => setSectorF(e.target.value)} placeholder="Setor contém..." style={{ ...inputStyle, marginBottom: 0 }} />
+              <input value={searchF} onChange={(e) => setSearchF(e.target.value)} placeholder="Nome da empresa contém..." style={{ ...inputStyle, marginBottom: 0 }} />
+            </div>
+          </div>
+
+          {(selectedBatch || dateFrom || dateTo || ownerF !== "all" || stageF !== "all" || sectorF || searchF) && (
+            <button onClick={clearFilters} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 14 }}>Limpar filtros</button>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4, marginBottom: 8 }}>
+            <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>{filtered.length} lead{filtered.length === 1 ? "" : "s"} no filtro · {selectedCount} selecionado{selectedCount === 1 ? "" : "s"}</span>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={selectAllFiltered} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Selecionar todos</button>
+              <button onClick={clearSelection} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Limpar seleção</button>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto", marginBottom: 16 }}>
+            {filtered.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 10px", color: "#94a3b8", fontSize: 12.5 }}>Nenhum lead com esse filtro.</div>
+            ) : filtered.map((l) => (
+              <div key={l.id} onClick={() => toggleOne(l.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: selectedIds.has(l.id) ? "rgba(109,94,248,0.08)" : "#fafbfc", border: `1px solid ${selectedIds.has(l.id) ? "rgba(109,94,248,0.3)" : "#eef0f3"}`, cursor: "pointer" }}>
+                <input type="checkbox" checked={selectedIds.has(l.id)} onChange={() => toggleOne(l.id)} onClick={(e) => e.stopPropagation()} style={{ width: 15, height: 15, cursor: "pointer", flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.company}</div>
+                  <div style={{ fontSize: 10.5, color: "#94a3b8" }}>{l.owner || "sem responsável"} · {l.stage}{l.sector ? ` · ${l.sector}` : ""}</div>
+                </div>
+                <div style={{ fontSize: 10, color: "#94a3b8", flexShrink: 0 }}>{l.createdAt ? formatDateShort(l.createdAt) : "-"}</div>
+              </div>
+            ))}
+          </div>
+
+          {selectedCount > 0 && (
+            <div style={{ borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 8 }}>Ajustar os {selectedCount} selecionados</div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                <select value={bulkOwner} onChange={(e) => setBulkOwner(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 160 }}>
+                  <option value="">Mudar responsável para...</option>
+                  {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                </select>
+                <button onClick={applyBulkOwner} disabled={!bulkOwner} style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: bulkOwner ? "#6d5ef8" : "#eef0f3", color: bulkOwner ? "white" : "#b4b6bc", fontSize: 12.5, fontWeight: 700, cursor: bulkOwner ? "pointer" : "not-allowed" }}>Aplicar</button>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <select value={bulkStage} onChange={(e) => setBulkStage(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 160 }}>
+                  <option value="">Mudar estágio para...</option>
+                  {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button onClick={applyBulkStage} disabled={!bulkStage} style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: bulkStage ? "#6d5ef8" : "#eef0f3", color: bulkStage ? "white" : "#b4b6bc", fontSize: 12.5, fontWeight: 700, cursor: bulkStage ? "pointer" : "not-allowed" }}>Aplicar</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: "14px 24px", borderTop: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Fechar</button>
+          <button
+            onClick={handleDelete}
+            disabled={selectedCount === 0}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: selectedCount === 0 ? "rgba(148,163,184,0.3)" : (confirmDelete ? "#dc2626" : "linear-gradient(135deg, #ef4444, #dc2626)"), color: "white", fontSize: 13, fontWeight: 700, cursor: selectedCount === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7 }}
+          >
+            <Trash2 size={14} /> {confirmDelete ? `Confirmar exclusão de ${selectedCount}` : `Excluir ${selectedCount > 0 ? selectedCount : ""} selecionado${selectedCount === 1 ? "" : "s"}`}
           </button>
         </div>
       </div>
@@ -3719,6 +3923,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [showSdrManager, setShowSdrManager] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showBulkPhoneModal, setShowBulkPhoneModal] = useState(false);
+  const [showBulkManageModal, setShowBulkManageModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -3998,6 +4203,27 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       };
     }));
     setToast(`${items.length} telefone${items.length === 1 ? "" : "s"} atualizado${items.length === 1 ? "" : "s"}`);
+  };
+
+  // Gerenciar leads em massa - principalmente pra desfazer uma importação que veio errada
+  // (exclui vários de uma vez) ou corrigir responsável/estágio de um grupo grande.
+  const bulkDeleteLeads = (ids) => {
+    if (!ids.length) return;
+    const idSet = new Set(ids);
+    setLeads((prev) => prev.filter((l) => !idSet.has(l.id)));
+    if (selected && idSet.has(selected.id)) setSelected(null);
+    setToast(`${ids.length} lead${ids.length === 1 ? "" : "s"} excluído${ids.length === 1 ? "" : "s"}`);
+  };
+  const bulkUpdateLeads = (ids, patch) => {
+    if (!ids.length || !Object.keys(patch).length) return;
+    const idSet = new Set(ids);
+    const now = new Date().toISOString();
+    const patchDesc = Object.entries(patch).map(([k, v]) => `${k === "owner" ? "responsável" : "estágio"} → ${v}`).join(", ");
+    setLeads((prev) => prev.map((l) => !idSet.has(l.id) ? l : {
+      ...l, ...patch,
+      notes: [{ id: "n_bulkedit_" + Date.now() + "_" + l.id, date: now, text: `[Atualização em massa] ${patchDesc}` }, ...(l.notes || [])],
+    }));
+    setToast(`${ids.length} lead${ids.length === 1 ? "" : "s"} atualizado${ids.length === 1 ? "" : "s"}`);
   };
 
   const handleQuickContact = (type, lead) => {
@@ -5664,6 +5890,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         )}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
         {showBulkPhoneModal && <BulkPhoneModal leads={leads} onClose={() => setShowBulkPhoneModal(false)} onApply={applyBulkPhones} />}
+        {showBulkManageModal && <BulkManageModal leads={leads} sdrs={sdrs} onClose={() => setShowBulkManageModal(false)} onDelete={bulkDeleteLeads} onBulkEdit={bulkUpdateLeads} />}
         {showNotifications && (
           <NotificationsPanel
             stats={stats}
@@ -5679,6 +5906,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onManageSdrs={() => { setShowMenu(false); setShowSdrManager(true); }}
             onImport={() => { setShowMenu(false); setShowImportModal(true); }}
             onBulkPhones={() => { setShowMenu(false); setShowBulkPhoneModal(true); }}
+            onBulkManage={() => { setShowMenu(false); setShowBulkManageModal(true); }}
             onNewLead={() => { setShowMenu(false); createLead(); }}
             onSwitchWorkspace={onSwitchWorkspace ? () => { setShowMenu(false); onSwitchWorkspace(); } : undefined}
             workspaceName={workspaceName}
