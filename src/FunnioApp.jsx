@@ -155,7 +155,7 @@ const TOUR_STEPS = [
   { id: "welcome", title: "Bem-vindo ao Funnio! 🎉", text: "Vamos fazer um tour rápido pelas principais áreas do seu funil. Leva menos de um minuto - você pode pular a qualquer momento.", target: null },
   { id: "menu", title: "Menu lateral", text: "Aqui você gerencia SDRs, importa leads em massa, troca de funil e mais.", target: '[data-tour="menu"]' },
   { id: "new-lead", title: "Adicionar leads", text: "Cadastre um lead na mão por aqui, ou use \"Importar leads\" pra subir uma planilha inteira de uma vez.", target: '[data-tour="new-lead"]' },
-  { id: "leads-grid", title: "Seus leads", text: "Cada card é um lead. Toque nele pra ver detalhes, mudar estágio, temperatura e registrar contatos.", target: '[data-tour="leads-grid"]' },
+  { id: "leads-grid", title: "Seus leads", text: "Cada card é um lead. Toque nele pra ver detalhes, mudar estágio, temperatura e registrar contatos.", target: "#leads-grid > div:first-child" },
   { id: "week-card", title: "Abordar essa semana", text: "Marque quem você precisa contatar nos próximos dias. Ao contatar por qualquer canal, o Funnio marca como feito sozinho.", target: '[data-tour="week-card"]' },
   { id: "assistant", title: "Assistente de IA", text: "Seu gestor de vendas com IA. Pergunte sobre seus leads ou peça sugestões de abordagem a qualquer momento.", target: '[data-tour="assistant-btn"]' },
   { id: "nav", title: "Navegação", text: "Home, Leads, Calendário de reuniões e Relatórios - tudo a um toque de distância aqui embaixo.", target: '[data-tour="bottom-nav"]' },
@@ -180,7 +180,24 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
       const el = document.querySelector(step.target);
       if (!el) { setRect(null); return; }
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => { if (!cancelled) setRect(el.getBoundingClientRect()); }, 300);
+      setTimeout(() => {
+        if (cancelled) return;
+        const r = el.getBoundingClientRect();
+        const vh = window.innerHeight, vw = window.innerWidth;
+        const TOOLTIP_RESERVE = 230; // espaço mínimo sempre reservado pro card com os botões
+        let top = Math.max(8, r.top);
+        let left = Math.max(8, r.left);
+        let bottom = Math.min(vh - 8, r.bottom);
+        let right = Math.min(vw - 8, r.right);
+        // Decide se o card do tour vai embaixo ou em cima com base em onde o alvo está,
+        // e SEMPRE corta o destaque pra caber, garantindo que o card nunca saia da tela.
+        const centerY = (top + bottom) / 2;
+        let placeBelow = centerY < vh / 2;
+        if (placeBelow) bottom = Math.min(bottom, vh - TOOLTIP_RESERVE);
+        else top = Math.max(top, TOOLTIP_RESERVE);
+        if (bottom <= top) { bottom = top + 40; placeBelow = vh - bottom > top; }
+        setRect({ top, left, bottom, right, width: Math.max(20, right - left), height: Math.max(20, bottom - top), placeBelow });
+      }, 300);
     };
     measure();
     window.addEventListener("resize", measure);
@@ -200,9 +217,7 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
 
   let tooltipStyle = { position: "fixed", zIndex: 999, width: 300, transition: "top 0.35s ease, bottom 0.35s ease, left 0.35s ease" };
   if (rect) {
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const placeBelow = spaceBelow > 210;
-    if (placeBelow) tooltipStyle.top = rect.bottom + pad + 16;
+    if (rect.placeBelow) tooltipStyle.top = rect.bottom + pad + 16;
     else tooltipStyle.bottom = window.innerHeight - rect.top + pad + 16;
     let left = rect.left + rect.width / 2 - 150;
     left = Math.max(16, Math.min(window.innerWidth - 316, left));
@@ -214,6 +229,14 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
   return (
     <>
       <div style={spotStyle} />
+      {/* Botão de fechar sempre fixo no canto, independente de onde o card do tour esteja - garante que sempre dá pra sair */}
+      <button
+        onClick={onSkip}
+        title="Fechar tour"
+        style={{ position: "fixed", top: 14, right: 14, zIndex: 999, width: 34, height: 34, borderRadius: "50%", border: "none", background: "rgba(20,20,26,0.55)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <X size={16} />
+      </button>
       <div style={tooltipStyle}>
         <div style={{ background: "white", borderRadius: 18, padding: "18px 20px", boxShadow: "0 24px 60px -16px rgba(0,0,0,0.55)" }}>
           <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
@@ -4649,7 +4672,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 13, color: "#94a3b8" }}>{leads.length === 0 ? "Comece adicionando seu primeiro lead" : "Tente ajustar os filtros"}</div>
                 </Glass>
               ) : (
-                <div id="leads-grid" data-tour="leads-grid" className="leads-grid">
+                <div id="leads-grid" className="leads-grid">
                   {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} />)}
                 </div>
               )}
