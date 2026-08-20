@@ -9,6 +9,7 @@ import {
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
   Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
+  Repeat,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -113,6 +114,29 @@ const WEEK_VIA_CONFIG = {
   "whatsapp-lista": { label: "Via lista de envio WhatsApp", color: "#128c4a", icon: Send },
   email: { label: "Via Email", color: "#3b82f6", icon: Mail },
   phone: { label: "Via Telefone", color: "#8b5cf6", icon: Phone },
+};
+
+// Feed de atividades da tela de Relatórios - classifica cada nota do lead por tipo
+// de ação (contato, mudança de estágio, atualização em massa etc.) pra exibir com
+// ícone e cor certos, sem precisar de uma tabela de log separada.
+const ACTIVITY_CONFIG = {
+  created: { label: "Entrou no funil", color: "#6d5ef8", icon: UserPlus },
+  won: { label: "Conquistado", color: "#10b981", icon: Trophy },
+  stage: { label: "Mudou de estágio", color: "#8b5cf6", icon: Repeat },
+  whatsapp: { label: "Contato via WhatsApp", color: "#25d366", icon: MessageCircle },
+  email: { label: "Contato via Email", color: "#3b82f6", icon: Mail },
+  phone: { label: "Contato via Telefone", color: "#f59e0b", icon: Phone },
+  bulk: { label: "Atualização em massa", color: "#94a3b8", icon: Upload },
+  note: { label: "Anotação", color: "#94a3b8", icon: FileText },
+};
+const classifyActivityNote = (text) => {
+  const t = text || "";
+  if (t.startsWith("Mudou de estágio")) return "stage";
+  if (t.startsWith("[Atualização em massa]")) return "bulk";
+  if (t.startsWith("Contato via WhatsApp")) return "whatsapp";
+  if (t.startsWith("Contato via Email")) return "email";
+  if (t.startsWith("Contato via Telefone")) return "phone";
+  return "note";
 };
 
 const STAGE_OPTIONS = ["Apresentação", "Alinhamento", "Escopo Enviado", "Proposta", "Conquistado", "Perdida"];
@@ -1705,7 +1729,16 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
     const updated = { ...draft, notes: [note, ...(draft.notes || [])], lastContact: new Date().toISOString() };
     setDraft(updated); setNewNote(""); onSave(updated);
   };
-  const handleSave = () => { onSave(draft); onClose(); };
+  const handleSave = () => {
+    // Se o estágio mudou, registra automaticamente no histórico do lead -
+    // isso alimenta o feed de atividades da tela de Relatórios.
+    let toSave = draft;
+    if (draft.stage !== lead.stage) {
+      const note = { id: "n_stage_" + Date.now(), date: new Date().toISOString(), text: `Mudou de estágio: ${lead.stage} → ${draft.stage}` };
+      toSave = { ...draft, notes: [note, ...(draft.notes || [])] };
+    }
+    onSave(toSave); onClose();
+  };
   // Fechar (X ou clicar fora) descartava qualquer edição sem avisar. Agora só fecha direto
   // se não há mudanças; havendo, confirma antes de perder o que foi digitado.
   const isDirty = JSON.stringify(draft) !== JSON.stringify(lead);
@@ -3855,6 +3888,29 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     return { meetingsInPeriod, contactedInPeriod, label: `últimos ${days} dias` };
   }, [leads, meetings, reportPeriod]);
 
+  // Feed de atividades - junta tudo que aconteceu na plataforma no período: leads que
+  // entraram, contatos feitos, mudanças de estágio e conquistas. Montado a partir do
+  // createdAt e das notas de cada lead (já timestampadas), sem precisar de log separado.
+  const activityFeed = useMemo(() => {
+    const cutoff = reportPeriod === "all" ? null : (() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - parseInt(reportPeriod, 10)); return d; })();
+    const events = [];
+    leads.forEach((l) => {
+      if (l.createdAt && (!cutoff || new Date(l.createdAt) >= cutoff)) {
+        events.push({ id: "ev_c_" + l.id, date: l.createdAt, kind: "created", company: l.company, owner: l.owner, leadId: l.id });
+      }
+      (l.notes || []).forEach((n) => {
+        if (!cutoff || new Date(n.date) >= cutoff) {
+          events.push({ id: "ev_n_" + n.id, date: n.date, kind: classifyActivityNote(n.text), company: l.company, owner: l.owner, leadId: l.id, text: n.text });
+        }
+      });
+      if (l.wonDate && (!cutoff || new Date(l.wonDate) >= cutoff)) {
+        events.push({ id: "ev_w_" + l.id, date: l.wonDate, kind: "won", company: l.company, owner: l.owner, leadId: l.id, value: getDealValue(l) });
+      }
+    });
+    events.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return events;
+  }, [leads, reportPeriod]);
+
   // Leads conquistados (Vendida), filtrados por data de fechamento - usados na página dedicada
   const wonLeads = useMemo(() => {
     let arr = leads.filter((l) => l.stage === "Conquistado");
@@ -5142,6 +5198,53 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.contactedInPeriod}</div>
                 </Glass>
               </div>
+
+              {/* Feed de atividades - tudo que aconteceu na plataforma no período selecionado */}
+              <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Atividade da plataforma</div>
+                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 600 }}>{activityFeed.length} ação{activityFeed.length === 1 ? "" : "ões"}</div>
+                </div>
+                <div style={{ fontSize: 11.5, color: "#9a9aa3", marginBottom: 14 }}>Leads que entraram, contatos, mudanças de estágio e conquistas — {reportStats.label}</div>
+                {activityFeed.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "24px 10px", color: "#94a3b8" }}>
+                    <ClipboardList size={26} color="#cbd5e1" style={{ marginBottom: 8 }} />
+                    <div style={{ fontSize: 12.5 }}>Nada por aqui nesse período.</div>
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: 420, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 2 }}>
+                    {activityFeed.map((ev) => {
+                      const cfg = ACTIVITY_CONFIG[ev.kind] || ACTIVITY_CONFIG.note;
+                      const lead = leads.find((l) => l.id === ev.leadId);
+                      let label = cfg.label;
+                      if (ev.kind === "stage" && ev.text) label = ev.text;
+                      if (ev.kind === "won") label = `Conquistado${ev.value ? " · " + formatBRL(ev.value) : ""}`;
+                      if (ev.kind === "bulk") label = "Telefone atualizado em massa";
+                      const now = new Date(); const d = new Date(ev.date);
+                      const sameDay = d.toDateString() === now.toDateString();
+                      const dateLabel = sameDay
+                        ? d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+                        : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+                      return (
+                        <div
+                          key={ev.id}
+                          onClick={() => lead && setSelected(lead)}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 12, background: "white", border: `1px solid ${cfg.color}22`, cursor: lead ? "pointer" : "default" }}
+                        >
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: cfg.color + "18", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <cfg.icon size={13} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.company}</div>
+                            <div style={{ fontSize: 10.5, color: "#9a9aa3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.owner} · {label}</div>
+                          </div>
+                          <div style={{ fontSize: 10, color: "#9a9aa3", flexShrink: 0 }}>{dateLabel}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Glass>
 
               {/* Receita com meta editável */}
               <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
