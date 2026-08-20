@@ -13,9 +13,15 @@
        fora da caixa em qualquer tela que carregue antes do CRM principal (login,
        escolher funil etc.) */
     * { box-sizing: border-box; }
+    /* Fundo escuro já no HTML puro, antes do React montar - evita o "flash" branco
+       na tela de login enquanto o JS carrega, especialmente ao abrir como app instalado. */
+    html, body { background: #08080a; margin: 0; }
+    /* Remove o zoom automático ao tocar duas vezes rápido em qualquer lugar da tela
+       (gesto padrão do navegador), sem desabilitar o pinça-pra-zoom manual. */
+    html, body { touch-action: manipulation; }
   </style>
 </head>
-<body style="margin:0;">
+<body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
