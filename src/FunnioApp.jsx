@@ -3301,6 +3301,7 @@ const IMPORT_HELP_ITEMS = [
   { icon: Upload, color: "#06b6d4", title: "Arquivo grande, só processou uma parte", text: "Pra não travar, cada importação processa até ~300 linhas de uma vez. Se aparecer o aviso de que só as primeiras linhas foram processadas, é só importar de novo com o restante do arquivo." },
   { icon: Repeat, color: "#10b981", title: "Um lote falhou por rede instável", text: "Às vezes um pedaço do arquivo falha ao processar por causa da conexão. Os leads que deram certo aparecem normalmente na revisão - só reimporte o restante depois." },
   { icon: Pencil, color: "#6d5ef8", title: "Nada disso resolveu?", text: "Você pode editar qualquer campo direto na tela de revisão antes de confirmar, remover linhas erradas com a lixeira, ou colar o texto manualmente em vez de subir o arquivo - copiar e colar direto do Excel às vezes funciona melhor que o arquivo original." },
+  { icon: AlertCircle, color: "#b45309", title: "Lead marcado como \"Já existe\"", text: "O Funnio compara o nome da empresa (ignorando maiúsculas, acentos e pontuação) com os leads que já estão no seu funil. Pra cada duplicado, escolha: \"Adicionar mesmo assim\" (cria um segundo lead), \"Substituir existente\" (atualiza os dados do lead que já existe, mantendo o histórico dele) ou \"Não incluir\" (ignora essa linha)." },
 ];
 
 const ImportHelpPanel = ({ onClose }) => (
@@ -3354,10 +3355,14 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
 
   const requestClose = () => { if (step !== "loading") onClose(); };
 
-  const existingNames = useMemo(
-    () => new Set((existingLeads || []).map((l) => (l.company || "").trim().toLowerCase())),
-    [existingLeads]
-  );
+  const existingLeadsByName = useMemo(() => {
+    const map = new Map();
+    (existingLeads || []).forEach((l) => {
+      const key = normalizeCompanyName(l.company);
+      if (key && !map.has(key)) map.set(key, l);
+    });
+    return map;
+  }, [existingLeads]);
 
   const MAX_CHUNKS = 12; // trava de segurança: evita dezenas de chamadas de IA numa importação gigante
 
@@ -3405,10 +3410,13 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
         .map((l, i) => {
           const companyTrim = String(l.company).trim();
           const { phone, whatsapp } = reclassifyPhoneFields({ phone: l.phone || "", whatsapp: l.whatsapp || "" });
+          const existingMatch = existingLeadsByName.get(normalizeCompanyName(companyTrim));
           return {
             _include: true,
             _tmpId: "imp_" + Date.now() + "_" + i,
-            _duplicate: existingNames.has(companyTrim.toLowerCase()),
+            _duplicate: !!existingMatch,
+            _duplicateLeadId: existingMatch?.id || null,
+            _dupAction: existingMatch ? "add" : null, // "add" | "replace" (irrelevante se não é duplicado)
             company: companyTrim,
             contactName: l.contactName || "",
             role: l.role || "",
@@ -3589,7 +3597,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
               {duplicateCount > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "9px 14px", borderRadius: 10, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)" }}>
                   <AlertCircle size={14} color="#b45309" />
-                  <span style={{ fontSize: 12, color: "#78350f" }}>{duplicateCount} lead{duplicateCount === 1 ? "" : "s"} com nome parecido a um que já existe no sistema - marcados abaixo, confira antes de importar.</span>
+                  <span style={{ fontSize: 12, color: "#78350f" }}>{duplicateCount} lead{duplicateCount === 1 ? "" : "s"} com nome parecido a um que já existe no sistema - escolha "Adicionar", "Substituir" ou "Não incluir" em cada um abaixo.</span>
                 </div>
               )}
 
@@ -3611,9 +3619,33 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                     <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                       <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <input value={l.company} onChange={(e) => updateDraft(l._tmpId, { company: e.target.value })} placeholder="Empresa" style={{ ...inputStyle, fontWeight: 700, flex: 1, minWidth: 140 }} />
-                        {l._duplicate && <span title="Já existe um lead com esse nome" style={{ fontSize: 10, fontWeight: 700, color: "#b45309", background: "rgba(245,166,35,0.15)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>Já existe</span>}
                         {!l.company.trim() && <span style={{ fontSize: 10, fontWeight: 700, color: "#e2483f", background: "rgba(226,72,63,0.1)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>Nome obrigatório</span>}
                       </div>
+                      {l._duplicate && (
+                        <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
+                          <span title="Já existe um lead com esse nome" style={{ fontSize: 10, fontWeight: 700, color: "#b45309", background: "rgba(245,166,35,0.15)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap", flexShrink: 0 }}>Já existe</span>
+                          {[
+                            { key: "add", label: "Adicionar mesmo assim" },
+                            { key: "replace", label: "Substituir existente" },
+                            { key: "skip", label: "Não incluir" },
+                          ].map((opt) => {
+                            const active = opt.key === "skip" ? !l._include : (l._include && l._dupAction === opt.key);
+                            return (
+                              <button
+                                key={opt.key}
+                                onClick={() => opt.key === "skip" ? updateDraft(l._tmpId, { _include: false }) : updateDraft(l._tmpId, { _include: true, _dupAction: opt.key })}
+                                style={{
+                                  padding: "4px 9px", borderRadius: 7, cursor: "pointer", fontSize: 10.5, fontWeight: 700,
+                                  border: `1px solid ${active ? "#b45309" : "rgba(245,166,35,0.35)"}`,
+                                  background: active ? "#b45309" : "white", color: active ? "white" : "#b45309",
+                                }}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                       <input value={l.contactName} onChange={(e) => updateDraft(l._tmpId, { contactName: e.target.value })} placeholder="Contato" style={inputStyle} />
                       <input value={l.role} onChange={(e) => updateDraft(l._tmpId, { role: e.target.value })} placeholder="Cargo" style={inputStyle} />
                       <select value={l.owner} onChange={(e) => updateDraft(l._tmpId, { owner: e.target.value })} style={selectStyle}>
@@ -4181,7 +4213,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const confirmImport = (importedDrafts) => {
     const now = new Date().toISOString();
     const batchStamp = Date.now();
-    const newLeads = importedDrafts.map((d, i) => ({
+
+    // Leads marcados "Substituir existente" atualizam o lead que já existe em vez de
+    // criar um duplicado - preserva id/histórico e loga a substituição como nota.
+    const toReplace = importedDrafts.filter((d) => d._dupAction === "replace" && d._duplicateLeadId);
+    const toAdd = importedDrafts.filter((d) => !(d._dupAction === "replace" && d._duplicateLeadId));
+    const replaceById = Object.fromEntries(toReplace.map((d) => [d._duplicateLeadId, d]));
+
+    const newLeads = toAdd.map((d, i) => ({
       id: "l_imp_" + batchStamp + "_" + i,
       company: d.company,
       owner: d.owner || sdrs[0]?.name || "",
@@ -4212,8 +4251,29 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       createdAt: now,
       notes: d.feedback ? [{ id: "n_imp_" + batchStamp + "_" + i, date: now, text: `[Importado] ${d.feedback}` }] : [],
     }));
-    setLeads((prev) => [...newLeads, ...prev]);
-    setToast(`${newLeads.length} lead${newLeads.length === 1 ? "" : "s"} importado${newLeads.length === 1 ? "" : "s"} com sucesso`);
+
+    setLeads((prev) => {
+      const updated = prev.map((l) => {
+        const d = replaceById[l.id];
+        if (!d) return l;
+        return {
+          ...l,
+          company: d.company, owner: d.owner || l.owner, stage: d.stage,
+          contactName: d.contactName || l.contactName, role: d.role || l.role, sector: d.sector || l.sector,
+          email: d.email || l.email, phone: d.phone || l.phone, whatsapp: d.whatsapp || l.whatsapp,
+          hasWhatsapp: !!(d.whatsapp || l.whatsapp), hasEmail: !!(d.email || l.email), hasPhone: !!(d.phone || l.phone),
+          notes: [{ id: "n_imp_replace_" + batchStamp + "_" + l.id, date: now, text: `[Importado] Dados substituídos${d.feedback ? `: "${d.feedback}"` : ""}` }, ...(l.notes || [])],
+        };
+      });
+      return [...newLeads, ...updated];
+    });
+
+    const replacedCount = toReplace.length;
+    const addedCount = newLeads.length;
+    const parts = [];
+    if (addedCount) parts.push(`${addedCount} adicionado${addedCount === 1 ? "" : "s"}`);
+    if (replacedCount) parts.push(`${replacedCount} substituído${replacedCount === 1 ? "" : "s"}`);
+    setToast(parts.length ? parts.join(" · ") : "Nenhum lead importado");
   };
 
   // Aplica telefones em massa: cada item já vem casado com o lead certo (feito no
