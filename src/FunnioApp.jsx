@@ -3874,18 +3874,33 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   // Dados filtrados por período - usados só na página de Relatórios
   const reportStats = useMemo(() => {
-    if (reportPeriod === "all") {
-      return {
-        meetingsInPeriod: meetings.length,
-        contactedInPeriod: leads.filter((l) => l.lastContact).length,
-        label: "todo o período",
-      };
-    }
-    const days = parseInt(reportPeriod, 10);
-    const cutoff = new Date(); cutoff.setHours(0, 0, 0, 0); cutoff.setDate(cutoff.getDate() - days);
-    const meetingsInPeriod = meetings.filter((m) => new Date(m.date) >= cutoff).length;
-    const contactedInPeriod = leads.filter((l) => l.lastContact && new Date(l.lastContact) >= cutoff).length;
-    return { meetingsInPeriod, contactedInPeriod, label: `últimos ${days} dias` };
+    const cutoff = reportPeriod === "all" ? null : (() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - parseInt(reportPeriod, 10)); return d; })();
+    const inPeriod = (dateStr) => !!dateStr && (!cutoff || new Date(dateStr) >= cutoff);
+    const label = reportPeriod === "all" ? "todo o período" : `últimos ${parseInt(reportPeriod, 10)} dias`;
+
+    const meetingsInPeriod = meetings.filter((m) => inPeriod(m.date)).length;
+    const contactedInPeriod = leads.filter((l) => inPeriod(l.lastContact)).length;
+    const leadsAddedInPeriod = leads.filter((l) => inPeriod(l.createdAt)).length;
+
+    // Leads distintos (não eventos) contatados por WhatsApp e que mudaram de estágio no período,
+    // extraídos das notas já timestampadas de cada lead.
+    const whatsappLeadIds = new Set();
+    const stageChangeLeadIds = new Set();
+    leads.forEach((l) => {
+      (l.notes || []).forEach((n) => {
+        if (!inPeriod(n.date)) return;
+        const kind = classifyActivityNote(n.text);
+        if (kind === "whatsapp") whatsappLeadIds.add(l.id);
+        if (kind === "stage") stageChangeLeadIds.add(l.id);
+      });
+    });
+
+    return {
+      meetingsInPeriod, contactedInPeriod, leadsAddedInPeriod,
+      whatsappContactedInPeriod: whatsappLeadIds.size,
+      stageChangedInPeriod: stageChangeLeadIds.size,
+      label,
+    };
   }, [leads, meetings, reportPeriod]);
 
   // Feed de atividades - junta tudo que aconteceu na plataforma no período: leads que
@@ -5196,6 +5211,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
                   <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Contatos ({reportStats.label})</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.contactedInPeriod}</div>
+                </Glass>
+                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Leads adicionados ({reportStats.label})</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.leadsAddedInPeriod}</div>
+                </Glass>
+                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Contatados via WhatsApp ({reportStats.label})</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#25d366", marginTop: 4 }}>{reportStats.whatsappContactedInPeriod}</div>
+                </Glass>
+                <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 700 }}>Mudaram de estágio ({reportStats.label})</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#8b5cf6", marginTop: 4 }}>{reportStats.stageChangedInPeriod}</div>
                 </Glass>
               </div>
 
