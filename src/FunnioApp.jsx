@@ -1068,7 +1068,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
         <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : (initialMessage ? "Editar script da fila" : "Editar mensagem")}</div>
+              <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : (initialMessage ? "Editar mensagem do envio" : "Editar mensagem")}</div>
               <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
             </div>
             <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
@@ -1129,7 +1129,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                   <Pencil size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
-                    Você está editando o <strong>script padrão</strong> desse lead. Fica salvo até você mandar ou editar de novo.
+                    Essa edição vale só pra esse envio pendente - não altera o script padrão da biblioteca.
                   </div>
                 </div>
               )}
