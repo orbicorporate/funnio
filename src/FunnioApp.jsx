@@ -3807,13 +3807,13 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             {draft.locationType === "presencial" ? (
               <input value={draft.address || ""} onChange={(e) => update({ address: e.target.value })} placeholder="Endereço completo - rua, número, cidade" style={inputStyle} />
             ) : (
-              <div style={{ display: "flex", gap: 6 }}>
-                <input value={draft.link || ""} onChange={(e) => update({ link: e.target.value })} placeholder="https://meet.google.com/xxx-xxxx-xxx" style={{ ...inputStyle, flex: 1, marginBottom: 0 }} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                <input value={draft.link || ""} onChange={(e) => update({ link: e.target.value })} placeholder="https://meet.google.com/xxx-xxxx-xxx" style={{ ...inputStyle, flex: "1 1 180px", minWidth: 0, marginBottom: 0 }} />
                 <button
                   type="button"
                   onClick={() => window.open("https://meet.google.com/new", "_blank")}
                   title="Abre o Google Meet numa aba nova pra criar uma sala - depois é só colar o link aqui"
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 12px", borderRadius: 12, border: "1.5px solid #6366f1", background: "rgba(99,102,241,0.08)", color: "#4f46e5", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 14px", borderRadius: 12, border: "1.5px solid #6366f1", background: "rgba(99,102,241,0.08)", color: "#4f46e5", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
                 >
                   <Video size={13} /> Gerar Meet
                 </button>
