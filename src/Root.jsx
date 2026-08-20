@@ -295,7 +295,7 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
     <div style={{ minHeight: "100vh", background: "#08080a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden" }}>
       <AmbientBackground />
       <div style={{ width: "100%", maxWidth: 360, position: "relative", zIndex: 1 }}>
-        <img src="/logo.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(163,230,53,0.4))" }} />
+        <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(163,230,53,0.4))" }} />
         <h1 style={{ textAlign: "center", color: "white", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
         <div style={{ textAlign: "center", color: "#9a9aa3", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
         <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.5)" }}>
@@ -351,7 +351,7 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 20px 40px" }}>
         <div style={{ maxWidth: 420, width: "100%", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <img src="/logo.png" alt="Funnio" style={{ height: 76, width: "auto", display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 22px rgba(163,230,53,0.35))" }} />
+            <img src="/logo-v2.png" alt="Funnio" style={{ height: 76, width: "auto", display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 22px rgba(163,230,53,0.35))" }} />
             <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
             <div style={{ color: "#a3e635", fontSize: 12.5, fontWeight: 600, marginBottom: 2 }}>Seu funil de vendas</div>
             <div style={{ color: "#767670", fontSize: 12 }}>{email}</div>
