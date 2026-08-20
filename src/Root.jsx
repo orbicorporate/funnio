@@ -281,7 +281,7 @@ export default function Root() {
 
 function CenteredMessage({ children }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0a", color: "#9a9aa3", fontFamily: "Arial, sans-serif", fontSize: 14 }}>
+    <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0a", color: "#9a9aa3", fontFamily: "Arial, sans-serif", fontSize: 14 }}>
       {children}
     </div>
   );
@@ -292,7 +292,7 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
   const [password, setPassword] = useState("");
   const isLogin = mode === "login";
   return (
-    <div style={{ minHeight: "100vh", background: "#08080a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100dvh", background: "#08080a", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden" }}>
       <AmbientBackground />
       <div style={{ width: "100%", maxWidth: 360, position: "relative", zIndex: 1 }}>
         <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(163,230,53,0.4))" }} />
@@ -343,7 +343,7 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
   const [code, setCode] = useState(defaultCode || "");
   const wsColors = ["#6d5ef8", "#a3e635", "#f59e0b", "#38bdf8", "#ec4899"];
   return (
-    <div style={{ minHeight: "100vh", background: "#08080a", fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100dvh", background: "#08080a", fontFamily: '"Open Sans", Arial, sans-serif', position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <AmbientBackground />
 
       <button onClick={onLogout} style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: "none", color: "#a3e635", fontSize: 12.5, fontWeight: 600, cursor: "pointer", zIndex: 2 }}>Sair</button>
