@@ -2684,12 +2684,21 @@ const readSpreadsheetAsText = (file) =>
       try {
         const wb = XLSX.read(e.target.result, { type: isCsv ? "string" : "array" });
         if (!wb.SheetNames || wb.SheetNames.length === 0) { reject(new Error("empty")); return; }
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        let csv = XLSX.utils.sheet_to_csv(sheet);
+        // Planilhas costumam vir com uma aba por categoria (ex: "Tecnologia & Finanças",
+        // "Saúde & Farma & Beleza"...). Antes só líamos a primeira aba - se ela fosse um
+        // "Resumo" e os contatos reais estivessem nas outras, a importação perdia quase tudo.
+        // Agora concatena todas as abas que têm conteúdo, com o nome da aba como referência.
+        const parts = [];
+        wb.SheetNames.forEach((name) => {
+          const sheet = wb.Sheets[name];
+          const sheetCsv = XLSX.utils.sheet_to_csv(sheet);
+          if (sheetCsv && sheetCsv.trim()) parts.push(`--- Aba: ${name} ---\n${sheetCsv.trim()}`);
+        });
+        let csv = parts.join("\n\n");
         if (!csv || !csv.trim()) { reject(new Error("empty")); return; }
-        if (csv.length > 50000) {
-          const cut = csv.lastIndexOf("\n", 50000);
-          csv = csv.slice(0, cut > 0 ? cut : 50000);
+        if (csv.length > 80000) {
+          const cut = csv.lastIndexOf("\n", 80000);
+          csv = csv.slice(0, cut > 0 ? cut : 80000);
         }
         resolve(csv);
       } catch (err) { reject(err); }
