@@ -3599,8 +3599,10 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
   }, [leads, sdrs]);
 
   const reassignAllFrom = (ownerKey) => {
-    const target = reassignTarget[ownerKey];
-    if (target === undefined || target === ownerKey) return;
+    const raw = reassignTarget[ownerKey];
+    if (!raw || raw === "__none__") return;
+    const target = raw === "__todos__" ? "" : raw;
+    if (target === ownerKey) return;
     const ids = leads.filter((l) => (l.owner || "") === ownerKey).map((l) => l.id);
     if (!ids.length) return;
     onBulkEdit(ids, { owner: target });
@@ -3691,18 +3693,18 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                     <div style={{ fontSize: 11, color: "#94a3b8" }}>{row.count} lead{row.count === 1 ? "" : "s"}</div>
                     <div style={{ flex: 1, minWidth: 8 }} />
                     <select
-                      value={reassignTarget[row.key] ?? ""}
+                      value={reassignTarget[row.key] ?? "__none__"}
                       onChange={(e) => setReassignTarget((prev) => ({ ...prev, [row.key]: e.target.value }))}
                       style={{ ...selectStyle, width: "auto", minWidth: 130, padding: "7px 10px", fontSize: 12 }}
                     >
-                      <option value="" disabled={reassignTarget[row.key] !== ""}>Mover pra...</option>
-                      {row.key !== "" && <option value="">Todos</option>}
+                      <option value="__none__">Mover pra...</option>
+                      {row.key !== "" && <option value="__todos__">Todos</option>}
                       {sdrs.filter((s) => s.name !== row.key).map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                     </select>
                     <button
                       onClick={() => reassignAllFrom(row.key)}
-                      disabled={!reassignTarget[row.key]}
-                      style={{ padding: "7px 12px", borderRadius: 9, border: "none", background: reassignTarget[row.key] ? "#6d5ef8" : "#eef0f3", color: reassignTarget[row.key] ? "white" : "#b4b6bc", fontSize: 11.5, fontWeight: 700, cursor: reassignTarget[row.key] ? "pointer" : "not-allowed", flexShrink: 0 }}
+                      disabled={!reassignTarget[row.key] || reassignTarget[row.key] === "__none__"}
+                      style={{ padding: "7px 12px", borderRadius: 9, border: "none", background: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "#6d5ef8" : "#eef0f3", color: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "white" : "#b4b6bc", fontSize: 11.5, fontWeight: 700, cursor: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "pointer" : "not-allowed", flexShrink: 0 }}
                     >
                       Mover
                     </button>
