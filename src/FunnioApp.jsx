@@ -381,6 +381,7 @@ const seedLeads = RAW.map(([company, owner, stage, feedback, status], i) => ({
   id: `l_${i + 1}`,
   company, owner, stage, feedback, status,
   contactName: "", email: "", phone: "", whatsapp: "",
+  role: "", sector: "",
   hasWhatsapp: false, hasEmail: false, hasPhone: false,
   phase: inferPhase(stage, feedback),
   temperature: inferTemperature(stage, feedback),
@@ -867,6 +868,11 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
             <h3 className="lc-title" style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontWeight: 700, color: txtTitle, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {lead.company}
             </h3>
+            {(lead.role || lead.sector) && (
+              <div style={{ fontSize: 10.5, color: dark ? "#9a9aa3" : "#9a9aa3", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>
+                {[lead.role, lead.sector].filter(Boolean).join(" · ")}
+              </div>
+            )}
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
               <Users size={11} color={txtIcon} />
               <span className="lc-owner" style={{ color: txtOwner, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.owner}</span>
@@ -2110,6 +2116,17 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             <input value={draft.contactName || ""} onChange={(e) => update({ contactName: e.target.value })} placeholder="Nome do contato na empresa" style={inputStyle} />
           </div>
 
+          <div style={{ marginBottom: 12, display: "flex", gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Cargo</label>
+              <input value={draft.role || ""} onChange={(e) => update({ role: e.target.value })} placeholder="Ex: CEO, Gerente de Marketing" style={inputStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Setor</label>
+              <input value={draft.sector || ""} onChange={(e) => update({ sector: e.target.value })} placeholder="Ex: Tecnologia, Alimentos" style={inputStyle} />
+            </div>
+          </div>
+
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}>Origem do lead</label>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -2805,15 +2822,17 @@ const extractLeadsWithAI = async (rawText, sdrNames) => {
 Cada item do array deve ter exatamente estes campos:
 {
   "company": string (nome da empresa/lead - obrigatório, nunca vazio),
-  "contactName": string ou "" (nome da pessoa de contato, se houver),
+  "contactName": string ou "" (nome da PESSOA de contato, se houver - não confunda com cargo),
+  "role": string ou "" (cargo/função da pessoa de contato, ex: "CEO", "Diretor de Marketing", "Gerente de Growth"; combine com o nível hierárquico se ambos existirem, ex: "CEO - C-Level"),
+  "sector": string ou "" (setor/segmento da empresa - se os dados vierem organizados em abas por categoria, marcadas como "--- Aba: NomeDaAba ---", use o nome da aba como setor, a menos que já haja uma coluna de setor explícita),
   "phone": string ou "" (telefone, mantenha como veio),
   "email": string ou "" (email, se houver),
   "whatsapp": string ou "" (se identificar que é whatsapp, senão vazio),
   "owner": string ou "" (responsável/SDR, tente casar com um destes se possível: ${sdrList}; senão deixe vazio),
   "stage": string (escolha o mais parecido entre: ${stageList}; se não identificar, use "Apresentação"),
-  "feedback": string ou "" (qualquer observação, status, contexto extra da linha)
+  "feedback": string ou "" (qualquer observação, status, contexto extra da linha que não se encaixe nos outros campos)
 }
-Regras: ignore linhas de cabeçalho/vazias. Se uma coluna parecer telefone com "whatsapp" no texto ou contexto, preencha "whatsapp" também. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
+Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Se uma coluna parecer telefone com "whatsapp" no texto ou contexto, preencha "whatsapp" também. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
 
   const text = await callClaudeAPI({
     system: systemPrompt,
@@ -3118,6 +3137,8 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             _duplicate: existingNames.has(companyTrim.toLowerCase()),
             company: companyTrim,
             contactName: l.contactName || "",
+            role: l.role || "",
+            sector: l.sector || "",
             phone: l.phone || "",
             email: l.email || "",
             whatsapp: l.whatsapp || "",
@@ -3314,10 +3335,12 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                         {!l.company.trim() && <span style={{ fontSize: 10, fontWeight: 700, color: "#e2483f", background: "rgba(226,72,63,0.1)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>Nome obrigatório</span>}
                       </div>
                       <input value={l.contactName} onChange={(e) => updateDraft(l._tmpId, { contactName: e.target.value })} placeholder="Contato" style={inputStyle} />
+                      <input value={l.role} onChange={(e) => updateDraft(l._tmpId, { role: e.target.value })} placeholder="Cargo" style={inputStyle} />
                       <select value={l.owner} onChange={(e) => updateDraft(l._tmpId, { owner: e.target.value })} style={selectStyle}>
                         <option value="">Sem responsável</option>
                         {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
+                      <input value={l.sector} onChange={(e) => updateDraft(l._tmpId, { sector: e.target.value })} placeholder="Setor" style={inputStyle} />
                       <input value={l.phone} onChange={(e) => updateDraft(l._tmpId, { phone: e.target.value })} placeholder="Telefone" style={inputStyle} />
                       <input value={l.email} onChange={(e) => updateDraft(l._tmpId, { email: e.target.value })} placeholder="Email" style={inputStyle} />
                       <input value={l.whatsapp} onChange={(e) => updateDraft(l._tmpId, { whatsapp: e.target.value })} placeholder="WhatsApp" style={inputStyle} />
@@ -3867,7 +3890,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const toggleWeekFlag = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -3884,6 +3907,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       feedback: d.feedback || "",
       status: "Atendido",
       contactName: d.contactName || "",
+      role: d.role || "",
+      sector: d.sector || "",
       email: d.email || "",
       phone: d.phone || "",
       whatsapp: d.whatsapp || "",
@@ -4120,6 +4145,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         (l.feedback || "").toLowerCase().includes(q) ||
         (l.owner || "").toLowerCase().includes(q) ||
         (l.contactName || "").toLowerCase().includes(q) ||
+        (l.role || "").toLowerCase().includes(q) ||
+        (l.sector || "").toLowerCase().includes(q) ||
         (l.email || "").toLowerCase().includes(q) ||
         phoneMatch
       );
