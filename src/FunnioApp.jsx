@@ -906,7 +906,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
               <Users size={11} color={txtIcon} />
-              <span className="lc-owner" style={{ color: txtOwner, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.owner}</span>
+              <span className="lc-owner" style={{ color: txtOwner, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.owner || "Todos"}</span>
               {lead.origin && ORIGIN_BY_KEY[lead.origin] && (() => {
                 const OriginIcon = ORIGIN_BY_KEY[lead.origin].icon;
                 const originLabel = lead.origin === "outro" && lead.originOther ? lead.originOther : ORIGIN_BY_KEY[lead.origin].label;
@@ -2231,10 +2231,10 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 10, cursor: "pointer" }} onClick={() => onOpen(lead)}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <OwnerAvatar name={lead.owner} size={38} />
+          <OwnerAvatar name={lead.owner || "Todos"} size={38} />
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 500, color: "#0f172a" }}>{lead.company}</div>
-            <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>SDR: {lead.owner}</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>SDR: {lead.owner || "Todos"}</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -2320,8 +2320,8 @@ const WeekSquareCard = ({ lead, onOpen, onDone, onToggleSuper }) => {
         )}
         <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 14.5, fontWeight: 500, color: "#0f172a", lineHeight: 1.2, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{lead.company}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <OwnerAvatar name={lead.owner} size={16} />
-          <span style={{ fontSize: 10.5, color: "#94a3b8" }}>{lead.owner}</span>
+          <OwnerAvatar name={lead.owner || "Todos"} size={16} />
+          <span style={{ fontSize: 10.5, color: "#94a3b8" }}>{lead.owner || "Todos"}</span>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color, marginLeft: "auto" }} title={cfg.label} />
         </div>
       </div>
@@ -2390,7 +2390,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <OwnerAvatar name={draft.owner} size={22} />
-                  <select value={draft.owner} onChange={(e) => update({ owner: e.target.value })} style={{ fontSize: 13, color: "#475569", border: "none", background: "transparent", outline: "none", fontWeight: 500, cursor: "pointer" }}>
+                  <select value={draft.owner || ""} onChange={(e) => update({ owner: e.target.value })} style={{ fontSize: 13, color: "#475569", border: "none", background: "transparent", outline: "none", fontWeight: 500, cursor: "pointer" }}>
+                    <option value="">Todos</option>
                     {sdrs.map((s) => <option key={s.name}>{s.name}</option>)}
                   </select>
                 </div>
@@ -3582,6 +3583,29 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [bulkOwner, setBulkOwner] = useState("");
   const [bulkStage, setBulkStage] = useState("");
+  const [reassignTarget, setReassignTarget] = useState({}); // { [ownerKey]: targetOwnerValue }
+
+  // Conta quantos leads cada SDR tem hoje (incluindo o balde "Todos" = sem responsável
+  // específico) - alimenta o painel de reatribuição rápida logo no topo.
+  const ownerCounts = useMemo(() => {
+    const map = {};
+    leads.forEach((l) => {
+      const key = l.owner || "";
+      map[key] = (map[key] || 0) + 1;
+    });
+    const rows = sdrs.map((s) => ({ key: s.name, label: s.name, count: map[s.name] || 0 }));
+    rows.push({ key: "", label: "Todos", count: map[""] || 0 });
+    return rows.filter((r) => r.count > 0);
+  }, [leads, sdrs]);
+
+  const reassignAllFrom = (ownerKey) => {
+    const target = reassignTarget[ownerKey];
+    if (target === undefined || target === ownerKey) return;
+    const ids = leads.filter((l) => (l.owner || "") === ownerKey).map((l) => l.id);
+    if (!ids.length) return;
+    onBulkEdit(ids, { owner: target });
+    setReassignTarget((prev) => ({ ...prev, [ownerKey]: undefined }));
+  };
 
   // Detecta lotes de importação a partir do padrão de id "l_imp_<timestamp>_<i>"
   // gerado no confirmImport - assim dá pra selecionar "aquela importação de terça" inteira.
@@ -3640,7 +3664,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
     setSelectedIds(new Set());
   };
 
-  const applyBulkOwner = () => { if (bulkOwner && selectedCount) { onBulkEdit([...selectedIds], { owner: bulkOwner }); setBulkOwner(""); } };
+  const applyBulkOwner = () => { if (bulkOwner && selectedCount) { onBulkEdit([...selectedIds], { owner: bulkOwner === "__todos__" ? "" : bulkOwner }); setBulkOwner(""); } };
   const applyBulkStage = () => { if (bulkStage && selectedCount) { onBulkEdit([...selectedIds], { stage: bulkStage }); setBulkStage(""); } };
 
   return (
@@ -3655,6 +3679,38 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
         </div>
 
         <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
+          {ownerCounts.length > 0 && (
+            <div style={{ marginBottom: 18, background: "rgba(109,94,248,0.06)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 14, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", textTransform: "uppercase", marginBottom: 2 }}>Reatribuir por SDR</div>
+              <div style={{ fontSize: 11.5, color: "#64748b", marginBottom: 10 }}>Move todos os leads de um responsável pra outro (ou pra "Todos") de uma vez, sem precisar filtrar um por um.</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {ownerCounts.map((row) => (
+                  <div key={row.key} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 10px", borderRadius: 10, background: "white", border: "1px solid #eef0f3" }}>
+                    <OwnerAvatar name={row.label} size={26} />
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>{row.label}</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>{row.count} lead{row.count === 1 ? "" : "s"}</div>
+                    <div style={{ flex: 1, minWidth: 8 }} />
+                    <select
+                      value={reassignTarget[row.key] ?? ""}
+                      onChange={(e) => setReassignTarget((prev) => ({ ...prev, [row.key]: e.target.value }))}
+                      style={{ ...selectStyle, width: "auto", minWidth: 130, padding: "7px 10px", fontSize: 12 }}
+                    >
+                      <option value="" disabled={reassignTarget[row.key] !== ""}>Mover pra...</option>
+                      {row.key !== "" && <option value="">Todos</option>}
+                      {sdrs.filter((s) => s.name !== row.key).map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                    </select>
+                    <button
+                      onClick={() => reassignAllFrom(row.key)}
+                      disabled={!reassignTarget[row.key]}
+                      style={{ padding: "7px 12px", borderRadius: 9, border: "none", background: reassignTarget[row.key] ? "#6d5ef8" : "#eef0f3", color: reassignTarget[row.key] ? "white" : "#b4b6bc", fontSize: 11.5, fontWeight: 700, cursor: reassignTarget[row.key] ? "pointer" : "not-allowed", flexShrink: 0 }}
+                    >
+                      Mover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {importBatches.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Importações recentes</div>
@@ -3689,7 +3745,8 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                 <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
               </div>
               <select value={ownerF} onChange={(e) => setOwnerF(e.target.value)} style={selectStyle}>
-                <option value="all">Todos os responsáveis</option>
+                <option value="all">Todos os responsáveis (filtro)</option>
+                <option value="">Só os "Todos" (sem responsável específico)</option>
                 {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
               </select>
               <select value={stageF} onChange={(e) => setStageF(e.target.value)} style={selectStyle}>
@@ -3721,7 +3778,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                 <input type="checkbox" checked={selectedIds.has(l.id)} onChange={() => toggleOne(l.id)} onClick={(e) => e.stopPropagation()} style={{ width: 15, height: 15, cursor: "pointer", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.company}</div>
-                  <div style={{ fontSize: 10.5, color: "#94a3b8" }}>{l.owner || "sem responsável"} · {l.stage}{l.sector ? ` · ${l.sector}` : ""}</div>
+                  <div style={{ fontSize: 10.5, color: "#94a3b8" }}>{l.owner || "Todos"} · {l.stage}{l.sector ? ` · ${l.sector}` : ""}</div>
                 </div>
                 <div style={{ fontSize: 10, color: "#94a3b8", flexShrink: 0 }}>{l.createdAt ? formatDateShort(l.createdAt) : "-"}</div>
               </div>
@@ -3734,6 +3791,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
               <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
                 <select value={bulkOwner} onChange={(e) => setBulkOwner(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 160 }}>
                   <option value="">Mudar responsável para...</option>
+                  <option value="__todos__">Todos</option>
                   {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                 </select>
                 <button onClick={applyBulkOwner} disabled={!bulkOwner} style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: bulkOwner ? "#6d5ef8" : "#eef0f3", color: bulkOwner ? "white" : "#b4b6bc", fontSize: 12.5, fontWeight: 700, cursor: bulkOwner ? "pointer" : "not-allowed" }}>Aplicar</button>
@@ -4122,7 +4180,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                       <input value={l.contactName} onChange={(e) => updateDraft(l._tmpId, { contactName: e.target.value })} placeholder="Contato" style={inputStyle} />
                       <input value={l.role} onChange={(e) => updateDraft(l._tmpId, { role: e.target.value })} placeholder="Cargo" style={inputStyle} />
                       <select value={l.owner} onChange={(e) => updateDraft(l._tmpId, { owner: e.target.value })} style={selectStyle}>
-                        <option value="">Sem responsável</option>
+                        <option value="">Todos</option>
                         {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
                       <input value={l.sector} onChange={(e) => updateDraft(l._tmpId, { sector: e.target.value })} placeholder="Setor" style={inputStyle} />
@@ -5713,7 +5771,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
                               <span style={{ fontSize: 10, fontWeight: 800, color: via.color, background: via.color + "14", padding: "1.5px 7px", borderRadius: 20 }}>{via.label}</span>
-                              <span style={{ fontSize: 11, color: "#94a3b8" }}>{lead.owner}</span>
+                              <span style={{ fontSize: 11, color: "#94a3b8" }}>{lead.owner || "Todos"}</span>
                             </div>
                           </div>
                           <button
@@ -5836,8 +5894,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       <div style={{ flex: 1, minWidth: 160 }}>
                         <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.company}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
-                          <OwnerAvatar name={lead.owner} size={16} />
-                          <span style={{ fontSize: 11.5, color: "#9a9aa3" }}>{lead.owner}</span>
+                          <OwnerAvatar name={lead.owner || "Todos"} size={16} />
+                          <span style={{ fontSize: 11.5, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
                           <span style={{
                             fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6,
                             background: lead.dealType === "mensal" ? "rgba(109,94,248,0.12)" : "rgba(148,163,184,0.15)",
