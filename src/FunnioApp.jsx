@@ -571,6 +571,35 @@ const formatDateFull = (d) => !d ? "-" : new Date(d).toLocaleDateString("pt-BR",
 const formatDateShort = (d) => !d ? "-" : new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 const daysSince = (iso_) => !iso_ ? null : Math.floor((Date.now() - new Date(iso_).getTime()) / 86400000);
 const cleanPhone = (p) => (p || "").replace(/\D/g, "");
+
+// Classifica um telefone brasileiro pelo padrão de dígitos: DDD + 9 + 8 dígitos (11 no total,
+// terceiro dígito "9") é celular/WhatsApp; DDD + 8 dígitos (10 no total) é fixo.
+// Retorna true (celular), false (fixo) ou null (não deu pra saber - número incompleto/estrangeiro).
+const isMobileBR = (raw) => {
+  let d = cleanPhone(raw);
+  if (!d) return null;
+  if ((d.length === 12 || d.length === 13) && d.startsWith("55")) d = d.slice(2); // remove +55
+  if (d.length === 11) return d[2] === "9";
+  if (d.length === 10) return false;
+  return null;
+};
+
+// Depois que a IA extrai um lead, um dos campos phone/whatsapp costuma vir vazio e o outro
+// preenchido - essa função corrige automaticamente qual campo é qual com base no padrão do
+// número (celular com 9 = WhatsApp, fixo = telefone), sobrescrevendo o palpite da IA.
+const reclassifyPhoneFields = (draft) => {
+  let phone = draft.phone || "";
+  let whatsapp = draft.whatsapp || "";
+  if (phone && !whatsapp) {
+    const mobile = isMobileBR(phone);
+    if (mobile === true) { whatsapp = phone; phone = ""; }
+  } else if (whatsapp && !phone) {
+    const mobile = isMobileBR(whatsapp);
+    if (mobile === false) { phone = whatsapp; whatsapp = ""; }
+  }
+  return { ...draft, phone, whatsapp };
+};
+
 const parseFee = (feedback) => {
   if (!feedback) return 0;
   const m = feedback.match(/R\$\s*([\d.,]+)/i);
@@ -2837,7 +2866,7 @@ Cada item do array deve ter exatamente estes campos:
   "stage": string (escolha o mais parecido entre: ${stageList}; se não identificar, use "Apresentação"),
   "feedback": string ou "" (qualquer observação, status, contexto extra da linha que não se encaixe nos outros campos)
 }
-Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Se uma coluna parecer telefone com "whatsapp" no texto ou contexto, preencha "whatsapp" também. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
+Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Para telefones brasileiros, use o padrão de dígitos pra decidir onde colocar o número: DDD + 9 dígitos (11 no total, ex: 11987654321) é CELULAR - coloque em "whatsapp". DDD + 8 dígitos (10 no total, ex: 1133334444) é FIXO - coloque em "phone". Se a linha já disser explicitamente "whatsapp" ou "celular"/"fixo", respeite essa informação. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
 
   const text = await callClaudeAPI({
     system: systemPrompt,
@@ -3375,6 +3404,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
         .filter((l) => l && l.company && String(l.company).trim())
         .map((l, i) => {
           const companyTrim = String(l.company).trim();
+          const { phone, whatsapp } = reclassifyPhoneFields({ phone: l.phone || "", whatsapp: l.whatsapp || "" });
           return {
             _include: true,
             _tmpId: "imp_" + Date.now() + "_" + i,
@@ -3383,9 +3413,9 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             contactName: l.contactName || "",
             role: l.role || "",
             sector: l.sector || "",
-            phone: l.phone || "",
+            phone,
             email: l.email || "",
-            whatsapp: l.whatsapp || "",
+            whatsapp,
             owner: sdrs.some((s) => s.name === l.owner) ? l.owner : (sdrs[0]?.name || ""),
             stage: STAGE_OPTIONS.includes(l.stage) ? l.stage : "Apresentação",
             feedback: l.feedback || "",
