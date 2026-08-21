@@ -1447,6 +1447,36 @@ const EMAIL_SCRIPT_LIBRARY = [
     subject: "Quanto custa gerar uma nova conversa para sua clínica?",
     body: "Oi, {nome}. Tudo bem?\n\nQuanto custa hoje fazer um potencial paciente entrar em contato com a {empresa}?\n\nEm uma operação recente para uma rede de clínicas brasileira, geramos 1.722 conversas em 90 dias, com aproximadamente R$ 11,3 mil de investimento em mídia.\n\nAlgumas campanhas chegaram a um custo de apenas R$ 4,58 por conversa iniciada.\n\nÉ esse número que gostamos de acompanhar.\n\nPorque, para uma clínica, não adianta simplesmente comprar tráfego. O marketing precisa ajudar a transformar mídia em novas oportunidades para a agenda.\n\nAcredito que seria interessante fazermos essa mesma leitura para a {empresa}: entender demanda, concorrência, custo de aquisição e onde existe espaço para melhorar a performance.\n\nSe fizer sentido, podemos preparar uma análise inicial e apresentar para vocês.\n\nAbraço,\nPedro",
   },
+  {
+    key: "nu_mg1", caseTitle: "Nume Company", category: "Mercado geral · case + estratégia integrada", color: "#db2777", icon: Megaphone,
+    subject: "Como transformar presença digital em resultado",
+    body: "Oi, {nome}.\n\nEm um dos nossos projetos recentes, uma estratégia integrada de posicionamento, conteúdo, social media e performance ajudou a gerar mais de 10 mil acessos em apenas 60 dias, além de milhares de ações de intenção e contato com a marca.\n\nO ponto não foi simplesmente aumentar mídia. Foi alinhar branding, comunicação e tráfego pago para fazer cada canal trabalhar na mesma direção.\n\nNa Nume, são 18 anos de experiência construindo estratégias para marcas nacionais e globais, com trabalhos para empresas como Harley-Davidson, Cielo, BYD, entre outras.\n\nOlhando para a {empresa}, acredito que podemos encontrar oportunidades interessantes tanto na construção da marca quanto na geração de demanda.\n\nFaz sentido conversarmos por 20 minutos?\n\nPedro\nNume Company",
+  },
+  {
+    key: "nu_mg2", caseTitle: "Nume Company", category: "Mercado geral · branding + social + performance", color: "#db2777", icon: Megaphone,
+    subject: "O marketing da {empresa} está trabalhando na mesma direção?",
+    body: "Oi, {nome}.\n\nMuitas empresas acabam tratando branding, social media e tráfego pago como frentes separadas. O problema é que, quando cada canal fala uma língua, a marca perde força e a mídia tende a ficar mais cara.\n\nEm um case recente, integramos posicionamento, conteúdo e performance e ultrapassamos 10 mil acessos em 60 dias, criando uma jornada muito mais consistente entre atenção, interesse e conversão.\n\nA Nume reúne 18 anos de expertise em marketing e já trabalhou com marcas nacionais e globais como Harley-Davidson, Cielo e BYD, entre outras.\n\nVejo espaço para aplicar essa mesma lógica na {empresa}: fortalecer a marca, organizar o conteúdo e fazer o investimento em mídia trabalhar com mais eficiência.\n\nPodemos trocar uma ideia por 20 minutos esta semana?\n\nPedro\nNume Company",
+  },
+  {
+    key: "nu_mg3", caseTitle: "Nume Company", category: "Mercado geral · curta e direta", color: "#db2777", icon: Megaphone,
+    subject: "Uma ideia para a {empresa}",
+    body: "Oi, {nome}.\n\nEm um case recente, uma estratégia integrada de branding, social media e tráfego pago gerou mais de 10 mil acessos em 60 dias.\n\nÉ exatamente esse tipo de integração que fazemos na Nume há 18 anos, com experiência em marcas como Harley-Davidson, Cielo e BYD, entre outras nacionais e globais.\n\nAcredito que exista uma oportunidade parecida na {empresa}.\n\nFaz sentido uma conversa rápida de 15 minutos?\n\nPedro\nNume Company",
+  },
+  {
+    key: "nu_ab1", caseTitle: "Nume Company", category: "Alimentos e bebidas · case com intenção de compra", color: "#db2777", icon: Megaphone,
+    subject: "Como levamos 4.609 pessoas até um estabelecimento em 60 dias",
+    body: "Oi, {nome}.\n\n4.609 pessoas solicitaram uma rota até o estabelecimento em apenas 60 dias. Outras 1.815 fizeram uma ligação e o site ultrapassou 10 mil acessos no período.\n\nO resultado veio de uma estratégia em que social media, posicionamento da marca, conteúdo e performance em mídia paga trabalharam juntos para transformar atenção em intenção real de compra.\n\nPara empresas de alimentos e bebidas, essa integração faz muita diferença. Não basta ter um feed bonito ou investir em anúncios isoladamente. A marca precisa gerar desejo e a mídia precisa converter esse desejo em movimento.\n\nA Nume reúne 18 anos de expertise, atendendo marcas nacionais e globais como Harley-Davidson, Cielo, BYD, entre outras.\n\nAcredito que podemos identificar algumas oportunidades interessantes para a {empresa}.\n\nQue tal conversarmos por 20 minutos?\n\nPedro\nNume Company",
+  },
+  {
+    key: "nu_ab2", caseTitle: "Nume Company", category: "Alimentos e bebidas · do desejo ao ponto de venda", color: "#db2777", icon: Megaphone,
+    subject: "Do conteúdo à loja: 4.609 rotas em 60 dias",
+    body: "Oi, {nome}.\n\nNo mercado de alimentos e bebidas, a comunicação precisa fazer mais do que gerar curtidas: ela precisa criar desejo e levar o consumidor até a compra.\n\nEm um de nossos cases, a combinação de branding, gestão de social media e mídia de performance gerou 4.609 solicitações de rota, 1.815 ligações e mais de 10 mil acessos ao site em apenas 60 dias.\n\nA estratégia funcionou porque marca, conteúdo e tráfego pago foram planejados como uma única operação, e não como três fornecedores diferentes disputando atenção.\n\nNa Nume, fazemos isso há 18 anos e acumulamos experiência com marcas nacionais e globais como Harley-Davidson, Cielo e BYD, entre outras.\n\nTenho algumas ideias de como essa estrutura poderia funcionar para a {empresa}.\n\nFaz sentido conversarmos?\n\nPedro\nNume Company",
+  },
+  {
+    key: "nu_ab3", caseTitle: "Nume Company", category: "Alimentos e bebidas · curta e direta", color: "#db2777", icon: Megaphone,
+    subject: "4.609 rotas em 60 dias",
+    body: "Oi, {nome}.\n\nEm um case de alimentos e bebidas, geramos 4.609 solicitações de rota, 1.815 ligações e mais de 10 mil acessos em 60 dias.\n\nO trabalho integrou branding, social media e tráfego pago para transformar atenção em intenção de compra.\n\nA Nume atua há 18 anos e já trabalhou com marcas como Harley-Davidson, Cielo e BYD, entre outras nacionais e globais.\n\nPosso te mostrar em 15 minutos como aplicaríamos essa lógica na {empresa}?\n\nPedro\nNume Company",
+  },
 ];
 
 // Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
