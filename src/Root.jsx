@@ -292,12 +292,36 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
   const [password, setPassword] = useState("");
   const isLogin = mode === "login";
   return (
-    <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 35%, #fdf2f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px calc(20px + env(safe-area-inset-bottom)) 20px", fontFamily: '"Open Sans", Arial, sans-serif', overflow: "hidden auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #4c3fd7 0%, #6d5ef8 32%, #9b6ff5 60%, #c084f5 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px calc(20px + env(safe-area-inset-bottom)) 20px", fontFamily: '"Open Sans", Arial, sans-serif', overflow: "hidden" }}>
+      <style>{`
+        @keyframes funnioBlobFloat1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -40px) scale(1.12); }
+          66% { transform: translate(-20px, 20px) scale(0.94); }
+        }
+        @keyframes funnioBlobFloat2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-35px, -25px) scale(1.15); }
+        }
+        @keyframes funnioBlobFloat3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          40% { transform: translate(25px, 30px) scale(0.9); }
+          80% { transform: translate(-15px, -15px) scale(1.08); }
+        }
+        @keyframes funnioShimmer {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 0.9; }
+        }
+      `}</style>
+      <div style={{ position: "absolute", top: "-10%", left: "-15%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(196,132,245,0) 70%)", filter: "blur(10px)", animation: "funnioBlobFloat1 14s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-15%", right: "-10%", width: 460, height: 460, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,214,255,0.4) 0%, rgba(109,94,248,0) 70%)", filter: "blur(10px)", animation: "funnioBlobFloat2 18s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "35%", right: "8%", width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(163,230,53,0.28) 0%, rgba(163,230,53,0) 70%)", filter: "blur(10px)", animation: "funnioBlobFloat3 16s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%)", animation: "funnioShimmer 6s ease-in-out infinite", pointerEvents: "none" }} />
       <div style={{ width: "100%", maxWidth: 360, position: "relative", zIndex: 1 }}>
-        <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 22px rgba(109,94,248,0.3))" }} />
-        <h1 style={{ textAlign: "center", color: "#14141a", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
-        <div style={{ textAlign: "center", color: "#6b6b75", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
-        <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 22, boxShadow: "0 30px 70px -24px rgba(109,94,248,0.35)" }}>
+        <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(30,20,80,0.4))" }} />
+        <h1 style={{ textAlign: "center", color: "#ffffff", fontSize: 24, fontWeight: 800, margin: "0 0 4px", textShadow: "0 2px 12px rgba(30,20,80,0.3)" }}>Funnio</h1>
+        <div style={{ textAlign: "center", color: "rgba(255,255,255,0.85)", fontSize: 13, marginBottom: 24, textShadow: "0 1px 8px rgba(30,20,80,0.25)" }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
+        <div style={{ background: "rgba(255,255,255,0.94)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(30,20,80,0.55)" }}>
           {error && <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>{error}</div>}
 
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" style={inputStyle} />
