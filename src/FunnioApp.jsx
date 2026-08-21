@@ -904,7 +904,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
   );
 };
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker }) => {
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1085,6 +1085,19 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           <CircleContactBtn icon={Mail} color="#6d5ef8" dark={dark} hasData={!!lead.email} onClick={() => (lead.email ? onQuickContact("email", lead) : onOpen(lead))} />
         </div>
       </div>
+
+      {/* Botão extra "Marcar como feito" - só aparece na tela "Abordar essa semana" */}
+      {onMarkWeekDone && (
+        <div className="lc-pad" style={{ paddingTop: 0 }} onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={onMarkWeekDone}
+            title="Marcar este lead como abordado essa semana"
+            style={{ width: "100%", padding: "8px 0", borderRadius: 9, cursor: "pointer", fontSize: 11.5, fontWeight: 700, background: dark ? "rgba(255,255,255,0.06)" : "white", color: "#34d399", border: "1.5px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
+          >
+            <CheckCircle2 size={13} /> Marcar como feito
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -2583,48 +2596,6 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
         <ContactPill icon={Mail} color="#3b82f6" label="Email" hasData={!!lead.email} isMarked={lead.hasEmail} onClick={() => (lead.email ? onQuickContact("email", lead) : onOpen(lead))} />
         <ContactPill icon={Phone} color="#8b5cf6" label="Ligar" hasData={!!lead.phone} isMarked={lead.hasPhone} onClick={() => (lead.phone ? onQuickContact("phone", lead) : onOpen(lead))} />
       </div>
-    </div>
-  );
-};
-
-// Card compacto (quadrado pequeno) usado na lista "Abordar essa semana" - feita a partir da tag manual
-const WeekSquareCard = ({ lead, onOpen, onDone, onToggleSuper }) => {
-  const cfg = TEMP_CONFIG[lead.temperature];
-  const tagLabel = lead.weekTag === "hoje" ? "Hoje" : "Esta semana";
-  const tagColor = lead.weekTag === "hoje" ? "#dc2626" : "#059669";
-  return (
-    <div style={{ borderRadius: 16, padding: "12px 13px", background: "rgba(255,255,255,0.75)", backdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.85)", boxShadow: "0 6px 18px -8px rgba(15,23,42,0.1)", display: "flex", flexDirection: "column", gap: 8 }}>
-      <div onClick={() => onOpen(lead)} style={{ cursor: "pointer" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: tagColor, background: tagColor + "15", padding: "2px 7px", borderRadius: 6 }}>{tagLabel}</span>
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleSuper(lead.id); }}
-            title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
-            style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, opacity: lead.superAttention ? 1 : 0.3 }}
-          >
-            <StarImgIcon size={13} />
-          </button>
-        </div>
-        {lead.feedback && (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 4, fontSize: 10, color: "#64748b", background: "#f7f8fa", borderRadius: 6, padding: "4px 6px", marginBottom: 5, lineHeight: 1.3 }}>
-            <MessageCircle size={9} style={{ flexShrink: 0, marginTop: 1.5, opacity: 0.7 }} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{lead.feedback}</span>
-          </div>
-        )}
-        <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 14.5, fontWeight: 500, color: "#0f172a", lineHeight: 1.2, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{lead.company}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <OwnerAvatar name={lead.owner || "Todos"} size={16} />
-          <span style={{ fontSize: 10.5, color: "#94a3b8" }}>{lead.owner || "Todos"}</span>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color, marginLeft: "auto" }} title={cfg.label} />
-        </div>
-      </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onDone(); }}
-        title="Marcar este lead como abordado"
-        style={{ padding: "8px 0", borderRadius: 9, cursor: "pointer", fontSize: 11.5, fontWeight: 700, background: "white", color: "#059669", border: "1.5px solid #059669", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
-      >
-        <CheckCircle2 size={13} /> Marcar como feito
-      </button>
     </div>
   );
 };
@@ -6232,8 +6203,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 13, color: "#94a3b8" }}>Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"</div>
                 </Glass>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
-                  {stats.weekList.map((lead) => <WeekSquareCard key={lead.id} lead={lead} onOpen={setSelected} onDone={() => toggleWeekDone(lead.id)} onToggleSuper={toggleSuperAttention} />)}
+                <div className="leads-grid">
+                  {stats.weekList.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
                 </div>
               )}
 
