@@ -491,6 +491,16 @@ const ORIGIN_OPTIONS = [
 ];
 const ORIGIN_BY_KEY = Object.fromEntries(ORIGIN_OPTIONS.map((o) => [o.key, o]));
 
+// Lista fixa de setores/segmentos de empresa - cobre os mais comuns em prospecção B2B.
+// O valor final continua sendo texto livre em lead.sector (compatível com o que já foi
+// digitado antes); se não bater com nenhuma opção, a tela mostra "Outro" com campo customizado.
+const SECTOR_OPTIONS = [
+  "Tecnologia / TI", "Saúde e Bem-estar", "Alimentos e Bebidas", "Varejo e E-commerce",
+  "Educação", "Serviços Financeiros", "Energia e Sustentabilidade", "Construção e Imobiliário",
+  "Indústria e Manufatura", "Marketing e Publicidade", "Jurídico", "Logística e Transporte",
+  "Turismo e Hospitalidade", "Agronegócio", "Moda e Beleza", "Serviços e Outros",
+];
+
 const getPeriodBounds = (period, refDate = new Date()) => {
   const now = new Date(refDate);
 
@@ -2345,8 +2355,9 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   const [newNote, setNewNote] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showExtraContacts, setShowExtraContacts] = useState(false);
+  const [sectorCustom, setSectorCustom] = useState(() => !!(lead?.sector && !SECTOR_OPTIONS.includes(lead.sector)));
 
-  useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); setShowExtraContacts(!!(lead?.extraContacts && lead.extraContacts.trim())); }, [lead]);
+  useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); setShowExtraContacts(!!(lead?.extraContacts && lead.extraContacts.trim())); setSectorCustom(!!(lead?.sector && !SECTOR_OPTIONS.includes(lead.sector))); }, [lead]);
   if (!lead) return null;
 
   const update = (patch) => setDraft((d) => ({ ...d, ...patch }));
@@ -2636,7 +2647,26 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             </div>
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>Setor</label>
-              <input value={draft.sector || ""} onChange={(e) => update({ sector: e.target.value })} placeholder="Ex: Tecnologia, Alimentos" style={inputStyle} />
+              <select
+                value={sectorCustom ? "outro" : (draft.sector || "")}
+                onChange={(e) => {
+                  if (e.target.value === "outro") { setSectorCustom(true); }
+                  else { setSectorCustom(false); update({ sector: e.target.value }); }
+                }}
+                style={selectStyle}
+              >
+                <option value="">Selecione...</option>
+                {SECTOR_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                <option value="outro">Outro (personalizado)</option>
+              </select>
+              {sectorCustom && (
+                <input
+                  value={draft.sector || ""}
+                  onChange={(e) => update({ sector: e.target.value })}
+                  placeholder="Digite o setor"
+                  style={{ ...inputStyle, marginTop: 6, marginBottom: 0 }}
+                />
+              )}
             </div>
           </div>
 
@@ -4582,6 +4612,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [superOnly, setSuperOnly] = useState(false);
   const [originFilter, setOriginFilter] = useState("all");
   const [originDropdownOpen, setOriginDropdownOpen] = useState(false);
+  const [sectorFilter, setSectorFilter] = useState("all");
+  const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]); // [{role:'user'|'assistant', content}]
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -5150,6 +5182,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (phaseFilter !== "all" && (l.phase || "none") !== phaseFilter) return false;
       if (originFilter !== "all" && l.origin !== originFilter) return false;
+      if (sectorFilter !== "all" && (l.sector || "") !== sectorFilter) return false;
       if (quickStage === "ativo" && l.stage === "Perdida") return false;
       if (superOnly && !l.superAttention) return false;
       if (!q) return true;
@@ -5178,12 +5211,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       return a.company.localeCompare(b.company);
     });
     return arr;
-  }, [leads, search, tempFilter, whatsappOnly, ownerFilter, statusFilter, phaseFilter, originFilter, quickStage, superOnly]);
+  }, [leads, search, tempFilter, whatsappOnly, ownerFilter, statusFilter, phaseFilter, originFilter, sectorFilter, quickStage, superOnly]);
 
   const desatendidosFiltered = filtered.filter((l) => l.status === "Desatendido");
 
-  const hasActiveFilters = !!search || tempFilter !== "all" || whatsappOnly || ownerFilter !== "all" || statusFilter !== "all" || phaseFilter !== "all" || originFilter !== "all" || !!quickStage || superOnly;
-  const clearFilters = () => { setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setOriginFilter("all"); setQuickStage(null); setSuperOnly(false); };
+  const hasActiveFilters = !!search || tempFilter !== "all" || whatsappOnly || ownerFilter !== "all" || statusFilter !== "all" || phaseFilter !== "all" || originFilter !== "all" || sectorFilter !== "all" || !!quickStage || superOnly;
+  const clearFilters = () => { setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setOriginFilter("all"); setSectorFilter("all"); setQuickStage(null); setSuperOnly(false); };
 
   const scrollToGrid = () => {
     setTimeout(() => document.getElementById("leads-grid")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -5761,6 +5794,41 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     ))}
                   </div>
                 )}
+              </Glass>
+
+              <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 20, position: "relative" }}>
+                <div
+                  onClick={() => setSectorDropdownOpen((v) => !v)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+                >
+                  <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Setor</span>
+                  <div style={{ flex: 1 }}>
+                    {sectorFilter === "all" ? (
+                      <span style={{ fontSize: 12.5, color: "#64748b", fontWeight: 600 }}>Todos os setores</span>
+                    ) : (
+                      <span style={{ fontSize: 12.5, fontWeight: 700, color: "#6d5ef8" }}>{sectorFilter}</span>
+                    )}
+                  </div>
+                  {sectorFilter !== "all" && (
+                    <button onClick={(e) => { e.stopPropagation(); setSectorFilter("all"); }} title="Limpar" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 20, height: 20, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <X size={11} />
+                    </button>
+                  )}
+                  <ChevronRight size={15} color="#94a3b8" style={{ transform: sectorDropdownOpen ? "rotate(90deg)" : "none", transition: "transform 0.15s ease", flexShrink: 0 }} />
+                </div>
+
+                {sectorDropdownOpen && (() => {
+                  const sectorsInUse = [...new Set(leads.map((l) => l.sector).filter(Boolean))];
+                  const allSectors = [...new Set([...SECTOR_OPTIONS, ...sectorsInUse])];
+                  return (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
+                      <Chip active={sectorFilter === "all"} onClick={() => { setSectorFilter("all"); setSectorDropdownOpen(false); }} color="#0f172a">Todos</Chip>
+                      {allSectors.map((s) => (
+                        <Chip key={s} active={sectorFilter === s} onClick={() => { setSectorFilter(s); setSectorDropdownOpen(false); }} color="#6d5ef8" count={leads.filter((l) => l.sector === s).length}>{s}</Chip>
+                      ))}
+                    </div>
+                  );
+                })()}
               </Glass>
 
               {filtered.length === 0 ? (
