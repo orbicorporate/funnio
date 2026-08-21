@@ -691,7 +691,7 @@ const TempDot = ({ temp, size = 10 }) => {
 
 // Selo hexagonal com o ícone dentro - réplica visual dos ícones enviados (chama, termômetro, floco, estrela, check, calendário)
 // Ícone solto (sem badge/forma ao redor) - preenchido na cor sólida, igual aos ícones de referência
-const HexIcon = ({ icon: Icon, color, size = 44, iconSize, iconColor }) => {
+const HexIcon = ({ icon: Icon, color, size = 44, iconSize, iconColor, pulse }) => {
   const renderSize = iconSize ? Math.round(iconSize * 1.9) : size;
   const fillColor = iconColor || color;
   return (
@@ -700,7 +700,7 @@ const HexIcon = ({ icon: Icon, color, size = 44, iconSize, iconColor }) => {
       color={fillColor}
       fill={fillColor}
       strokeWidth={0.5}
-      style={{ flexShrink: 0 }}
+      style={{ flexShrink: 0, color: fillColor, animation: pulse ? "hexIconPulse 2.2s ease-in-out infinite" : "none" }}
     />
   );
 };
@@ -5527,6 +5527,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.08); } }
+        @keyframes hexIconPulse { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } 50% { transform: scale(1.14); filter: drop-shadow(0 0 6px currentColor); } }
+        @keyframes ctaGlowPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(215,250,60,0.55); } 50% { box-shadow: 0 0 0 7px rgba(215,250,60,0); } }
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
         @keyframes stageBarFill { from { width: 0%; } }
         @keyframes celebrate { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 60% { transform: scale(0.97); } 100% { transform: scale(1); } }
@@ -5587,7 +5589,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
         .lead-card:hover { transform: translateY(-3px); box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 16px 36px -10px rgba(76, 29, 149, 0.22) !important; }
-        .glow-btn { position: relative; overflow: hidden; }
+        .glow-btn { position: relative; overflow: hidden; animation: ctaGlowPulse 2.4s ease-in-out infinite; }
         .glow-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%); background-size: 200% 100%; animation: shimmer 3.5s ease-in-out infinite; }
       `}</style>
 
@@ -5771,13 +5773,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
 
                 <div onClick={() => setView("desatendidos")} style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.6)), url(${BG_PINK_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}>
-                  <HexIcon icon={NegociacoesRedIcon} color="#e2483f" grad="linear-gradient(160deg, #f88a80, #e2483f)" size={30} iconSize={13} />
+                  <HexIcon icon={NegociacoesRedIcon} color="#e2483f" grad="linear-gradient(160deg, #f88a80, #e2483f)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 11.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Negociações antigas</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.desatendidos.length}</div>
                 </div>
 
                 <div onClick={() => { setSuperOnly((v) => !v); scrollToGrid(); }} style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.6)), url(${BG_ORANGE_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: `1px solid ${superOnly ? "#f5c94c" : "#eef0f3"}`, cursor: "pointer" }}>
-                  <HexIcon icon={StarImgIcon} color="#f5c518" grad="linear-gradient(160deg, #ffe27a, #f5c518)" size={30} iconSize={13} />
+                  <HexIcon icon={StarImgIcon} color="#f5c518" grad="linear-gradient(160deg, #ffe27a, #f5c518)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 11.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Super lead</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.superLeads.length}</div>
                 </div>
@@ -5855,7 +5857,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.75 }}>Foque nos leads da sua lista</div>
                           </div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setView("semana"); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); setView("semana"); }} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                           Ver lista <ChevronRight size={14} />
                         </button>
                       </div>
@@ -5888,7 +5890,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
-                        <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0 }}>
+                        <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "hexIconPulse 2.4s ease-in-out infinite" : "none", color: "#059669" }}>
                           <svg width="90" height="90" viewBox="0 0 90 90">
                             <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="9" />
                             <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="9" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
