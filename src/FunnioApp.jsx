@@ -114,6 +114,7 @@ const WEEK_VIA_CONFIG = {
   "whatsapp-lista": { label: "Via lista de envio WhatsApp", color: "#128c4a", icon: Send },
   email: { label: "Via Email", color: "#3b82f6", icon: Mail },
   "email-lista": { label: "Via lista de envio de e-mail", color: "#1d4ed8", icon: Mail },
+  "call-lista": { label: "Via lista de ligação", color: "#7c3aed", icon: Phone },
   phone: { label: "Via Telefone", color: "#8b5cf6", icon: Phone },
 };
 
@@ -429,6 +430,7 @@ const BADGES_KEY = "earnedBadges:v1";
 const CHAT_HISTORY_KEY = "assistantChat:v1";
 const WA_SEND_HISTORY_KEY = "waSendHistory:v1";
 const EMAIL_SEND_HISTORY_KEY = "emailSendHistory:v1";
+const CALL_SEND_HISTORY_KEY = "callSendHistory:v1";
 const WEEK_HISTORY_KEY = "weekCompletionHistory:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
@@ -862,7 +864,47 @@ const ChannelLabel = ({ label, checked, onToggle, disabled }) => (
 // LEAD CARD (grid principal)
 // ════════════════════════════════════════════════════════════════════════
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, onToggleWaList, inEmailList, onToggleEmailList }) => {
+// Popup pra escolher em qual fila de envio adicionar o lead (WhatsApp/E-mail/Ligação) -
+// um único ícone de avião no card abre isso, em vez de um botão fixo por canal.
+const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, onPick }) => {
+  const rows = [
+    { key: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "#25d366", has: !!lead.whatsapp, active: inWaList },
+    { key: "email", label: "E-mail", icon: Mail, color: "#3b82f6", has: !!lead.email, active: inEmailList },
+    { key: "call", label: "Ligação", icon: Phone, color: "#7c3aed", has: !!lead.phone, active: inCallList },
+  ];
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.4)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "20px 20px 0 0", padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", animation: "slideUp 0.25s ease" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Adicionar a uma lista de envio</div>
+        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company} - escolha o canal</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {rows.map((r) => (
+            <button
+              key={r.key}
+              onClick={() => r.has && onPick(r.key)}
+              disabled={!r.has}
+              style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, cursor: r.has ? "pointer" : "not-allowed",
+                border: `1.5px solid ${r.active ? r.color : "#eef0f3"}`, background: r.active ? r.color + "10" : (r.has ? "white" : "#f8f9fb"), opacity: r.has ? 1 : 0.55,
+              }}
+            >
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: r.color + "18", color: r.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <r.icon size={16} />
+              </div>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>{r.label}</div>
+                <div style={{ fontSize: 11, color: "#94a3b8" }}>{r.has ? (r.active ? "Já está na fila - toque pra remover" : "Adicionar à fila") : "Sem dado cadastrado"}</div>
+              </div>
+              {r.active && <Check size={16} color={r.color} />}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1022,35 +1064,20 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           <span className="lc-label" style={{ color: txtLabel, fontWeight: 600 }}>Falar essa semana</span>
           <ToggleSwitch on={isOnWeekList} onClick={() => onToggleWeekFlag(lead.id)} />
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          {lead.whatsapp && onToggleWaList && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          {onOpenChannelPicker && (
             <button
-              onClick={() => onToggleWaList(lead.id)}
-              title={inWaList ? "Remover da lista de envio WA" : "Adicionar à lista de envio WA"}
+              onClick={() => onOpenChannelPicker(lead)}
+              title="Adicionar a uma lista de envio (WhatsApp/E-mail/Ligação)"
               style={{
-                width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${inWaList ? "#25d366" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
-                background: inWaList ? "#25d366" : (dark ? "rgba(255,255,255,0.06)" : "white"),
-                color: inWaList ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
+                width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${(inWaList || inEmailList || inCallList) ? "#6d5ef8" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
+                background: (inWaList || inEmailList || inCallList) ? "#6d5ef8" : (dark ? "rgba(255,255,255,0.06)" : "white"),
+                color: (inWaList || inEmailList || inCallList) ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                transition: "all 0.15s ease", transform: inWaList ? "scale(1.05)" : "scale(1)",
+                transition: "all 0.15s ease", transform: (inWaList || inEmailList || inCallList) ? "scale(1.05)" : "scale(1)", flexShrink: 0,
               }}
             >
-              {inWaList ? <Check size={15} /> : <Send size={13} />}
-            </button>
-          )}
-          {lead.email && onToggleEmailList && (
-            <button
-              onClick={() => onToggleEmailList(lead.id)}
-              title={inEmailList ? "Remover da lista de envio de e-mail" : "Adicionar à lista de envio de e-mail"}
-              style={{
-                width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${inEmailList ? "#3b82f6" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
-                background: inEmailList ? "#3b82f6" : (dark ? "rgba(255,255,255,0.06)" : "white"),
-                color: inEmailList ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
-                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                transition: "all 0.15s ease", transform: inEmailList ? "scale(1.05)" : "scale(1)",
-              }}
-            >
-              {inEmailList ? <Check size={15} /> : <Mail size={13} />}
+              {(inWaList || inEmailList || inCallList) ? <Check size={15} /> : <Send size={13} />}
             </button>
           )}
           <CircleContactBtn icon={MessageCircle} color="#25d366" dark={dark} hasData={!!lead.whatsapp} onClick={() => (lead.whatsapp ? onQuickContact("whatsapp", lead) : onOpen(lead))} />
@@ -2225,6 +2252,218 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
               style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(59,130,246,0.6)" : "none" }}
             >
               <Mail size={15} /> Iniciar envio ({validLeads.length})
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// LISTA DE LIGAÇÕES - versão simplificada das outras filas: sem script/mensagem,
+// é só uma sequência de leads pra ligar. Abre o discador do celular (tel:) por lead.
+// ════════════════════════════════════════════════════════════════════════
+const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, onLogCalled }) => {
+  const [mode, setMode] = useState("list"); // list | calling | done
+  const [tab, setTab] = useState("fila");
+  const [idx, setIdx] = useState(0);
+  const [calledCount, setCalledCount] = useState(0);
+  const [skippedCount, setSkippedCount] = useState(0);
+
+  const validLeads = leadsInList.filter((l) => l.phone);
+  const withoutPhoneCount = leadsInList.length - validLeads.length;
+  const currentLead = validLeads[idx];
+
+  const startCalling = (fromIdx = 0) => {
+    if (validLeads.length === 0) return;
+    setIdx(fromIdx); setCalledCount(0); setSkippedCount(0);
+    setMode("calling");
+  };
+
+  const goNext = (justCalled) => {
+    const isLast = idx + 1 >= validLeads.length;
+    if (isLast) {
+      if (justCalled || calledCount > 0) setMode("done");
+      else setMode("list");
+    } else {
+      setIdx((i) => i + 1);
+    }
+  };
+
+  const handleCall = () => {
+    window.location.href = `tel:${cleanPhone(currentLead.phone)}`;
+    onLogCalled(currentLead.id);
+    setCalledCount((c) => c + 1);
+    goNext(true);
+  };
+
+  const handleSkip = () => { setSkippedCount((c) => c + 1); goNext(false); };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
+      <div style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ArrowLeft size={17} />
+              </button>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16.5, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Lista de ligações</div>
+                <div style={{ fontSize: 11.5, opacity: 0.85 }}>
+                  {mode === "list" && `${leadsInList.length} lead${leadsInList.length === 1 ? "" : "s"} na lista`}
+                  {mode === "calling" && `Ligando ${idx + 1} de ${validLeads.length}`}
+                  {mode === "done" && "Rodada concluída"}
+                </div>
+              </div>
+            </div>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+          </div>
+          {mode === "calling" && (
+            <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 4, width: `${(idx / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          {mode === "list" && (
+            <>
+              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "fila" ? "#7c3aed" : "#94a3b8" }}>
+                  Fila ({leadsInList.length})
+                </button>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "historico" ? "#7c3aed" : "#94a3b8" }}>
+                  Histórico ({history.length})
+                </button>
+              </div>
+
+              {tab === "fila" ? (
+                leadsInList.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <Phone size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Toque no avião num lead e escolha "Ligação" pra adicionar aqui.</div>
+                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                      ← Voltar pros leads
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {withoutPhoneCount > 0 && (
+                      <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "#b45309", padding: "10px 14px", borderRadius: 12, fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                        ⚠ {withoutPhoneCount} lead{withoutPhoneCount === 1 ? "" : "s"} sem telefone cadastrado - não {withoutPhoneCount === 1 ? "entra" : "entram"} na ligação.
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
+                      {leadsInList.map((lead, i) => (
+                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.phone ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                          <OwnerAvatar name={lead.company} size={32} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                            <div style={{ fontSize: 11, color: lead.phone ? "#94a3b8" : "#b45309" }}>{lead.phone || "sem telefone cadastrado"}</div>
+                          </div>
+                          {lead.phone && (
+                            <button onClick={() => startCalling(i)} title="Começar a ligar por aqui" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(124,58,237,0.12)", color: "#7c3aed", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Phone size={13} />
+                            </button>
+                          )}
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              ) : (
+                history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>Nenhuma ligação ainda</div>
+                    <div style={{ fontSize: 12.5, marginTop: 4 }}>Toda ligação feita pela fila fica registrada aqui.</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                    {history.map((h) => (
+                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(124,58,237,0.12)", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Check size={15} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
+                            <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{h.phone}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </>
+          )}
+
+          {mode === "calling" && currentLead && (
+            <div>
+              <div style={{ background: "white", borderRadius: 20, padding: 24, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, textAlign: "center", animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+                <OwnerAvatar name={currentLead.company} size={56} />
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginTop: 12 }}>{currentLead.company}</div>
+                <div style={{ fontSize: 14, color: "#7c3aed", fontWeight: 700, marginTop: 2 }}>{currentLead.phone}</div>
+                {currentLead.contactName && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>Falar com {currentLead.contactName}{currentLead.role ? ` (${currentLead.role})` : ""}</div>}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                  Pular
+                </button>
+                <button onClick={handleCall} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(124,58,237,0.6)" }}>
+                  <Phone size={15} /> Ligar agora
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
+                {idx > 0 && (
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                    ← Voltar pro anterior
+                  </button>
+                )}
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                  Sair da fila
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === "done" && (
+            <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
+              <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Rodada concluída!</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
+                {calledCount} ligação{calledCount === 1 ? "" : "ões"} feita{calledCount === 1 ? "" : "s"}{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
+              </div>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+                Fechar
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
+        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
+            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              Limpar lista
+            </button>
+            <button
+              onClick={() => startCalling(0)}
+              disabled={validLeads.length === 0}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #8b5cf6, #7c3aed)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(124,58,237,0.6)" : "none" }}
+            >
+              <Phone size={15} /> Começar a ligar ({validLeads.length})
             </button>
           </div>
         </div>
@@ -3930,7 +4169,7 @@ const IMPORT_HELP_ITEMS = [
 
 const ImportHelpPanel = ({ onClose }) => (
   <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 140, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
-    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "85vh", overflowY: "auto", background: "white", borderRadius: "22px 22px 0 0", padding: 22, boxShadow: "0 -20px 60px -12px rgba(0,0,0,0.35)", animation: "menuSlideIn 0.2s ease" }}>
+    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "85vh", overflowY: "auto", background: "white", borderRadius: "22px 22px 0 0", padding: 22, boxShadow: "0 -20px 60px -12px rgba(0,0,0,0.35)", animation: "slideUp 0.25s ease" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
         <div>
           <div style={{ fontSize: 17, fontWeight: 800, color: "#14141a" }}>A extração não ficou boa?</div>
@@ -4649,6 +4888,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [emailScriptPickerLead, setEmailScriptPickerLead] = useState(null);
   const [emailSendHistory, setEmailSendHistory] = useState([]);
   const [showEmailSendScreen, setShowEmailSendScreen] = useState(false);
+  const [callSendList, setCallSendList] = useState([]); // leadId[] - fila simples, sem script
+  const [callSendHistory, setCallSendHistory] = useState([]);
+  const [showCallSendScreen, setShowCallSendScreen] = useState(false);
+  const [channelPickerLead, setChannelPickerLead] = useState(null);
+  const [showListsPicker, setShowListsPicker] = useState(false);
   const [weekHistory, setWeekHistory] = useState([]);
   const [showWeekHistory, setShowWeekHistory] = useState(false);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
@@ -4671,8 +4915,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(LEADS_KEY, []), loadData(MEETINGS_KEY, seedMeetings), loadData(SDRS_KEY, seedSDRs),
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
-      loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory]) => {
+      loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []), loadData(CALL_SEND_HISTORY_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -4702,6 +4946,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setWaSendHistory(Array.isArray(waHistory) ? waHistory : []);
         setWeekHistory(Array.isArray(weekHist) ? weekHist : []);
         setEmailSendHistory(Array.isArray(emailHistory) ? emailHistory : []);
+        setCallSendHistory(Array.isArray(callHistory) ? callHistory : []);
         setLoaded(true);
       }
     });
@@ -4717,6 +4962,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(CALL_SEND_HISTORY_KEY, callSendHistory); }, [callSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_HISTORY_KEY, weekHistory); }, [weekHistory, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
 
@@ -5062,6 +5308,26 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setEmailSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setEmailSendHistory((prev) => [{ id: "eh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", email: lead?.email || "", subject, body, date: now, by: currentUserId }, ...prev].slice(0, 300));
     if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "email-lista"); }
+  };
+
+  // Fila de ligações - mais simples que WA/e-mail: não tem script, é só uma lista de leads
+  // pra ligar em sequência. Adicionar/remover é direto, sem modal.
+  const toggleCallList = (leadId) => {
+    setCallSendList((prev) => prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]);
+  };
+  const logCallListContact = (leadId) => {
+    const now = new Date().toISOString();
+    const lead = leads.find((l) => l.id === leadId);
+    setLeads((prev) => prev.map((l) => l.id === leadId ? {
+      ...l,
+      lastContact: now,
+      weekDone: l.weekTag ? true : l.weekDone,
+      weekDoneVia: (l.weekTag && !l.weekDone) ? "call-lista" : l.weekDoneVia,
+      notes: [{ id: "n_call_" + Date.now(), date: now, text: "Contato via Telefone (lista de ligação)" }, ...(l.notes || [])],
+    } : l));
+    setCallSendList((prev) => prev.filter((id) => id !== leadId));
+    setCallSendHistory((prev) => [{ id: "ch_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", phone: lead?.phone || "", date: now, by: currentUserId }, ...prev].slice(0, 300));
+    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "call-lista"); }
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -5856,7 +6122,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} onToggleWaList={() => handlePaperPlaneClick(lead)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} onToggleEmailList={() => handleMailIconClick(lead)} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} />)}
                 </div>
               )}
 
@@ -6766,6 +7032,32 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onSelect={addToEmailListWithScript}
           />
         )}
+        {showCallSendScreen && (
+          <CallSendListScreen
+            leadsInList={callSendList.map((id) => leads.find((l) => l.id === id)).filter(Boolean)}
+            history={callSendHistory}
+            onClose={() => setShowCallSendScreen(false)}
+            onRemove={(id) => setCallSendList((prev) => prev.filter((x) => x !== id))}
+            onClear={() => setCallSendList([])}
+            onLogCalled={logCallListContact}
+          />
+        )}
+        {channelPickerLead && (
+          <ChannelPickerPopup
+            lead={channelPickerLead}
+            inWaList={waSendList.some((x) => x.leadId === channelPickerLead.id)}
+            inEmailList={emailSendList.some((x) => x.leadId === channelPickerLead.id)}
+            inCallList={callSendList.includes(channelPickerLead.id)}
+            onClose={() => setChannelPickerLead(null)}
+            onPick={(channel) => {
+              const lead = channelPickerLead;
+              setChannelPickerLead(null);
+              if (channel === "whatsapp") handlePaperPlaneClick(lead);
+              else if (channel === "email") handleMailIconClick(lead);
+              else if (channel === "call") toggleCallList(lead.id);
+            }}
+          />
+        )}
         {showWeekHistory && (
           <WeekHistoryScreen
             history={weekHistory}
@@ -6820,42 +7112,54 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
 
-        {/* ── BOTÃO FLUTUANTE: LISTA DE ENVIO WHATSAPP (só aparece com itens na lista) ── */}
-        {waSendList.length > 0 && view !== "assistente" && (
+        {/* ── BOTÃO FLUTUANTE: MINHAS LISTAS (WhatsApp + E-mail + Ligação, consolidado num só) ── */}
+        {(waSendList.length + emailSendList.length + callSendList.length) > 0 && view !== "assistente" && (
           <button
-            onClick={() => setShowWaSendScreen(true)}
-            title="Lista de envio WhatsApp"
+            onClick={() => setShowListsPicker(true)}
+            title="Minhas listas de envio"
             style={{
-              position: "fixed", right: 84, bottom: 90, width: 50, height: 50, borderRadius: "50%",
-              border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white",
+              position: "fixed", right: 84, bottom: "calc(90px + env(safe-area-inset-bottom))", width: 50, height: 50, borderRadius: "50%",
+              border: "none", background: "linear-gradient(135deg, #6d5ef8, #4c3fd6)", color: "white",
               display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              boxShadow: "0 10px 26px -8px rgba(37,211,102,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              boxShadow: "0 10px 26px -8px rgba(109,94,248,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
             }}
           >
             <Send size={19} />
             <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
-              {waSendList.length}
+              {waSendList.length + emailSendList.length + callSendList.length}
             </span>
           </button>
         )}
 
-        {/* ── BOTÃO FLUTUANTE: LISTA DE ENVIO DE E-MAIL (só aparece com itens na lista) ── */}
-        {emailSendList.length > 0 && view !== "assistente" && (
-          <button
-            onClick={() => setShowEmailSendScreen(true)}
-            title="Lista de envio de e-mail"
-            style={{
-              position: "fixed", right: 148, bottom: 90, width: 50, height: 50, borderRadius: "50%",
-              border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              boxShadow: "0 10px 26px -8px rgba(59,130,246,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}
-          >
-            <Mail size={19} />
-            <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
-              {emailSendList.length}
-            </span>
-          </button>
+        {showListsPicker && (
+          <div onClick={() => setShowListsPicker(false)} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.4)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "20px 20px 0 0", padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", animation: "slideUp 0.25s ease" }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a", marginBottom: 14 }}>Minhas listas de envio</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {waSendList.length > 0 && (
+                  <button onClick={() => { setShowListsPicker(false); setShowWaSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(37,211,102,0.15)", color: "#128c4a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MessageCircle size={16} /></div>
+                    <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>WhatsApp</div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "white", background: "#25d366", padding: "3px 9px", borderRadius: 20 }}>{waSendList.length}</span>
+                  </button>
+                )}
+                {emailSendList.length > 0 && (
+                  <button onClick={() => { setShowListsPicker(false); setShowEmailSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(59,130,246,0.15)", color: "#1d4ed8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Mail size={16} /></div>
+                    <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>E-mail</div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "white", background: "#3b82f6", padding: "3px 9px", borderRadius: 20 }}>{emailSendList.length}</span>
+                  </button>
+                )}
+                {callSendList.length > 0 && (
+                  <button onClick={() => { setShowListsPicker(false); setShowCallSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(124,58,237,0.15)", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Phone size={16} /></div>
+                    <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>Ligação</div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "white", background: "#7c3aed", padding: "3px 9px", borderRadius: 20 }}>{callSendList.length}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ── BOTÃO FLUTUANTE: ASSISTENTE DE IA (logo com anel de LED girando) ── */}
@@ -6865,7 +7169,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             data-tour="assistant-btn"
             title="Assistente de vendas com IA"
             style={{
-              position: "fixed", right: 18, bottom: 90, width: 58, height: 58, borderRadius: "50%",
+              position: "fixed", right: 18, bottom: "calc(90px + env(safe-area-inset-bottom))", width: 58, height: 58, borderRadius: "50%",
               border: "none", background: "transparent", padding: 0, cursor: "pointer",
               boxShadow: "0 10px 28px -8px rgba(215,250,60,0.55)", zIndex: 85,
             }}
