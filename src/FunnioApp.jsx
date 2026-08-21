@@ -981,7 +981,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <div className="lc-hex"><HexIcon icon={cfg.icon} color={cfg.color} grad={cfg.grad} size={38} iconSize={16} /></div>
+            <div className="lc-hex"><HexIcon icon={cfg.icon} color={cfg.color} grad={cfg.grad} size={38} iconSize={16} pulse /></div>
             <button
               onClick={(e) => { e.stopPropagation(); onToggleSuper(lead.id); }}
               title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
@@ -5678,7 +5678,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   onClick={() => { clearFilters(); scrollToGrid(); }}
                   style={{ borderRadius: 20, padding: "16px 18px", cursor: "pointer", backgroundImage: `linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.7)), url(${BG_GREEN_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3" }}
                 >
-                  <HexIcon icon={Users} color="#d7fa3c" grad="linear-gradient(160deg, #e7ffa0, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" />
+                  <HexIcon icon={Users} color="#d7fa3c" grad="linear-gradient(160deg, #e7ffa0, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" pulse />
                   <div style={{ fontSize: 12.5, color: "#6b6b75", fontWeight: 600, marginTop: 10, marginBottom: 3 }}>Total de leads</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 30, fontWeight: 800, color: "#14141a" }}>{stats.total}</div>
                   <div style={{ height: 5, borderRadius: 3, background: "#eef0f3", marginTop: 8 }}><div style={{ height: "100%", width: "100%", borderRadius: 3, background: DARK.lime }} /></div>
@@ -5693,7 +5693,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     backgroundSize: "cover", backgroundPosition: "center",
                   }}
                 >
-                  <HexIcon icon={EmContatoIcon} color="#d7fa3c" grad="linear-gradient(160deg, #eaff9c, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" />
+                  <HexIcon icon={EmContatoIcon} color="#d7fa3c" grad="linear-gradient(160deg, #eaff9c, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" pulse />
                   <div style={{ fontSize: 12.5, opacity: 0.75, fontWeight: 600, marginTop: 10, marginBottom: 3 }}>Em contato</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 30, fontWeight: 800, color: DARK.lime }}>{stats.ativos}</div>
                   <div style={{ fontSize: 11, opacity: 0.75, marginTop: 8 }}>conversas ativas</div>
@@ -5790,13 +5790,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   onClick={() => setView("conquistados")}
                   style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.65)), url(${BG_LAVENDER_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}
                 >
-                  <HexIcon icon={CheckImgIcon} color="#6d5ef8" grad="linear-gradient(160deg, #a79bfc, #6d5ef8)" size={30} iconSize={13} />
+                  <HexIcon icon={CheckImgIcon} color="#6d5ef8" grad="linear-gradient(160deg, #a79bfc, #6d5ef8)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 11.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Conquistados</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.vendidas}</div>
                 </div>
 
                 <div onClick={() => setView("agenda")} style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(30,20,80,0.15), rgba(30,20,80,0.15)), url(${BG_PURPLE_VIVID})`, backgroundSize: "cover", backgroundPosition: "center", color: "white", cursor: "pointer" }}>
-                  <HexIcon icon={ReunioesIcon} color="white" grad="rgba(255,255,255,0.22)" size={30} iconSize={13} iconColor="white" />
+                  <HexIcon icon={ReunioesIcon} color="white" grad="rgba(255,255,255,0.22)" size={30} iconSize={13} iconColor="white" pulse />
                   <div style={{ fontSize: 11.5, opacity: 0.9, fontWeight: 700, marginTop: 8 }}>Calendário</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800 }}>{stats.upcomingMeetings.length}</div>
                   <div style={{ fontSize: 10, opacity: 0.8, fontWeight: 600, marginTop: 3 }}>
@@ -5924,10 +5924,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
                         <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "ringGoalGlow 2.4s ease-in-out infinite" : "none" }}>
                           <svg width="90" height="90" viewBox="0 0 90 90">
-                            <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="5" />
-                            <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="5" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
+                            <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="3" />
+                            <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="3" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
                             {pct > 0 && (
-                              <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeDasharray="10 228.8" opacity="0.75" transform="rotate(-90 45 45)" style={{ animation: "ringLightTravel 2.6s linear infinite" }} />
+                              <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="10 228.8" opacity="0.75" transform="rotate(-90 45 45)" style={{ animation: "ringLightTravel 2.6s linear infinite" }} />
                             )}
                           </svg>
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -5937,7 +5937,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
 
                         <div style={{ flex: 1, minWidth: 140 }}>
-                          <div style={{ height: 7, borderRadius: 4, background: "#eef0f3", marginBottom: 8, overflow: "hidden" }}>
+                          <div style={{ height: 4, borderRadius: 3, background: "#eef0f3", marginBottom: 8, overflow: "hidden" }}>
                             <div style={{
                               height: "100%", borderRadius: 4, width: `${pct}%`,
                               background: goalMet ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #c8e85a, #a8dc2e)",
