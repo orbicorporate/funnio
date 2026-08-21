@@ -939,11 +939,11 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
         <div
           aria-hidden="true"
           style={{
-            position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+            position: "absolute", left: 0, top: 0, bottom: 0, width: 1.5,
             background: "linear-gradient(180deg, transparent 0%, transparent 35%, #fde68a 45%, #f59e0b 50%, #fde68a 55%, transparent 65%, transparent 100%)",
             backgroundSize: "100% 300%",
             animation: "superLedTravel 2.6s linear infinite",
-            boxShadow: "0 0 8px 1px rgba(245,158,11,0.6)",
+            boxShadow: "0 0 6px 0.5px rgba(245,158,11,0.55)",
             zIndex: 1, pointerEvents: "none",
           }}
         />
