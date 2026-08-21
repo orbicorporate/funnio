@@ -4590,6 +4590,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [showImportModal, setShowImportModal] = useState(false);
   const [showBulkPhoneModal, setShowBulkPhoneModal] = useState(false);
   const [showBulkManageModal, setShowBulkManageModal] = useState(false);
+  const [dashboardTipIndex, setDashboardTipIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -5059,7 +5060,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const contactedThisWeek = leads.filter((l) => l.lastContact && new Date(l.lastContact) >= weekStart && new Date(l.lastContact) < weekEnd).length;
     // Leads quentes sem contato recente - usado pra puxar atenção pro assistente de IA no dashboard
     const hotNoContact = leads.filter((l) => l.stage !== "Conquistado" && l.stage !== "Perdida" && l.temperature === "hot" && (daysSince(l.lastContact) === null || daysSince(l.lastContact) > 3));
-    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact };
+    // Leads ativos sem nenhuma próxima ação definida - fácil de esquecer de dar sequência
+    const noNextAction = leads.filter((l) => l.stage !== "Conquistado" && l.stage !== "Perdida" && !l.nextAction);
+    // Super leads (marcados como grandes/prioritários) sem contato recente
+    const superNoContact = leads.filter((l) => l.superAttention && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) === null || daysSince(l.lastContact) > 3));
+    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact };
   }, [leads, meetings]);
 
   // Dados filtrados por período - usados só na página de Relatórios
@@ -5356,15 +5361,47 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
 
-              {/* Sugestão pro assistente de IA quando há leads quentes esfriando sem contato -
-                  a legenda mostra o lead mais urgente de verdade, não um texto genérico */}
-              {stats.hotNoContact.length > 0 && (() => {
-                const sortedHot = [...stats.hotNoContact].sort((a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999));
-                const mostUrgent = sortedHot[0];
-                const urgentDays = daysSince(mostUrgent.lastContact);
-                // Frase completa por caso, em vez de encaixar um sufixo no meio - "está nunca contatado" não faz sentido em português
-                const urgentPhrase = urgentDays === null ? "nunca foi contatado" : `está há ${urgentDays} dia${urgentDays === 1 ? "" : "s"} sem contato`;
-                const extra = stats.hotNoContact.length - 1;
+              {/* Card de dicas rotativas - sempre mostra a mais relevante primeiro, e "Quero outra
+                  dica" troca pra próxima categoria de alerta que tiver leads pendentes */}
+              {(() => {
+                const buildTip = (id, icon, color, label, list, urgentSortFn, phraseFn, aiQuestionFn, filterFn) => {
+                  if (!list.length) return null;
+                  const sorted = urgentSortFn ? [...list].sort(urgentSortFn) : list;
+                  const top = sorted[0];
+                  const extra = list.length - 1;
+                  return { id, icon, color, label: label(list.length), company: top.company, phrase: phraseFn(top), extra, aiQuestion: aiQuestionFn(list.length), filterFn, count: list.length };
+                };
+                const tips = [
+                  buildTip(
+                    "hot", Flame, "#6d5ef8",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} quente${n === 1 ? "" : "s"} esfriando`,
+                    stats.hotNoContact,
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
+                    (n) => `Quais desses ${n} leads quentes sem contato eu deveria priorizar hoje?`,
+                    () => { setTempFilter("hot"); },
+                  ),
+                  buildTip(
+                    "noaction", CalendarIcon, "#f59e0b",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} sem próxima ação definida`,
+                    stats.noNextAction,
+                    null,
+                    () => "está sem nenhum próximo passo agendado",
+                    (n) => `Esses ${n} leads sem próxima ação, o que eu deveria fazer com cada um?`,
+                    () => {},
+                  ),
+                  buildTip(
+                    "super", Star, "#ec4899",
+                    (n) => `${n} super lead${n === 1 ? "" : "s"} sem contato recente`,
+                    stats.superNoContact,
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
+                    (n) => `Meus ${n} super leads sem contato recente, por qual eu começo?`,
+                    () => { setSuperOnly(true); },
+                  ),
+                ].filter(Boolean);
+                if (tips.length === 0) return null;
+                const tip = tips[dashboardTipIndex % tips.length];
                 return (
                   <div style={{ borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", marginBottom: 14, overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px" }}>
@@ -5372,26 +5409,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>
-                          {stats.hotNoContact.length} lead{stats.hotNoContact.length === 1 ? "" : "s"} quente{stats.hotNoContact.length === 1 ? "" : "s"} esfriando
-                        </div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#14141a" }}>{tip.label}</div>
                         <div style={{ fontSize: 11, color: "#6b6b75", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          <strong style={{ color: "#6d5ef8" }}>{mostUrgent.company}</strong> {urgentPhrase}{extra > 0 ? ` · +${extra} outro${extra === 1 ? "" : "s"}` : ""}
+                          <strong style={{ color: tip.color }}>{tip.company}</strong> {tip.phrase}{tip.extra > 0 ? ` · +${tip.extra} outro${tip.extra === 1 ? "" : "s"}` : ""}
                         </div>
                       </div>
                     </div>
                     <div style={{ display: "flex", borderTop: "1px solid rgba(109,94,248,0.15)" }}>
                       <button
-                        onClick={() => { setChatInput(`Quais desses ${stats.hotNoContact.length} leads quentes sem contato eu deveria priorizar hoje?`); setView("assistente"); }}
+                        onClick={() => { setChatInput(tip.aiQuestion); setView("assistente"); }}
                         style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", borderRight: "1px solid rgba(109,94,248,0.15)", background: "transparent", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
                       >
                         <Sparkles size={12} /> Perguntar ao assistente
                       </button>
                       <button
-                        onClick={() => { setQuickStage(null); setSearch(""); setTempFilter("hot"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setSuperOnly(false); scrollToGrid(); }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", background: "transparent", color: "#6d5ef8", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                        onClick={() => setDashboardTipIndex((i) => (i + 1) % tips.length)}
+                        disabled={tips.length <= 1}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", background: "transparent", color: tips.length > 1 ? "#6d5ef8" : "#b4b6bc", fontSize: 11.5, fontWeight: 700, cursor: tips.length > 1 ? "pointer" : "default" }}
                       >
-                        <Flame size={12} /> Ver lista completa
+                        <Repeat size={12} /> Quero outra dica
                       </button>
                     </div>
                   </div>
