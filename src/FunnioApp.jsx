@@ -886,12 +886,26 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
       style={{
         position: "relative", borderRadius: 18,
         background: dark ? DARK.card : "white",
-        border: `1px solid ${dark ? "#232327" : "#eef0f3"}`,
+        border: `1px solid ${lead.superAttention ? "rgba(245,158,11,0.35)" : (dark ? "#232327" : "#eef0f3")}`,
         boxShadow: dark ? "0 8px 22px -8px rgba(20,20,22,0.5)" : "0 2px 10px -4px rgba(20,20,22,0.08)",
         cursor: "pointer", transition: "all 0.2s ease",
         overflow: "hidden",
+        animation: lead.superAttention ? "superCardGlow 2.6s ease-in-out infinite" : "none",
       }}
     >
+      {lead.superAttention && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+            background: "linear-gradient(180deg, transparent 0%, transparent 35%, #fde68a 45%, #f59e0b 50%, #fde68a 55%, transparent 65%, transparent 100%)",
+            backgroundSize: "100% 300%",
+            animation: "superLedTravel 2.6s linear infinite",
+            boxShadow: "0 0 8px 1px rgba(245,158,11,0.6)",
+            zIndex: 1, pointerEvents: "none",
+          }}
+        />
+      )}
       <div onClick={() => onOpen(lead)} className="lc-pad">
         {/* Cabeçalho: nome + dono à esquerda, selo hexagonal de temperatura + estrela à direita */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
@@ -902,7 +916,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
               </div>
             )}
             {lead.superAttention && (
-              <div className="lc-superbadge" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(109,94,248,0.22)" : "#f3f0fe", color: dark ? "#b3a8fd" : "#6d5ef8", fontWeight: 700 }}>
+              <div className="lc-superbadge" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(245,158,11,0.22)" : "#fff7e6", color: dark ? "#fbbf24" : "#b45309", fontWeight: 700, animation: "superBadgeGlow 2.2s ease-in-out infinite" }}>
                 <StarImgIcon size={11} /> Super lead
               </div>
             )}
@@ -5257,6 +5271,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes ledSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes superLedTravel { 0% { background-position: 0% -150%; } 100% { background-position: 0% 250%; } }
+        @keyframes superBadgeGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); } 50% { box-shadow: 0 0 0 4px rgba(245,158,11,0); } }
+        @keyframes superCardGlow { 0%, 100% { box-shadow: 0 2px 10px -4px rgba(20,20,22,0.08), 0 0 0 1px rgba(245,158,11,0.15); } 50% { box-shadow: 0 2px 16px -2px rgba(245,158,11,0.35), 0 0 0 1px rgba(245,158,11,0.35); } }
         @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
         @keyframes badgePop { 0% { opacity: 0; transform: scale(0.7) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes badgeBounce { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
