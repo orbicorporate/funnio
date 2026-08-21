@@ -391,6 +391,7 @@ const seedLeads = RAW.map(([company, owner, stage, feedback, status], i) => ({
   nextAction: null,
   weekDone: false,
   weekTag: null, // null | "hoje" | "semana" - tag manual que monta a lista da semana
+  weekDoneAt: null, // data ISO de quando foi marcado como feito - usada pra alertar sobre reabordagem em até 7 dias
   superAttention: false, // "Super lead" - lead grande, precisa de cuidado especial
   createdAt: null, // leads históricos (importados na criação do app) não contam pra meta de "leads adicionados no período"
   origin: null, // origem do lead - email, indicação, telefone, feira, etc.
@@ -910,6 +911,13 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
   const isDesatendido = lead.status === "Desatendido";
   const isOnWeekList = !!lead.weekTag && !lead.weekDone;
+  // Foi abordado (marcado como feito) nos últimos 7 dias? Usado pra alertar sobre reabordagem -
+  // só faz sentido mostrar quando o lead NÃO está ativo na lista da semana atual.
+  const approachedDays = (() => {
+    if (isOnWeekList || !lead.weekDoneAt) return null;
+    const days = Math.floor((Date.now() - new Date(lead.weekDoneAt).getTime()) / 86400000);
+    return days <= 7 ? days : null;
+  })();
 
   // Quando "Falar essa semana" está ativo, o card vira escuro (igual à referência)
   const dark = isOnWeekList;
@@ -960,6 +968,11 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
             {lead.superAttention && (
               <div className="lc-superbadge" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(245,158,11,0.22)" : "#fff7e6", color: dark ? "#fbbf24" : "#b45309", fontWeight: 700, animation: "superBadgeGlow 2.2s ease-in-out infinite" }}>
                 <StarImgIcon size={11} /> Super lead
+              </div>
+            )}
+            {approachedDays !== null && (
+              <div className="lc-superbadge" title="Marcado como feito recentemente na Lista da Semana" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, padding: "2px 7px", borderRadius: 7, background: dark ? "rgba(52,211,153,0.18)" : "#ecfdf5", color: dark ? "#6ee7b7" : "#059669", fontWeight: 700 }}>
+                <CheckCircle2 size={11} /> {approachedDays === 0 ? "Abordado hoje" : approachedDays === 1 ? "Abordado há 1 dia" : `Abordado há ${approachedDays} dias`}
               </div>
             )}
             <h3 className="lc-title" style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontWeight: 700, color: txtTitle, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -5100,15 +5113,37 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const toggleWeekDone = (id) => {
     const lead = leads.find((l) => l.id === id);
     const willBeDone = lead && !lead.weekDone;
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: !l.weekDone, weekDoneVia: !l.weekDone ? "manual" : l.weekDoneVia } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: !l.weekDone, weekDoneVia: !l.weekDone ? "manual" : l.weekDoneVia, weekDoneAt: !l.weekDone ? new Date().toISOString() : null } : l)));
     if (willBeDone) logWeekHistory(lead, "manual");
   };
   const toggleSuperAttention = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, superAttention: !l.superAttention } : l)));
-  const setWeekTag = (id, tag) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone } : l)));
-  const toggleWeekFlag = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
+  // Verifica se o lead foi abordado (marcado como feito) nos últimos 7 dias - usado pra
+  // avisar antes de adicionar ele de novo na Lista da Semana, evitando reabordagem repetida.
+  const daysSinceApproached = (lead) => {
+    if (!lead?.weekDoneAt) return null;
+    const days = Math.floor((Date.now() - new Date(lead.weekDoneAt).getTime()) / 86400000);
+    return days <= 7 ? days : null;
+  };
+  const confirmIfRecentlyApproached = (lead) => {
+    const days = daysSinceApproached(lead);
+    if (days === null) return true;
+    const when = days === 0 ? "hoje" : days === 1 ? "há 1 dia" : `há ${days} dias`;
+    return window.confirm(`${lead.company} já foi abordado ${when}. Quer marcar pra essa semana mesmo assim?`);
+  };
+  const setWeekTag = (id, tag) => {
+    const lead = leads.find((l) => l.id === id);
+    if (tag && lead && !confirmIfRecentlyApproached(lead)) return;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone } : l)));
+  };
+  const toggleWeekFlag = (id) => {
+    const lead = leads.find((l) => l.id === id);
+    const turningOn = !(lead?.weekTag && !lead?.weekDone);
+    if (turningOn && lead && !confirmIfRecentlyApproached(lead)) return;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
+  };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -5147,6 +5182,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       nextAction: null,
       weekDone: false,
       weekTag: null,
+      weekDoneAt: null,
       superAttention: false,
       wonDate: d.stage === "Conquistado" ? now : null,
       dealValue: null,
@@ -5231,6 +5267,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         // antes ficava esquisito: você conversava, mas a Lista da Semana continuava mostrando pendente.
         weekDone: l.weekTag ? true : l.weekDone,
         weekDoneVia: (l.weekTag && !l.weekDone) ? type : l.weekDoneVia,
+        weekDoneAt: (l.weekTag && !l.weekDone) ? new Date().toISOString() : l.weekDoneAt,
         notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])],
       } : l));
       if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, type); }
@@ -5267,6 +5304,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       lastContact: now,
       weekDone: l.weekTag ? true : l.weekDone,
       weekDoneVia: (l.weekTag && !l.weekDone) ? "whatsapp-lista" : l.weekDoneVia,
+      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])],
     } : l));
     setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
@@ -5304,6 +5342,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       lastContact: now,
       weekDone: l.weekTag ? true : l.weekDone,
       weekDoneVia: (l.weekTag && !l.weekDone) ? "email-lista" : l.weekDoneVia,
+      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_email_" + Date.now(), date: now, text: `Contato via Email (lista de envio): "${subject}"` }, ...(l.notes || [])],
     } : l));
     setEmailSendList((prev) => prev.filter((x) => x.leadId !== leadId));
@@ -5324,6 +5363,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       lastContact: now,
       weekDone: l.weekTag ? true : l.weekDone,
       weekDoneVia: (l.weekTag && !l.weekDone) ? "call-lista" : l.weekDoneVia,
+      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_call_" + Date.now(), date: now, text: "Contato via Telefone (lista de ligação)" }, ...(l.notes || [])],
     } : l));
     setCallSendList((prev) => prev.filter((id) => id !== leadId));
