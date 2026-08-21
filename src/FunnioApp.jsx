@@ -2403,9 +2403,15 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <button
                   onClick={() => { const updated = { ...draft, superAttention: !draft.superAttention }; setDraft(updated); onToggleSuper(draft.id); }}
                   title="Marcar como lead grande / super atenção"
-                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 7, color: draft.superAttention ? "#b45309" : "#94a3b8", background: draft.superAttention ? "rgba(245, 158, 11, 0.15)" : "rgba(148,163,184,0.12)", border: `1px solid ${draft.superAttention ? "rgba(245, 158, 11, 0.35)" : "rgba(148,163,184,0.25)"}` }}
+                  style={{
+                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, padding: "6px 12px", borderRadius: 9,
+                    color: draft.superAttention ? "white" : "#b45309",
+                    background: draft.superAttention ? "linear-gradient(135deg, #f59e0b, #d97706)" : "rgba(245, 158, 11, 0.12)",
+                    border: `1.5px solid ${draft.superAttention ? "#d97706" : "rgba(245, 158, 11, 0.5)"}`,
+                    boxShadow: draft.superAttention ? "0 4px 14px -4px rgba(217,119,6,0.6)" : "none",
+                  }}
                 >
-                  ⭐ {draft.superAttention ? "Super lead" : "Marcar super lead"}
+                  <Star size={13} fill={draft.superAttention ? "white" : "none"} /> {draft.superAttention ? "Super lead" : "Marcar super lead"}
                 </button>
               </div>
             </div>
@@ -2502,7 +2508,10 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           {draft.stage !== "Perdida" && (() => {
             const HAPPY_PATH = STAGE_OPTIONS.filter((s) => s !== "Perdida");
             const currentIdx = HAPPY_PATH.indexOf(draft.stage);
-            const pct = HAPPY_PATH.length > 1 ? (currentIdx / (HAPPY_PATH.length - 1)) * 100 : 0;
+            // Cada estágio já concluído conta como uma fatia cheia (1/5 = 20%, não 0%) -
+            // antes calculava currentIdx/(N-1), que deixava o primeiro estágio sempre em 0%,
+            // parecendo que a barra "não tinha ativado".
+            const pct = HAPPY_PATH.length > 0 ? ((currentIdx + 1) / HAPPY_PATH.length) * 100 : 0;
             return (
               <div style={{ marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -2636,24 +2645,33 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <button
                 type="button"
                 onClick={() => setShowExtraContacts(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: 0 }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, border: "1.5px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", borderRadius: 12, padding: "10px 14px", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
               >
-                <Plus size={14} /> Outros contatos / informações extras{draft.extraContacts ? " (preenchido)" : ""}
+                <div style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(109,94,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Plus size={14} />
+                </div>
+                <span style={{ flex: 1, textAlign: "left" }}>Outros contatos / informações extras</span>
+                {draft.extraContacts && <span style={{ fontSize: 10, fontWeight: 800, color: "white", background: "#6d5ef8", padding: "2px 8px", borderRadius: 20 }}>preenchido</span>}
               </button>
             ) : (
-              <>
-                <label style={labelStyle}>
-                  Outros contatos / informações extras
-                  <span style={{ fontWeight: 500, color: "#94a3b8", textTransform: "none", letterSpacing: 0 }}> - segundo telefone, outro decisor, e-mail alternativo etc.</span>
-                </label>
+              <div style={{ border: "1.5px solid rgba(109,94,248,0.25)", background: "rgba(109,94,248,0.05)", borderRadius: 14, padding: 12 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>
+                    <SecIcon icon={UserPlus} color="#6d5ef8" />Outros contatos / informações extras
+                    <div style={{ fontWeight: 500, color: "#94a3b8", textTransform: "none", letterSpacing: 0, marginTop: 2, fontSize: 11 }}>Segundo telefone, outro decisor, e-mail alternativo etc.</div>
+                  </label>
+                  <button type="button" onClick={() => setShowExtraContacts(false)} title="Recolher" style={{ width: 24, height: 24, borderRadius: 7, border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <ChevronRight size={13} style={{ transform: "rotate(90deg)" }} />
+                  </button>
+                </div>
                 <textarea
                   value={draft.extraContacts || ""}
                   onChange={(e) => update({ extraContacts: e.target.value })}
                   placeholder={"Ex:\nMaria Silva (Financeiro) - (11) 98888-7777\nfinanceiro@empresa.com"}
                   rows={4}
-                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13 }}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, background: "white", marginBottom: 0 }}
                 />
-              </>
+              </div>
             )}
           </div>
 
@@ -2755,14 +2773,14 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
 
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
-            <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8 }}>
-              <div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(150px, 1fr) minmax(0, 1.4fr)", gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando</span>
-                <input type="date" value={draft.nextAction?.date ? draft.nextAction.date.slice(0, 10) : ""} onChange={(e) => { const date = e.target.value ? new Date(e.target.value).toISOString() : null; update({ nextAction: date ? { date, description: draft.nextAction?.description || "" } : null }); }} style={inputStyle} />
+                <input type="date" value={draft.nextAction?.date ? draft.nextAction.date.slice(0, 10) : ""} onChange={(e) => { const date = e.target.value ? new Date(e.target.value).toISOString() : null; update({ nextAction: date ? { date, description: draft.nextAction?.description || "" } : null }); }} style={{ ...inputStyle, background: "white", minWidth: 0 }} />
               </div>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
-                <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={inputStyle} />
+                <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0 }} />
               </div>
             </div>
           </div>
