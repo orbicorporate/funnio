@@ -292,13 +292,12 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
   const [password, setPassword] = useState("");
   const isLogin = mode === "login";
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#08080a", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px calc(20px + env(safe-area-inset-bottom)) 20px", fontFamily: '"Open Sans", Arial, sans-serif', overflow: "hidden auto" }}>
-      <AmbientBackground />
+    <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 35%, #fdf2f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px calc(20px + env(safe-area-inset-bottom)) 20px", fontFamily: '"Open Sans", Arial, sans-serif', overflow: "hidden auto" }}>
       <div style={{ width: "100%", maxWidth: 360, position: "relative", zIndex: 1 }}>
-        <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 26px rgba(163,230,53,0.4))" }} />
-        <h1 style={{ textAlign: "center", color: "white", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
-        <div style={{ textAlign: "center", color: "#9a9aa3", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
-        <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 22, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.5)" }}>
+        <img src="/logo-v2.png" alt="Funnio" style={{ height: 92, width: "auto", display: "block", margin: "0 auto 18px", filter: "drop-shadow(0 10px 22px rgba(109,94,248,0.3))" }} />
+        <h1 style={{ textAlign: "center", color: "#14141a", fontSize: 24, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
+        <div style={{ textAlign: "center", color: "#6b6b75", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
+        <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 22, boxShadow: "0 30px 70px -24px rgba(109,94,248,0.35)" }}>
           {error && <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>{error}</div>}
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" style={inputStyle} />
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Senha (mín. 6 caracteres)" style={{ ...inputStyle, marginBottom: 16 }} onKeyDown={(e) => e.key === "Enter" && onSubmit(email, password)} />
@@ -310,55 +309,26 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
   );
 }
 
-// Fundo animado das telas de login/escolha de funil: alguns brilhos verde-limão
-// passando lentamente + pontinhos tipo LED piscando, pra não ficar um preto liso.
-function AmbientBackground() {
-  const dots = [
-    { top: "12%", left: "18%", delay: "0s" }, { top: "22%", left: "78%", delay: "0.6s" },
-    { top: "38%", left: "8%", delay: "1.2s" }, { top: "55%", left: "88%", delay: "0.3s" },
-    { top: "68%", left: "24%", delay: "1.6s" }, { top: "80%", left: "65%", delay: "0.9s" },
-    { top: "15%", left: "48%", delay: "2s" }, { top: "90%", left: "40%", delay: "1.4s" },
-    { top: "48%", left: "60%", delay: "0.4s" }, { top: "30%", left: "92%", delay: "1.8s" },
-  ];
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      <style>{`
-        @keyframes ambientDrift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-30px) scale(1.15); } }
-        @keyframes ambientDrift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,25px) scale(1.1); } }
-        @keyframes ledTwinkle { 0%,100% { opacity: 0.15; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.3); } }
-      `}</style>
-      <div style={{ position: "absolute", top: "-15%", left: "-15%", width: "65%", height: "65%", borderRadius: "50%", background: "radial-gradient(circle, rgba(215,250,60,0.28), transparent 70%)", filter: "blur(40px)", animation: "ambientDrift1 14s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", bottom: "-20%", right: "-15%", width: "70%", height: "70%", borderRadius: "50%", background: "radial-gradient(circle, rgba(163,230,53,0.24), transparent 70%)", filter: "blur(45px)", animation: "ambientDrift2 18s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", top: "30%", left: "55%", width: "45%", height: "45%", borderRadius: "50%", background: "radial-gradient(circle, rgba(234,240,80,0.18), transparent 70%)", filter: "blur(35px)", animation: "ambientDrift1 20s ease-in-out infinite reverse" }} />
-      {dots.map((d, i) => (
-        <div key={i} style={{ position: "absolute", top: d.top, left: d.left, width: 5, height: 5, borderRadius: "50%", background: "#d7fa3c", boxShadow: "0 0 12px 3px rgba(215,250,60,0.75)", animation: `ledTwinkle ${2.5 + (i % 3)}s ease-in-out ${d.delay} infinite` }} />
-      ))}
-    </div>
-  );
-}
-
 function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout, error, busy, tab, setTab, defaultCode }) {
   const [wsName, setWsName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [code, setCode] = useState(defaultCode || "");
   const wsColors = ["#6d5ef8", "#a3e635", "#f59e0b", "#38bdf8", "#ec4899"];
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#08080a", fontFamily: '"Open Sans", Arial, sans-serif', display: "flex", flexDirection: "column", overflow: "hidden auto" }}>
-      <AmbientBackground />
-
-      <button onClick={onLogout} style={{ position: "absolute", top: "calc(20px + env(safe-area-inset-top))", right: 22, background: "transparent", border: "none", color: "#a3e635", fontSize: 12.5, fontWeight: 600, cursor: "pointer", zIndex: 2 }}>Sair</button>
+    <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 35%, #fdf2f8 100%)", fontFamily: '"Open Sans", Arial, sans-serif', display: "flex", flexDirection: "column", overflow: "hidden auto" }}>
+      <button onClick={onLogout} style={{ position: "absolute", top: "calc(20px + env(safe-area-inset-top))", right: 22, background: "transparent", border: "none", color: "#6d5ef8", fontSize: 12.5, fontWeight: 600, cursor: "pointer", zIndex: 2 }}>Sair</button>
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 20px 40px" }}>
         <div style={{ maxWidth: 420, width: "100%", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <img src="/logo-v2.png" alt="Funnio" style={{ height: 76, width: "auto", display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 22px rgba(163,230,53,0.35))" }} />
-            <h1 style={{ color: "white", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
-            <div style={{ color: "#a3e635", fontSize: 12.5, fontWeight: 600, marginBottom: 2 }}>Seu funil de vendas</div>
-            <div style={{ color: "#767670", fontSize: 12 }}>{email}</div>
+            <img src="/logo-v2.png" alt="Funnio" style={{ height: 76, width: "auto", display: "block", margin: "0 auto 16px", filter: "drop-shadow(0 8px 20px rgba(109,94,248,0.28))" }} />
+            <h1 style={{ color: "#14141a", fontSize: 22, fontWeight: 800, margin: "0 0 4px" }}>Funnio</h1>
+            <div style={{ color: "#6d5ef8", fontSize: 12.5, fontWeight: 600, marginBottom: 2 }}>Seu funil de vendas</div>
+            <div style={{ color: "#8a8a93", fontSize: 12 }}>{email}</div>
           </div>
 
           {workspaces.length > 0 && (
-            <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 18, marginBottom: 18, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.45)" }}>
+            <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 18, marginBottom: 18, boxShadow: "0 30px 70px -24px rgba(109,94,248,0.3)" }}>
               <div style={{ color: "#8a8a93", fontSize: 11, fontWeight: 700, letterSpacing: 0.6, marginBottom: 12, textTransform: "uppercase" }}>Seus funis</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {workspaces.map((w, i) => (
@@ -381,7 +351,7 @@ function WorkspacePicker({ email, workspaces, onOpen, onCreate, onJoin, onLogout
             </div>
           )}
 
-          <div style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 20, boxShadow: "0 30px 80px -24px rgba(0,0,0,0.45)" }}>
+          <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 20, boxShadow: "0 30px 70px -24px rgba(109,94,248,0.3)" }}>
             <div style={{ display: "flex", gap: 4, marginBottom: 18, background: "#f1f2f5", borderRadius: 12, padding: 4 }}>
               <button onClick={() => setTab("create")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "create" ? "white" : "transparent", color: tab === "create" ? "#5b8c0a" : "#8a8a93", boxShadow: tab === "create" ? "0 2px 8px -3px rgba(20,20,26,0.2)" : "none", transition: "all 0.15s ease" }}>Criar novo funil</button>
               <button onClick={() => setTab("join")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", background: tab === "join" ? "white" : "transparent", color: tab === "join" ? "#5b8c0a" : "#8a8a93", boxShadow: tab === "join" ? "0 2px 8px -3px rgba(20,20,26,0.2)" : "none", transition: "all 0.15s ease" }}>Entrar com convite</button>
