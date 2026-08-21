@@ -120,6 +120,17 @@ export default function Root() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setAuthError(""); setBusy(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    setBusy(false);
+    // Em sucesso o navegador é redirecionado pro Google - só chega aqui se der erro antes de sair da página
+    if (error) setAuthError(translateAuthError(error.message));
+  };
+
   const handleCreateWorkspace = async (name) => {
     if (!name.trim()) return;
     setBusy(true); setWsError("");
@@ -218,6 +229,7 @@ export default function Root() {
         mode={authMode}
         setMode={(m) => { setAuthMode(m); setAuthError(""); }}
         onSubmit={handleAuthSubmit}
+        onGoogleSignIn={handleGoogleSignIn}
         error={authError}
         busy={busy}
       />
@@ -287,7 +299,7 @@ function CenteredMessage({ children }) {
   );
 }
 
-function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
+function AuthScreen({ mode, setMode, onSubmit, onGoogleSignIn, error, busy }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const isLogin = mode === "login";
@@ -299,6 +311,31 @@ function AuthScreen({ mode, setMode, onSubmit, error, busy }) {
         <div style={{ textAlign: "center", color: "#6b6b75", fontSize: 13, marginBottom: 24 }}>{isLogin ? "Entre na sua conta" : "Crie sua conta"}</div>
         <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(28px) saturate(180%)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 20, padding: 22, boxShadow: "0 30px 70px -24px rgba(109,94,248,0.35)" }}>
           {error && <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 12.5, marginBottom: 14 }}>{error}</div>}
+
+          {onGoogleSignIn && (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onGoogleSignIn}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e2e4e9", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: busy ? "default" : "pointer", marginBottom: 16, opacity: busy ? 0.6 : 1 }}
+              >
+                <svg width="17" height="17" viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
+                  <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                  <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                  <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                  <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                </svg>
+                Continuar com Google
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <div style={{ flex: 1, height: 1, background: "#eef0f3" }} />
+                <span style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 600 }}>ou</span>
+                <div style={{ flex: 1, height: 1, background: "#eef0f3" }} />
+              </div>
+            </>
+          )}
+
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="seu@email.com" style={inputStyle} />
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Senha (mín. 6 caracteres)" style={{ ...inputStyle, marginBottom: 16 }} onKeyDown={(e) => e.key === "Enter" && onSubmit(email, password)} />
           <button disabled={busy} onClick={() => onSubmit(email, password)} style={primaryBtnStyle}>{busy ? "..." : isLogin ? "Entrar" : "Criar conta"}</button>
