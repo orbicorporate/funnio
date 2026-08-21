@@ -4897,6 +4897,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [quickContactLead, setQuickContactLead] = useState(null);
   const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
   const [scriptPickerLead, setScriptPickerLead] = useState(null);
+  const [scriptPickerMode, setScriptPickerMode] = useState("list"); // "list" = adiciona à fila de envio | "dispatch" = abre direto (contato rápido)
   const [waSendHistory, setWaSendHistory] = useState([]);
   const [emailSendList, setEmailSendList] = useState([]); // { leadId, subject, body }[]
   const [emailScriptPickerLead, setEmailScriptPickerLead] = useState(null);
@@ -5259,6 +5260,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const handleQuickContact = (type, lead) => {
+    // WhatsApp e Email agora sempre passam pelo painel de escolha de script antes de
+    // abrir - só Telefone continua abrindo direto, já que não faz sentido "escrever um script" pra ligação.
+    if (type === "whatsapp" && lead.whatsapp) {
+      setQuickContactLead(null);
+      setScriptPickerMode("dispatch");
+      setScriptPickerLead(lead);
+      return;
+    }
+    if (type === "email" && lead.email) {
+      setQuickContactLead(null);
+      setScriptPickerMode("dispatch");
+      setEmailScriptPickerLead(lead);
+      return;
+    }
     dispatchContact(type, lead, (id) => {
       setLeads((prev) => prev.map((l) => l.id === id ? {
         ...l,
@@ -5274,12 +5289,46 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     });
   };
 
+  // Dispara o contato direto (não entra na fila de envio) depois que o script foi escolhido no painel -
+  // usado pelos botões de contato rápido (círculos coloridos), diferente da fila de envio em massa.
+  const dispatchWhatsAppWithMessage = (lead, message) => {
+    const num = cleanPhone(lead.whatsapp);
+    if (!num) return;
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, "_blank");
+    const now = new Date().toISOString();
+    setLeads((prev) => prev.map((l) => l.id === lead.id ? {
+      ...l,
+      lastContact: now,
+      weekDone: l.weekTag ? true : l.weekDone,
+      weekDoneVia: (l.weekTag && !l.weekDone) ? "whatsapp" : l.weekDoneVia,
+      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
+      notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via WhatsApp: "${message}"` }, ...(l.notes || [])],
+    } : l));
+    if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, "whatsapp"); }
+  };
+
+  const dispatchEmailWithMessage = (lead, subject, body) => {
+    if (!lead.email) return;
+    window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+    const now = new Date().toISOString();
+    setLeads((prev) => prev.map((l) => l.id === lead.id ? {
+      ...l,
+      lastContact: now,
+      weekDone: l.weekTag ? true : l.weekDone,
+      weekDoneVia: (l.weekTag && !l.weekDone) ? "email" : l.weekDoneVia,
+      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
+      notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via Email: "${subject}"` }, ...(l.notes || [])],
+    } : l));
+    if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, "email"); }
+  };
+
   // Toca no aviãozinho: se o lead já está na fila, remove direto. Se não está,
   // abre a tela de escolha de script em vez de adicionar com mensagem genérica.
   const handlePaperPlaneClick = (lead) => {
     if (waSendList.some((x) => x.leadId === lead.id)) {
       setWaSendList((prev) => prev.filter((x) => x.leadId !== lead.id));
     } else {
+      setScriptPickerMode("list");
       setScriptPickerLead(lead);
     }
   };
@@ -5318,6 +5367,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     if (emailSendList.some((x) => x.leadId === lead.id)) {
       setEmailSendList((prev) => prev.filter((x) => x.leadId !== lead.id));
     } else {
+      setScriptPickerMode("list");
       setEmailScriptPickerLead(lead);
     }
   };
@@ -7060,7 +7110,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           <ScriptPickerModal
             lead={scriptPickerLead}
             onClose={() => setScriptPickerLead(null)}
-            onSelect={addToWaListWithScript}
+            onSelect={(message) => {
+              if (scriptPickerMode === "dispatch") {
+                dispatchWhatsAppWithMessage(scriptPickerLead, message);
+                setScriptPickerLead(null);
+              } else {
+                addToWaListWithScript(message);
+              }
+            }}
           />
         )}
         {showEmailSendScreen && (
@@ -7081,7 +7138,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           <EmailScriptPickerModal
             lead={emailScriptPickerLead}
             onClose={() => setEmailScriptPickerLead(null)}
-            onSelect={addToEmailListWithScript}
+            onSelect={(subject, body) => {
+              if (scriptPickerMode === "dispatch") {
+                dispatchEmailWithMessage(emailScriptPickerLead, subject, body);
+                setEmailScriptPickerLead(null);
+              } else {
+                addToEmailListWithScript(subject, body);
+              }
+            }}
           />
         )}
         {showCallSendScreen && (
