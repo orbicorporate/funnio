@@ -382,7 +382,7 @@ const seedLeads = RAW.map(([company, owner, stage, feedback, status], i) => ({
   id: `l_${i + 1}`,
   company, owner, stage, feedback, status,
   contactName: "", email: "", phone: "", whatsapp: "",
-  role: "", sector: "",
+  role: "", sector: "", extraContacts: "",
   hasWhatsapp: false, hasEmail: false, hasPhone: false,
   phase: inferPhase(stage, feedback),
   temperature: inferTemperature(stage, feedback),
@@ -2344,8 +2344,9 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   const [draft, setDraft] = useState(lead);
   const [newNote, setNewNote] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showExtraContacts, setShowExtraContacts] = useState(false);
 
-  useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); }, [lead]);
+  useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); setShowExtraContacts(!!(lead?.extraContacts && lead.extraContacts.trim())); }, [lead]);
   if (!lead) return null;
 
   const update = (patch) => setDraft((d) => ({ ...d, ...patch }));
@@ -2628,6 +2629,32 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <label style={labelStyle}>Setor</label>
               <input value={draft.sector || ""} onChange={(e) => update({ sector: e.target.value })} placeholder="Ex: Tecnologia, Alimentos" style={inputStyle} />
             </div>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            {!showExtraContacts ? (
+              <button
+                type="button"
+                onClick={() => setShowExtraContacts(true)}
+                style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: 0 }}
+              >
+                <Plus size={14} /> Outros contatos / informações extras{draft.extraContacts ? " (preenchido)" : ""}
+              </button>
+            ) : (
+              <>
+                <label style={labelStyle}>
+                  Outros contatos / informações extras
+                  <span style={{ fontWeight: 500, color: "#94a3b8", textTransform: "none", letterSpacing: 0 }}> - segundo telefone, outro decisor, e-mail alternativo etc.</span>
+                </label>
+                <textarea
+                  value={draft.extraContacts || ""}
+                  onChange={(e) => update({ extraContacts: e.target.value })}
+                  placeholder={"Ex:\nMaria Silva (Financeiro) - (11) 98888-7777\nfinanceiro@empresa.com"}
+                  rows={4}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13 }}
+                />
+              </>
+            )}
           </div>
 
           <div style={{ marginBottom: 18 }}>
@@ -3333,14 +3360,15 @@ Cada item do array deve ter exatamente estes campos:
   "contactName": string ou "" (nome da PESSOA de contato, se houver - não confunda com cargo),
   "role": string ou "" (cargo/função da pessoa de contato, ex: "CEO", "Diretor de Marketing", "Gerente de Growth"; combine com o nível hierárquico se ambos existirem, ex: "CEO - C-Level"),
   "sector": string ou "" (setor/segmento da empresa - se os dados vierem organizados em abas por categoria, marcadas como "--- Aba: NomeDaAba ---", use o nome da aba como setor, a menos que já haja uma coluna de setor explícita),
-  "phone": string ou "" (telefone, mantenha como veio),
-  "email": string ou "" (email, se houver),
+  "phone": string ou "" (UM telefone fixo - se a linha tiver mais de um telefone/contato, use o principal aqui e jogue o resto em "extraContacts"),
+  "email": string ou "" (UM e-mail - se houver mais de um, use o principal aqui e jogue o resto em "extraContacts"),
   "whatsapp": string ou "" (se identificar que é whatsapp, senão vazio),
   "owner": string ou "" (responsável/SDR, tente casar com um destes se possível: ${sdrList}; senão deixe vazio),
   "stage": string (escolha o mais parecido entre: ${stageList}; se não identificar, use "Apresentação"),
-  "feedback": string ou "" (qualquer observação, status, contexto extra da linha que não se encaixe nos outros campos)
+  "feedback": string ou "" (qualquer observação, status, contexto extra da linha que não se encaixe nos outros campos),
+  "extraContacts": string ou "" (TUDO que não coube nos campos acima: segundo/terceiro telefone, outro e-mail, outro nome de contato/decisor com seu cargo, ramal, WhatsApp alternativo etc. Formate como linhas curtas, ex: "Maria Silva (Financeiro) - (11) 98888-7777\\nfinanceiro@empresa.com". Deixe "" se a linha só tiver um contato completo.)
 }
-Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Para telefones brasileiros, use o padrão de dígitos pra decidir onde colocar o número: DDD + 9 dígitos (11 no total, ex: 11987654321) é CELULAR - coloque em "whatsapp". DDD + 8 dígitos (10 no total, ex: 1133334444) é FIXO - coloque em "phone". Se a linha já disser explicitamente "whatsapp" ou "celular"/"fixo", respeite essa informação. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
+Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Para telefones brasileiros, use o padrão de dígitos pra decidir onde colocar o número: DDD + 9 dígitos (11 no total, ex: 11987654321) é CELULAR - coloque em "whatsapp". DDD + 8 dígitos (10 no total, ex: 1133334444) é FIXO - coloque em "phone". Se a linha já disser explicitamente "whatsapp" ou "celular"/"fixo", respeite essa informação. Se uma linha trouxer vários telefones, vários e-mails ou mais de um nome de decisor, escolha o contato principal (o primeiro, ou o que parecer mais decisor/completo) pros campos normais e coloque o restante em "extraContacts" - nunca descarte informação, só reorganize. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
 
   const text = await callClaudeAPI({
     system: systemPrompt,
@@ -3831,6 +3859,7 @@ const IMPORT_HELP_ITEMS = [
   { icon: Building2, color: "#8b5cf6", title: "Planilha com várias abas", text: "Se sua planilha tem uma aba por categoria, o Funnio já lê todas as abas com dado e usa o nome da aba como Setor quando não há coluna de setor explícita. Confira se o nome das abas faz sentido como setor." },
   { icon: ClipboardList, color: "#f59e0b", title: "Linhas de cabeçalho ou divisórias coloridas somem", text: "Linhas usadas só como título de seção (uma faixa colorida escrito, por exemplo, \"C-Level\") são ignoradas de propósito - só linhas com nome de empresa viram lead. Se um grupo inteiro sumiu, confira se a linha da empresa não ficou colada na linha de título por causa de célula mesclada." },
   { icon: Users, color: "#ec4899", title: "Nome do contato veio vazio", text: "Se a planilha só tem o CARGO (ex: \"CEO\") e não o nome da pessoa, o campo Contato fica vazio de propósito - cargo e nome são coisas diferentes. Preencha o cargo no campo Cargo, e o nome (se tiver) direto na revisão." },
+  { icon: UserPlus, color: "#6d5ef8", title: "Lead tinha vários telefones, e-mails ou decisores", text: "Quando uma linha traz mais de um contato completo, a IA usa o principal nos campos normais e guarda o restante em \"Outros contatos / informações extras\" - nada se perde, só fica organizado num campo à parte, editável na revisão e no lead depois." },
   { icon: Upload, color: "#06b6d4", title: "Arquivo grande, só processou uma parte", text: "Pra não travar, cada importação processa até ~300 linhas de uma vez. Se aparecer o aviso de que só as primeiras linhas foram processadas, é só importar de novo com o restante do arquivo." },
   { icon: Repeat, color: "#10b981", title: "Um lote falhou por rede instável", text: "Às vezes um pedaço do arquivo falha ao processar por causa da conexão. Os leads que deram certo aparecem normalmente na revisão - só reimporte o restante depois." },
   { icon: Pencil, color: "#6d5ef8", title: "Nada disso resolveu?", text: "Você pode editar qualquer campo direto na tela de revisão antes de confirmar, remover linhas erradas com a lixeira, ou colar o texto manualmente em vez de subir o arquivo - copiar e colar direto do Excel às vezes funciona melhor que o arquivo original." },
@@ -3954,6 +3983,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             contactName: l.contactName || "",
             role: l.role || "",
             sector: l.sector || "",
+            extraContacts: l.extraContacts || "",
             phone,
             email: l.email || "",
             whatsapp,
@@ -4193,6 +4223,19 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                         {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                       {l.feedback && <div style={{ gridColumn: "1 / -1", fontSize: 11.5, color: "#9a9aa3", fontStyle: "italic" }}>"{l.feedback}"</div>}
+                      {l.extraContacts && (
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#6d5ef8", marginBottom: 3 }}>
+                            <UserPlus size={11} /> Outros contatos encontrados
+                          </div>
+                          <textarea
+                            value={l.extraContacts}
+                            onChange={(e) => updateDraft(l._tmpId, { extraContacts: e.target.value })}
+                            rows={2}
+                            style={{ ...inputStyle, fontSize: 11.5, resize: "vertical", fontFamily: "inherit", background: "rgba(109,94,248,0.05)", borderColor: "rgba(109,94,248,0.25)" }}
+                          />
+                        </div>
+                      )}
                     </div>
                     <button onClick={() => removeDraft(l._tmpId)} title="Remover da lista" style={{ border: "none", background: "transparent", color: "#c4c4cc", cursor: "pointer", flexShrink: 0 }}>
                       <Trash size={15} />
@@ -4753,7 +4796,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const toggleWeekFlag = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -4779,6 +4822,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       contactName: d.contactName || "",
       role: d.role || "",
       sector: d.sector || "",
+      extraContacts: d.extraContacts || "",
       email: d.email || "",
       phone: d.phone || "",
       whatsapp: d.whatsapp || "",
@@ -4809,6 +4853,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           ...l,
           company: d.company, owner: d.owner || l.owner, stage: d.stage,
           contactName: d.contactName || l.contactName, role: d.role || l.role, sector: d.sector || l.sector,
+          extraContacts: d.extraContacts || l.extraContacts,
           email: d.email || l.email, phone: d.phone || l.phone, whatsapp: d.whatsapp || l.whatsapp,
           hasWhatsapp: !!(d.whatsapp || l.whatsapp), hasEmail: !!(d.email || l.email), hasPhone: !!(d.phone || l.phone),
           notes: [{ id: "n_imp_replace_" + batchStamp + "_" + l.id, date: now, text: `[Importado] Dados substituídos${d.feedback ? `: "${d.feedback}"` : ""}` }, ...(l.notes || [])],
@@ -5096,6 +5141,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         (l.contactName || "").toLowerCase().includes(q) ||
         (l.role || "").toLowerCase().includes(q) ||
         (l.sector || "").toLowerCase().includes(q) ||
+        (l.extraContacts || "").toLowerCase().includes(q) ||
         (l.email || "").toLowerCase().includes(q) ||
         phoneMatch
       );
