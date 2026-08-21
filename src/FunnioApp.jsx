@@ -700,7 +700,7 @@ const HexIcon = ({ icon: Icon, color, size = 44, iconSize, iconColor, pulse }) =
       color={fillColor}
       fill={fillColor}
       strokeWidth={0.5}
-      style={{ flexShrink: 0, color: fillColor, animation: pulse ? "hexIconPulse 2.2s ease-in-out infinite" : "none" }}
+      style={{ flexShrink: 0, transformOrigin: "50% 85%", animation: pulse ? "iconTremble 3.2s ease-in-out infinite" : "none" }}
     />
   );
 };
@@ -5557,7 +5557,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.08); } }
-        @keyframes hexIconPulse { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } 50% { transform: scale(1.14); filter: drop-shadow(0 0 6px currentColor); } }
+        @keyframes iconTremble { 0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(-10deg); } 30% { transform: rotate(8deg); } 45% { transform: rotate(-6deg); } 60% { transform: rotate(4deg); } 75% { transform: rotate(-2deg); } 90% { transform: rotate(1deg); } }
+        @keyframes ringGoalGlow { 0%, 100% { filter: drop-shadow(0 0 0 rgba(5,150,105,0)); } 50% { filter: drop-shadow(0 0 7px rgba(5,150,105,0.5)); } }
+        @keyframes ringLightTravel { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -238.8; } }
         @keyframes ctaGlowPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(215,250,60,0.55); } 50% { box-shadow: 0 0 0 7px rgba(215,250,60,0); } }
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
         @keyframes stageBarFill { from { width: 0%; } }
@@ -5920,10 +5922,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
-                        <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "hexIconPulse 2.4s ease-in-out infinite" : "none", color: "#059669" }}>
+                        <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "ringGoalGlow 2.4s ease-in-out infinite" : "none" }}>
                           <svg width="90" height="90" viewBox="0 0 90 90">
-                            <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="9" />
-                            <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="9" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
+                            <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="5" />
+                            <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="5" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
+                            {pct > 0 && (
+                              <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeDasharray="10 228.8" opacity="0.75" transform="rotate(-90 45 45)" style={{ animation: "ringLightTravel 2.6s linear infinite" }} />
+                            )}
                           </svg>
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <span style={{ fontSize: 19, fontWeight: 800, color: "#14141a", lineHeight: 1 }}>{pct}%</span>
@@ -5932,12 +5937,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
 
                         <div style={{ flex: 1, minWidth: 140 }}>
-                          <div style={{ height: 12, borderRadius: 6, background: "#eef0f3", marginBottom: 8 }}>
+                          <div style={{ height: 7, borderRadius: 4, background: "#eef0f3", marginBottom: 8, overflow: "hidden" }}>
                             <div style={{
-                              height: "100%", borderRadius: 6, width: `${pct}%`,
+                              height: "100%", borderRadius: 4, width: `${pct}%`,
                               background: goalMet ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #c8e85a, #a8dc2e)",
-                              transition: "width 0.3s ease",
-                            }} />
+                              transition: "width 0.3s ease", position: "relative", overflow: "hidden",
+                            }}>
+                              {pct > 0 && (
+                                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.65) 50%, transparent 70%)", backgroundSize: "200% 100%", animation: "shimmer 2.2s ease-in-out infinite" }} />
+                              )}
+                            </div>
                           </div>
                           <div>
                             <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 20, fontWeight: 800, color: goalMet ? "#059669" : "#8fae0e" }}>{stats.weekDoneCount}</span>
