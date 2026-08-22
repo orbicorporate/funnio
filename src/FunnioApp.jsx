@@ -6054,6 +6054,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       arr = arr.filter((l) => !l.wonDate || new Date(l.wonDate) >= cutoff);
     }
     arr.sort((a, b) => {
+      // Trabalhos ativos primeiro, concluídos agrupados lá embaixo - dentro de cada grupo, mais recente primeiro
+      if (!!a.workCompleted !== !!b.workCompleted) return a.workCompleted ? 1 : -1;
       const da = a.wonDate ? new Date(a.wonDate).getTime() : 0;
       const db = b.wonDate ? new Date(b.wonDate).getTime() : 0;
       return db - da;
@@ -6978,12 +6980,22 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {wonLeads.map((lead) => {
+                  {wonLeads.map((lead, idx) => {
                     const commissionDetails = getCommissionDetails(lead, commissionConfig);
                     const commission = commissionDetails.value;
+                    // Divisor visual bem no ponto em que os trabalhos concluídos começam - já que
+                    // a lista está ordenada com ativos primeiro e concluídos agrupados no fim.
+                    const showCompletedDivider = lead.workCompleted && (idx === 0 || !wonLeads[idx - 1].workCompleted);
                     return (
+                    <React.Fragment key={lead.id}>
+                    {showCompletedDivider && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "8px 0 2px" }}>
+                        <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, whiteSpace: "nowrap" }}>Trabalhos concluídos</span>
+                        <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
+                      </div>
+                    )}
                     <Glass
-                      key={lead.id}
                       onClick={() => setSelected(lead)}
                       style={{ borderRadius: 16, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", opacity: lead.workCompleted ? 0.55 : 1, filter: lead.workCompleted ? "grayscale(0.7)" : "none" }}
                     >
@@ -7062,6 +7074,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </button>
                       <ChevronRight size={16} color="#c4c4cc" />
                     </Glass>
+                    </React.Fragment>
                     );
                   })}
                 </div>
