@@ -456,18 +456,18 @@ const METRIC_DEFS = {
 const METRIC_KEYS = Object.keys(METRIC_DEFS);
 
 const DEFAULT_GOALS_CONFIG = {
-  leads: { enabled: true, period: "week", target: 20, reward: 0 },
-  proposals: { enabled: true, period: "week", target: 10, reward: 0 },
-  meetings: { enabled: false, period: "week", target: 8, reward: 0 },
-  contracts: { enabled: false, period: "month", target: 4, reward: 0 },
+  leads: { enabled: true, period: "week", target: 20, reward: 0, legendaryReward: 0 },
+  proposals: { enabled: true, period: "week", target: 10, reward: 0, legendaryReward: 0 },
+  meetings: { enabled: false, period: "week", target: 8, reward: 0, legendaryReward: 0 },
+  contracts: { enabled: false, period: "month", target: 4, reward: 0, legendaryReward: 0 },
 };
 
 // Níveis de badge - porcentagem da meta configurada que precisa bater pra ganhar cada nível.
-// 50% = "Badge 50%" · 100% (bateu a meta) = "Super Badge" · 150% (superou bastante) = "Badge Lendária"
+// 50% = "Badge 50%" · 100% (bateu a meta) = "Super Badge" · 120% (passou 20% da meta) = "Badge Lendária"
 const BADGE_TIERS = [
   { key: "b50", label: "Badge 50%", shortLabel: "50%", pct: 0.5, color: "#c07a3f", bg: "linear-gradient(160deg, #e3a86a, #a5652a)", description: "Metade da meta atingida" },
   { key: "super", label: "Super Badge", shortLabel: "Super", pct: 1.0, color: "#6d5ef8", bg: "linear-gradient(160deg, #a79bfc, #6d5ef8)", description: "Meta alcançada 100%" },
-  { key: "lendaria", label: "Badge Lendária", shortLabel: "Lendária", pct: 1.5, color: "#b8860b", bg: "linear-gradient(160deg, #ffd76a, #c9971f)", description: "Meta superada com excelência" },
+  { key: "lendaria", label: "Badge Lendária", shortLabel: "Lendária", pct: 1.2, color: "#b8860b", bg: "linear-gradient(160deg, #ffd76a, #c9971f)", description: "Meta superada em 20%" },
 ];
 
 // Calcula o início/fim/chave-identificadora do período corrente (semana ISO ou mês corrente)
@@ -5234,7 +5234,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           const badgeId = `${sdr.name}__${metricKey}__${tier.key}__${bounds.key}`;
           const already = earnedBadges.some((b) => b.id === badgeId);
           if (!already) {
-            newlyEarned.push({ id: badgeId, sdrName: sdr.name, metric: metricKey, tier: tier.key, periodKey: bounds.key, period: cfg.period, earnedAt: new Date().toISOString(), value: Math.round(value), target: cfg.target, reward: tier.key === "super" ? (cfg.reward || 0) : 0 });
+            newlyEarned.push({ id: badgeId, sdrName: sdr.name, metric: metricKey, tier: tier.key, periodKey: bounds.key, period: cfg.period, earnedAt: new Date().toISOString(), value: Math.round(value), target: cfg.target, reward: tier.key === "super" ? (cfg.reward || 0) : tier.key === "lendaria" ? (cfg.legendaryReward || 0) : 0 });
           }
         });
       });
@@ -5264,6 +5264,27 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     });
     return found.sort((a, b) => b.pct - a.pct);
   }, [leads, meetings, goalsConfig, sdrs]);
+
+  // Progresso pessoal do SDR logado rumo à Badge Lendária (120% da meta), só quando essa meta
+  // tem um bônus em dinheiro configurado - mostra quantas ações faltam pra destravar o prêmio.
+  const myLegendaryProgress = useMemo(() => {
+    if (!currentUserName) return [];
+    const found = [];
+    const legendaryPct = BADGE_TIERS.find((t) => t.key === "lendaria")?.pct || 1.2;
+    METRIC_KEYS.forEach((metricKey) => {
+      const cfg = goalsConfig[metricKey];
+      if (!cfg || !cfg.enabled || !cfg.target || !cfg.legendaryReward) return;
+      const bounds = getPeriodBounds(cfg.period);
+      const value = computeMetricValue(metricKey, currentUserName, bounds, leads, meetings);
+      const legendaryTarget = cfg.target * legendaryPct;
+      if (value >= cfg.target && value < legendaryTarget) {
+        const remaining = Math.max(1, Math.ceil(legendaryTarget - value));
+        const pctRemaining = Math.max(1, Math.round(((legendaryTarget - value) / legendaryTarget) * 100));
+        found.push({ metricKey, metricLabel: METRIC_DEFS[metricKey].label, remaining, pctRemaining, reward: cfg.legendaryReward });
+      }
+    });
+    return found;
+  }, [currentUserName, leads, meetings, goalsConfig]);
 
   const addSdr = (name) => {
     const trimmed = name.trim();
@@ -6200,6 +6221,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
 
+              {/* Empurrãozinho pessoal pra Badge Lendária, só quando ela tem prêmio em dinheiro configurado */}
+              {myLegendaryProgress.length > 0 && (
+                <div onClick={() => setView("metas")} style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 16, padding: "13px 16px", marginBottom: 14, background: "linear-gradient(135deg, #fff7e6, #fdedc9)", border: "1px solid #f0d38a", cursor: "pointer" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: "linear-gradient(160deg, #ffd76a, #c9971f)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Trophy size={17} color="white" />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#8a6412" }}>
+                      Faltam {myLegendaryProgress[0].remaining} {myLegendaryProgress[0].remaining === 1 ? "ação" : "ações"} ({myLegendaryProgress[0].pctRemaining}%) pra Badge Lendária de {myLegendaryProgress[0].metricLabel}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#a3821f", fontWeight: 600 }}>
+                      Destrava R$ {myLegendaryProgress[0].reward.toLocaleString("pt-BR")} 💰
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Abordar essa semana - card único fundido: hero lima + progresso + estatísticas + alerta */}
               {(() => {
                 const goalMet = stats.weekDoneCount >= weeklyGoal;
@@ -7029,7 +7067,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             />
                           </div>
                           <div>
-                            <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio (R$)</label>
+                            <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio 100% (R$)</label>
                             <input
                               type="number"
                               min={0}
@@ -7040,8 +7078,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               style={{ ...inputStyle, width: 100 }}
                             />
                           </div>
+                          <div>
+                            <label style={{ ...labelStyle, marginBottom: 4 }}>Bônus Lendária (R$)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={cfg.legendaryReward || 0}
+                              onChange={(e) => updateCfg({ legendaryReward: Math.max(0, parseFloat(e.target.value) || 0) })}
+                              placeholder="0"
+                              style={{ ...inputStyle, width: 100 }}
+                            />
+                          </div>
                           <div style={{ flex: 1, minWidth: 160, fontSize: 11, color: "#9a9aa3", lineHeight: 1.5 }}>
-                            🏅 Badge 50% aos {Math.round(cfg.target * 0.5)} · ⭐ Super Badge aos {cfg.target}{cfg.reward > 0 ? ` (+R$ ${cfg.reward.toLocaleString("pt-BR")})` : ""} · 👑 Badge Lendária aos {Math.round(cfg.target * 1.5)}
+                            🏅 Badge 50% aos {Math.round(cfg.target * 0.5)} · ⭐ Super Badge aos {cfg.target}{cfg.reward > 0 ? ` (+R$ ${cfg.reward.toLocaleString("pt-BR")})` : ""} · 👑 Badge Lendária aos {Math.round(cfg.target * 1.2)}{cfg.legendaryReward > 0 ? ` (+R$ ${cfg.legendaryReward.toLocaleString("pt-BR")})` : ""}
                           </div>
                         </div>
                       )}
