@@ -7424,12 +7424,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   // progresso mostrado abaixo se refere (a meta reseta a cada novo ciclo).
                   const periodRangeLabel = bounds ? (() => {
                     const endDisplay = new Date(bounds.end); endDisplay.setDate(endDisplay.getDate() - 1);
-                    if (cfg.period === "year") return `${bounds.start.getFullYear()}`;
-                    if (cfg.period === "month") return bounds.start.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-                    const sameMonth = bounds.start.getMonth() === endDisplay.getMonth();
-                    const startStr = bounds.start.toLocaleDateString("pt-BR", sameMonth ? { day: "2-digit" } : { day: "2-digit", month: "short" });
-                    const endStr = endDisplay.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-                    return `${startStr} – ${endStr}`;
+                    const totalDays = Math.round((endDisplay - bounds.start) / 86400000) + 1;
+                    const sameYear = bounds.start.getFullYear() === endDisplay.getFullYear();
+                    const fmt = (d, withYear) => d.toLocaleDateString("pt-BR", withYear ? { day: "2-digit", month: "2-digit", year: "numeric" } : { day: "2-digit", month: "2-digit" });
+                    return { range: `${fmt(bounds.start, !sameYear)} até ${fmt(endDisplay, true)}`, days: totalDays };
                   })() : null;
                   return (
                     <Glass key={metricKey} style={{ borderRadius: 20, padding: "18px 20px", opacity: isActive ? 1 : 0.75 }}>
@@ -7455,8 +7453,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
                       </div>
                       {periodRangeLabel && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#94a3b8", fontWeight: 600, marginBottom: 12, marginTop: -6 }}>
-                          <CalendarIcon size={11} /> Ciclo atual: {periodRangeLabel}
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: metric.color, fontWeight: 800, marginBottom: 14, marginTop: -4, background: metric.color + "12", padding: "7px 12px", borderRadius: 10 }}>
+                          <CalendarIcon size={13} />
+                          Meta de {periodRangeLabel.range}
+                          <span style={{ fontWeight: 700, color: "#6b6b75", background: "white", padding: "2px 7px", borderRadius: 6 }}>{periodRangeLabel.days} dias</span>
                         </div>
                       )}
                       <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
