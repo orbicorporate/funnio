@@ -522,6 +522,23 @@ const computeAutoCommission = (lead, commissionConfig) => {
   if (!tier) return 0;
   return tier.type === "percent" ? value * ((tier.value || 0) / 100) : (tier.value || 0);
 };
+// Detalhe completo da comissão (valor em R$ + percentual referente) - usado no card de
+// Conquistados pra mostrar "10% · R$ 380,00" em vez de só o valor final.
+const getCommissionDetails = (lead, commissionConfig) => {
+  const dealValue = getDealValue(lead);
+  if (typeof lead?.commissionOverride === "number") {
+    const pct = dealValue > 0 ? (lead.commissionOverride / dealValue) * 100 : null;
+    return { value: lead.commissionOverride, pct, isPercentTier: false, isOverride: true };
+  }
+  if (!lead || lead.stage !== "Conquistado" || !commissionConfig) return { value: 0, pct: null, isPercentTier: false, isOverride: false };
+  const bucket = lead.dealType === "mensal" ? commissionConfig.mensal : commissionConfig.avulso;
+  if (!bucket || !bucket.enabled || !Array.isArray(bucket.tiers) || bucket.tiers.length === 0) return { value: 0, pct: null, isPercentTier: false, isOverride: false };
+  const tier = bucket.tiers.find((t) => dealValue >= (t.min || 0) && (t.max === null || t.max === undefined || dealValue <= t.max));
+  if (!tier) return { value: 0, pct: null, isPercentTier: false, isOverride: false };
+  const value = tier.type === "percent" ? dealValue * ((tier.value || 0) / 100) : (tier.value || 0);
+  const pct = tier.type === "percent" ? tier.value : (dealValue > 0 ? (value / dealValue) * 100 : null);
+  return { value, pct, isPercentTier: tier.type === "percent", isOverride: false };
+};
 
 // Origem do lead - de onde ele veio, usado no cadastro, no card e no filtro da tela principal
 const ORIGIN_OPTIONS = [
@@ -6962,7 +6979,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {wonLeads.map((lead) => {
-                    const commission = computeCommission(lead, commissionConfig);
+                    const commissionDetails = getCommissionDetails(lead, commissionConfig);
+                    const commission = commissionDetails.value;
                     return (
                     <Glass
                       key={lead.id}
@@ -7003,8 +7021,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               color: commission > 0 ? "#b8860b" : "#64748b",
                             }}
                           >
-                            💰 {commission > 0 ? `${formatBRL(commission)} comissão` : "Definir comissão"}
-                            {typeof lead.commissionOverride === "number" && <span style={{ fontStyle: "italic" }}>(personalizada)</span>}
+                            💰 {commission > 0
+                              ? <>{commissionDetails.pct !== null ? `${commissionDetails.pct.toFixed(1).replace(/\.0$/, "")}% · ` : ""}{formatBRL(commission)}</>
+                              : "Definir comissão"}
+                            {commissionDetails.isOverride && <span style={{ fontStyle: "italic" }}>(personalizada)</span>}
                             <Pencil size={9} />
                           </button>
                         </div>
@@ -7017,19 +7037,22 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <div style={{ fontSize: 10.5, color: "#9a9aa3", fontWeight: 600 }}>Valor do contrato</div>
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#1fa971" }}>{formatBRL(getDealValue(lead))}{lead.dealType === "mensal" && <span style={{ fontSize: 11, fontWeight: 600 }}>/mês</span>}</div>
                       </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleWorkCompleted(lead.id); }}
-                        title={lead.workCompleted ? "Reabrir - o trabalho ainda está em andamento" : "Marcar como trabalho concluído"}
+                      <select
+                        value={lead.workCompleted ? "concluido" : "ativo"}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => { const wantsCompleted = e.target.value === "concluido"; if (wantsCompleted !== lead.workCompleted) toggleWorkCompleted(lead.id); }}
+                        title="Status do trabalho pós-venda"
                         style={{
-                          display: "flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 9,
+                          padding: "7px 10px", borderRadius: 9, cursor: "pointer", flexShrink: 0,
                           border: `1.5px solid ${lead.workCompleted ? "rgba(100,116,139,0.3)" : "#1fa971"}`,
                           background: lead.workCompleted ? "white" : "rgba(31,169,113,0.08)",
                           color: lead.workCompleted ? "#64748b" : "#1fa971",
-                          fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0,
+                          fontSize: 11, fontWeight: 700, fontFamily: "inherit", outline: "none",
                         }}
                       >
-                        {lead.workCompleted ? <><Repeat size={12} /> Reabrir</> : <><CheckCircle2 size={12} /> Trabalho concluído</>}
-                      </button>
+                        <option value="ativo">Trabalho: Ativo</option>
+                        <option value="concluido">Trabalho: Concluído</option>
+                      </select>
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleSuperAttention(lead.id); }}
                         title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
