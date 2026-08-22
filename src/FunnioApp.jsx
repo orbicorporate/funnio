@@ -9,7 +9,7 @@ import {
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
   Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
-  Repeat,
+  Repeat, Lock,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -712,14 +712,16 @@ const HexIcon = ({ icon: Icon, color, size = 44, iconSize, iconColor, pulse }) =
 };
 
 // Toggle switch estilo iOS - usado em "Falar essa semana"
-const ToggleSwitch = ({ on, onClick, activeColor = DARK.lime }) => (
+const ToggleSwitch = ({ on, onClick, activeColor = DARK.lime, disabled = false }) => (
   <button
     className="toggle-switch"
-    onClick={onClick}
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
     style={{
-      width: 44, height: 25, borderRadius: 13, border: "none", cursor: "pointer", flexShrink: 0,
+      width: 44, height: 25, borderRadius: 13, border: "none", cursor: disabled ? "default" : "pointer", flexShrink: 0,
       background: on ? activeColor : "rgba(148,163,184,0.35)",
       position: "relative", transition: "background 0.18s ease", padding: 0,
+      opacity: disabled ? 0.55 : 1,
     }}
   >
     <span className="toggle-knob" style={{
@@ -3423,6 +3425,46 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
   </>
 );
 
+// Card que convida o SDR a compartilhar a conquista recém-desbloqueada com o gestor do funil -
+// abre o WhatsApp com uma mensagem pronta (sem número fixo, a pessoa escolhe pra quem mandar,
+// igual ao fluxo de convite de membros).
+const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
+  if (!achievement) return null;
+  const message = achievement.type === "week"
+    ? `🎯 Batemos a meta semanal de abordagens no Funnio! ${achievement.count}/${achievement.target} leads abordados essa semana.`
+    : `🏆 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 165, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+          <div>
+            <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Compartilhe essa conquista!</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{gestorName ? `Manda pro ${gestorName} saber que você bateu a meta` : "Manda pro seu gestor saber que você bateu a meta"}</div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+        </div>
+
+        <div style={{ background: "#f8fafc", border: "1px solid #eef0f3", borderRadius: 12, padding: "12px 14px", fontSize: 13, color: "#334155", margin: "14px 0" }}>
+          {message}
+        </div>
+
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(message)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "#22c55e", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", textDecoration: "none", marginBottom: 8, boxSizing: "border-box" }}
+        >
+          <MessageCircle size={16} /> Compartilhar por WhatsApp
+        </a>
+        <button onClick={onClose} style={{ width: "100%", padding: "10px 0", borderRadius: 12, border: "none", background: "transparent", color: "#94a3b8", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+          Agora não
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Menu lateral - atalho pra qualquer seção do app
 const MENU_SECTIONS = [
   { key: "dashboard", label: "Home", icon: HomeIcon },
@@ -4950,7 +4992,10 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
 // APP
 // ════════════════════════════════════════════════════════════════════════
 
-export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId, workspaceName, onSwitchWorkspace } = {}) {
+export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId, workspaceName, onSwitchWorkspace, isOwner = false } = {}) {
+  // Nome do SDR correspondente ao usuário logado - usado pra saber se uma badge é dele
+  // (e mostrar o convite pra compartilhar com o gestor só pra quem realmente bateu a meta).
+  const currentUserName = authMembers.find((m) => m.user_id === currentUserId)?.display_name || null;
   const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
   const [leads, setLeads] = useState([]);
   const [meetings, setMeetings] = useState([]);
@@ -4967,6 +5012,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [weekApproachBadgeEnabled, setWeekApproachBadgeEnabled] = useState(false); // meta simples/única - liga/desliga
   const [weekApproachBadges, setWeekApproachBadges] = useState([]); // [{id, periodKey, earnedAt, count, target}]
   const [weekApproachBadgeQueue, setWeekApproachBadgeQueue] = useState([]); // fila de pop-up dessa badge única
+  // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
+  // que o pop-up de comemoração é fechado.
+  const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
   const [achievementsFilterSdr, setAchievementsFilterSdr] = useState("all");
   const [expandedHistoryMetric, setExpandedHistoryMetric] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -6092,11 +6140,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
                         <span style={{ fontSize: 15, fontWeight: 800, color: "#14141a" }}>Seu progresso semanal</span>
                         <button
-                          onClick={() => setEditingGoal(true)}
-                          title="Clique para definir a meta semanal a qualquer momento"
-                          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", cursor: "pointer", padding: 0 }}
+                          onClick={() => { if (isOwner) setEditingGoal(true); }}
+                          title={isOwner ? "Clique para definir a meta semanal a qualquer momento" : "Só o gestor do funil pode alterar a meta"}
+                          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", cursor: isOwner ? "pointer" : "default", padding: 0 }}
                         >
-                          {editingGoal ? (
+                          {editingGoal && isOwner ? (
                             <input
                               type="number" min={1} autoFocus defaultValue={weeklyGoal}
                               onBlur={(e) => { const v = parseInt(e.target.value, 10); setWeeklyGoal(v > 0 ? v : DEFAULT_WEEKLY_GOAL); setEditingGoal(false); }}
@@ -6106,7 +6154,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             />
                           ) : (
                             <span style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-                              Meta: <span style={{ color: "#6d5ef8", fontWeight: 800 }}>{weeklyGoal} leads</span> <Pencil size={11} color="#6d5ef8" />
+                              Meta: <span style={{ color: "#6d5ef8", fontWeight: 800 }}>{weeklyGoal} leads</span> {isOwner ? <Pencil size={11} color="#6d5ef8" /> : <Lock size={11} color="#9a9aa3" />}
                             </span>
                           )}
                         </button>
@@ -6784,14 +6832,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Configurar metas</h1>
-                  <div style={{ fontSize: 13, color: "#9a9aa3" }}>Ative só as metas que quiser acompanhar - cada uma gera badges automáticas</div>
+                  <div style={{ fontSize: 13, color: "#9a9aa3" }}>{isOwner ? "Ative só as metas que quiser acompanhar - cada uma gera badges automáticas" : "Só o gestor do funil pode alterar as metas"}</div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+              {!isOwner && (
+                <Glass style={{ borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+                  <Lock size={16} color="#9a9aa3" />
+                  <div style={{ fontSize: 12, color: "#6b6b75" }}>Você pode ver as metas ativas, mas só o gestor do funil pode ativar, desativar ou alterar valores.</div>
+                </Glass>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20, pointerEvents: isOwner ? "auto" : "none" }}>
                 {/* Meta simples e única - completar as abordagens da semana. Usa a mesma meta configurada
                     no card "Abordar essa semana" da home (editável por lá), aqui só liga/desliga a badge. */}
-                <Glass style={{ borderRadius: 18, padding: "18px 20px", border: weekApproachBadgeEnabled ? `1.5px solid ${DARK.lime}` : undefined }}>
+                <Glass style={{ borderRadius: 18, padding: "18px 20px", border: weekApproachBadgeEnabled ? `1.5px solid ${DARK.lime}` : undefined, opacity: isOwner ? 1 : 0.7 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 40, height: 40, borderRadius: 12, background: "#14141a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -6802,7 +6857,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>{weekApproachBadgeEnabled ? `Badge única ao bater a meta de ${weeklyGoal} por semana` : "Desativada"}</div>
                       </div>
                     </div>
-                    <ToggleSwitch on={weekApproachBadgeEnabled} onClick={() => setWeekApproachBadgeEnabled((v) => !v)} activeColor={DARK.lime} />
+                    <ToggleSwitch on={weekApproachBadgeEnabled} onClick={() => setWeekApproachBadgeEnabled((v) => !v)} activeColor={DARK.lime} disabled={!isOwner} />
                   </div>
                 </Glass>
 
@@ -6812,7 +6867,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   const MetricIcon = metric.icon;
                   const updateCfg = (patch) => setGoalsConfig((prev) => ({ ...prev, [metricKey]: { ...prev[metricKey], ...patch } }));
                   return (
-                    <Glass key={metricKey} style={{ borderRadius: 18, padding: "18px 20px", border: cfg.enabled ? `1.5px solid ${metric.color}55` : undefined }}>
+                    <Glass key={metricKey} style={{ borderRadius: 18, padding: "18px 20px", border: cfg.enabled ? `1.5px solid ${metric.color}55` : undefined, opacity: isOwner ? 1 : 0.7 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: cfg.enabled ? 16 : 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 12, background: metric.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -6823,7 +6878,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>{cfg.enabled ? `Meta: ${cfg.target} por ${periodNoun(cfg.period)}` : "Desativada"}</div>
                           </div>
                         </div>
-                        <ToggleSwitch on={cfg.enabled} onClick={() => updateCfg({ enabled: !cfg.enabled })} activeColor={metric.color} />
+                        <ToggleSwitch on={cfg.enabled} onClick={() => updateCfg({ enabled: !cfg.enabled })} activeColor={metric.color} disabled={!isOwner} />
                       </div>
 
                       {cfg.enabled && (
@@ -7380,8 +7435,36 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onFinish={finishTour}
           />
         )}
-        {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
-        {weekApproachBadgeQueue.length > 0 && <WeekApproachBadgePopup badge={weekApproachBadgeQueue[0]} onClose={() => setWeekApproachBadgeQueue((prev) => prev.slice(1))} />}
+        {badgeQueue.length > 0 && (
+          <BadgePopup
+            badge={badgeQueue[0]}
+            onClose={() => {
+              const badge = badgeQueue[0];
+              setBadgeQueue((prev) => prev.slice(1));
+              // Só sugere compartilhar pra quem realmente bateu a meta, não pro resto do time.
+              if (currentUserName && badge.sdrName && badge.sdrName.toLowerCase() === currentUserName.toLowerCase()) {
+                setShareAchievement({ type: "metric", ...badge });
+              }
+            }}
+          />
+        )}
+        {weekApproachBadgeQueue.length > 0 && (
+          <WeekApproachBadgePopup
+            badge={weekApproachBadgeQueue[0]}
+            onClose={() => {
+              const badge = weekApproachBadgeQueue[0];
+              setWeekApproachBadgeQueue((prev) => prev.slice(1));
+              setShareAchievement({ type: "week", ...badge });
+            }}
+          />
+        )}
+        {shareAchievement && (
+          <ShareAchievementModal
+            achievement={shareAchievement}
+            gestorName={authMembers.find((m) => m.role === "owner")?.display_name}
+            onClose={() => setShareAchievement(null)}
+          />
+        )}
 
         {/* ── BOTÃO FLUTUANTE: MINHAS LISTAS (WhatsApp + E-mail + Ligação, consolidado num só) ── */}
         {(waSendList.length + emailSendList.length + callSendList.length) > 0 && view !== "assistente" && (
