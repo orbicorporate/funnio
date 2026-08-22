@@ -1249,6 +1249,9 @@ const WEEK_DONE_QUICK_SUMMARIES = [
   "Não atendeu",
   "Conversamos, vai analisar",
   "Pediu pra retornar depois",
+  "Estamos marcando reunião",
+  "Gostou muito",
+  "Vai apresentar internamente",
 ];
 
 // Painel obrigatório antes de marcar um lead como "feito" na Lista da Semana - garante que
