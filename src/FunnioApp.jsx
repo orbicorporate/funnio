@@ -7261,16 +7261,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                         {BADGE_TIERS.map((tier) => {
                           const currentPct = bounds ? currentValue / (cfg.target * tier.pct) : null;
+                          const achieved = isActive && currentPct !== null && currentPct >= 1;
                           return (
                             <div key={tier.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6 }}>
-                              <AchievementHex tier={tier} metric={metric} active={isActive} size={56} pct={currentPct} />
+                              <AchievementHex tier={tier} metric={metric} active={achieved} size={56} pct={currentPct} />
                               {currentPct !== null && (
-                                <div style={{ fontSize: 12.5, fontWeight: 800, color: currentPct >= 1 ? tier.color : "#6b6b75", lineHeight: 1 }}>
+                                <div style={{ fontSize: 12.5, fontWeight: 800, color: achieved ? tier.color : "#6b6b75", lineHeight: 1 }}>
                                   {Math.min(100, Math.round(currentPct * 100))}%
                                 </div>
                               )}
                               <div>
-                                <div className="ach-tier-label" style={{ fontSize: 11, fontWeight: 700, color: isActive ? tier.color : "#9a9aa3" }}>{tier.label}</div>
+                                <div className="ach-tier-label" style={{ fontSize: 11, fontWeight: 700, color: achieved ? tier.color : "#9a9aa3" }}>{tier.label}</div>
                                 <div className="ach-tier-desc" style={{ fontSize: 9, color: "#9a9aa3", lineHeight: 1.25, marginTop: 1 }}>{tier.description}</div>
                               </div>
                             </div>
