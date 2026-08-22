@@ -7235,6 +7235,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   const currentValue = bounds
                     ? Math.max(0, ...(achievementsFilterSdr === "all" ? sdrs.map((s) => s.name) : [achievementsFilterSdr]).map((name) => computeMetricValue(metricKey, name, bounds, leads, meetings)))
                     : 0;
+                  // Intervalo de datas exato do ciclo vigente - deixa claro de qual período o
+                  // progresso mostrado abaixo se refere (a meta reseta a cada novo ciclo).
+                  const periodRangeLabel = bounds ? (() => {
+                    const endDisplay = new Date(bounds.end); endDisplay.setDate(endDisplay.getDate() - 1);
+                    if (cfg.period === "year") return `${bounds.start.getFullYear()}`;
+                    if (cfg.period === "month") return bounds.start.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+                    const sameMonth = bounds.start.getMonth() === endDisplay.getMonth();
+                    const startStr = bounds.start.toLocaleDateString("pt-BR", sameMonth ? { day: "2-digit" } : { day: "2-digit", month: "short" });
+                    const endStr = endDisplay.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+                    return `${startStr} – ${endStr}`;
+                  })() : null;
                   return (
                     <Glass key={metricKey} style={{ borderRadius: 20, padding: "18px 20px", opacity: isActive ? 1 : 0.75 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
@@ -7258,6 +7269,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <div style={{ fontSize: 12, color: "#9a9aa3" }}>{metric.description}</div>
                         </div>
                       </div>
+                      {periodRangeLabel && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#94a3b8", fontWeight: 600, marginBottom: 12, marginTop: -6 }}>
+                          <CalendarIcon size={11} /> Ciclo atual: {periodRangeLabel}
+                        </div>
+                      )}
                       <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                         {BADGE_TIERS.map((tier) => {
                           const currentPct = bounds ? currentValue / (cfg.target * tier.pct) : null;
