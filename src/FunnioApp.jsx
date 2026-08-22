@@ -5643,6 +5643,24 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setSelected(newLead);
   };
 
+  // Cliente que já fechou fora do Funnio (negociado por fora, indicação já fechada etc) -
+  // entra direto como Conquistado, sem passar pelas etapas do funil.
+  const createWonLeadExternal = () => {
+    const now = new Date().toISOString();
+    const newLead = {
+      id: "l_" + Date.now(), company: "Novo Cliente", owner: sdrs[0]?.name || "", stage: "Conquistado", feedback: "", status: "Atendido",
+      contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "",
+      hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "hot", temperature: "hot",
+      lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false,
+      wonDate: now, dealValue: null, dealType: "unico", contractPeriod: "mensal",
+      workCompleted: false, workCompletedAt: null, commissionOverride: null,
+      origin: null, createdAt: now,
+      notes: [{ id: "n_ext_" + Date.now(), date: now, text: "Cliente conquistado adicionado diretamente à lista (negócio fechado fora do Funnio)." }],
+    };
+    setLeads((prev) => [newLead, ...prev]);
+    setSelected(newLead);
+  };
+
   // Confirma a importação: transforma os leads revisados/editados em leads reais do sistema
   const confirmImport = (importedDrafts) => {
     const now = new Date().toISOString();
@@ -6944,9 +6962,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {/* ═══════════════════ CONQUISTADOS (deals fechados) ═══════════════════ */}
           {view === "conquistados" && (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 160 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Conquistados</h1>
                   <div style={{ fontSize: 13, color: "#1fa971", fontWeight: 700 }}>
                     {wonLeads.length} negócios fechados
@@ -6954,6 +6972,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     {wonTotalMonthly > 0 && <> · {formatBRL(wonTotalMonthly)}<span style={{ fontWeight: 600 }}>/mês</span> recorrente</>}
                   </div>
                 </div>
+                <button onClick={createWonLeadExternal} title="Adicionar cliente que já fechou fora do Funnio" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "1.5px solid #1fa971", background: "rgba(31,169,113,0.08)", color: "#1fa971", fontSize: 12, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                  <Plus size={13} /> Cliente conquistado
+                </button>
                 <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 12, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                   <DollarSign size={13} /> Comissões
                 </button>
