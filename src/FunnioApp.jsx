@@ -434,6 +434,11 @@ const EMAIL_SEND_HISTORY_KEY = "emailSendHistory:v1";
 const CALL_SEND_HISTORY_KEY = "callSendHistory:v1";
 const WEEK_HISTORY_KEY = "weekCompletionHistory:v1";
 
+// Meta simples e única (não entra no sistema de níveis 50%/Super/Lendária) - só liga/desliga.
+// Premia quem bate a meta semanal de abordagens ("Abordar essa semana") com uma badge só.
+const WEEK_APPROACH_BADGE_ENABLED_KEY = "weekApproachBadgeEnabled:v1";
+const WEEK_APPROACH_BADGES_KEY = "weekApproachBadges:v1";
+
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
   leads: { key: "leads", label: "Encher funil", shortLabel: "Funil", icon: Target, color: "#22a35a", topIcon: Star, description: "Mais leads, mais oportunidades." },
@@ -1233,6 +1238,64 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Sugestões rápidas de resumo - cobrem os casos mais comuns pra não precisar digitar toda vez.
+const WEEK_DONE_QUICK_SUMMARIES = [
+  "Tentativa de contato sem retorno",
+  "Não atendeu",
+  "Conversamos, vai analisar",
+  "Pediu pra retornar depois",
+];
+
+// Painel obrigatório antes de marcar um lead como "feito" na Lista da Semana - garante que
+// todo contato registrado tenha um resumo escrito do que aconteceu, mesmo que seja "sem retorno".
+const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
+  const [text, setText] = useState("");
+  if (!lead) return null;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: "white", borderRadius: "22px 22px 0 0", padding: 20, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+          <div>
+            <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Resumo do contato</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+        </div>
+        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 14 }}>Antes de marcar como feito, escreva o que aconteceu no contato - mesmo que tenha sido sem retorno.</div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {WEEK_DONE_QUICK_SUMMARIES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setText(s)}
+              style={{ padding: "6px 11px", borderRadius: 8, border: `1px solid ${text === s ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: text === s ? "rgba(109,94,248,0.1)" : "white", color: text === s ? "#6d5ef8" : "#64748b", fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Escreva o resumo do contato..."
+          autoFocus
+          rows={3}
+          style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13.5, fontFamily: '"Open Sans", Arial, sans-serif', resize: "none", outline: "none", marginBottom: 14, boxSizing: "border-box" }}
+        />
+
+        <button
+          onClick={() => onConfirm(text)}
+          disabled={!text.trim()}
+          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: text.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#e2e4e9", color: text.trim() ? "white" : "#9a9aa3", fontSize: 14, fontWeight: 700, cursor: text.trim() ? "pointer" : "default" }}
+        >
+          Marcar como feito
+        </button>
       </div>
     </div>
   );
@@ -3322,6 +3385,41 @@ const BadgePopup = ({ badge, onClose }) => {
   );
 };
 
+// Pop-up de celebração da badge única "Completar abordagens da semana" - mais simples que o
+// BadgePopup normal, já que não tem nível/métrica, é liga-desliga.
+const WeekApproachBadgePopup = ({ badge, onClose }) => (
+  <>
+    <CoinRain zIndex={199} />
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.55)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "white", borderRadius: 24, padding: "34px 26px 26px", textAlign: "center", boxShadow: "0 40px 100px -20px rgba(0,0,0,0.5)", animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+        <div style={{
+          position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 190, height: 190,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${DARK.lime}cc 0%, ${DARK.lime}55 40%, ${DARK.lime}00 72%)`,
+          filter: "blur(6px)", animation: "badgeGlow 1.4s ease-in-out infinite", pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute", top: 40, left: "50%", transform: "translateX(-50%)", width: 110, height: 110,
+          borderRadius: "50%", background: DARK.lime, opacity: 0.55, filter: "blur(18px)",
+          animation: "badgeGlow 1.4s ease-in-out infinite 0.15s", pointerEvents: "none",
+        }} />
+        <div style={{ position: "relative", display: "flex", justifyContent: "center", marginBottom: 16, animation: "badgeBounce 0.6s ease 0.1s both" }}>
+          <div style={{ width: 100, height: 100, borderRadius: "50%", background: "#14141a", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 0 5px ${DARK.lime}` }}>
+            <Target size={44} color={DARK.lime} />
+          </div>
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#8fae0e", marginBottom: 6 }}>Meta semanal batida!</div>
+        <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>Abordagens da semana</div>
+        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: 20 }}>{badge.count} de {badge.target} leads abordados</div>
+        <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
+          Continuar
+        </button>
+      </div>
+    </div>
+    <CoinRain zIndex={210} />
+  </>
+);
+
 // Menu lateral - atalho pra qualquer seção do app
 const MENU_SECTIONS = [
   { key: "dashboard", label: "Home", icon: HomeIcon },
@@ -4863,6 +4961,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [goalsConfig, setGoalsConfig] = useState(DEFAULT_GOALS_CONFIG);
   const [earnedBadges, setEarnedBadges] = useState([]); // [{id, sdrName, metric, tier, periodKey, earnedAt}]
   const [badgeQueue, setBadgeQueue] = useState([]); // fila de pop-ups de badge pra mostrar um de cada vez
+  const [weekApproachBadgeEnabled, setWeekApproachBadgeEnabled] = useState(false); // meta simples/única - liga/desliga
+  const [weekApproachBadges, setWeekApproachBadges] = useState([]); // [{id, periodKey, earnedAt, count, target}]
+  const [weekApproachBadgeQueue, setWeekApproachBadgeQueue] = useState([]); // fila de pop-up dessa badge única
   const [achievementsFilterSdr, setAchievementsFilterSdr] = useState("all");
   const [expandedHistoryMetric, setExpandedHistoryMetric] = useState(null);
   const [loaded, setLoaded] = useState(false);
@@ -4931,7 +5032,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(WEEKLY_GOAL_KEY, DEFAULT_WEEKLY_GOAL), loadData(REVENUE_GOAL_KEY, DEFAULT_REVENUE_GOAL),
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
       loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []), loadData(CALL_SEND_HISTORY_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory]) => {
+      loadData(WEEK_APPROACH_BADGE_ENABLED_KEY, false), loadData(WEEK_APPROACH_BADGES_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -4962,6 +5064,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setWeekHistory(Array.isArray(weekHist) ? weekHist : []);
         setEmailSendHistory(Array.isArray(emailHistory) ? emailHistory : []);
         setCallSendHistory(Array.isArray(callHistory) ? callHistory : []);
+        setWeekApproachBadgeEnabled(!!weekBadgeEnabled);
+        setWeekApproachBadges(Array.isArray(weekBadges) ? weekBadges : []);
         setLoaded(true);
       }
     });
@@ -4974,6 +5078,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(REVENUE_GOAL_KEY, revenueGoal); }, [revenueGoal, loaded]);
   useEffect(() => { if (loaded) saveData(GOALS_CONFIG_KEY, goalsConfig); }, [goalsConfig, loaded]);
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
+  useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGE_ENABLED_KEY, weekApproachBadgeEnabled); }, [weekApproachBadgeEnabled, loaded]);
+  useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGES_KEY, weekApproachBadges); }, [weekApproachBadges, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -5111,11 +5217,35 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     }
   };
   const deleteLead = (id) => { setLeads((prev) => prev.filter((l) => l.id !== id)); setSelected(null); };
+  // Toda vez que um lead vai ser marcado "feito" na semana, exige um resumo escrito do contato -
+  // guarda o alvo aqui até o SDR confirmar (ou cancelar) no painel de resumo.
+  const [weekDoneSummaryTarget, setWeekDoneSummaryTarget] = useState(null); // { leadId, via } | null
+  const requestWeekDoneSummary = (lead, via) => { if (lead) setWeekDoneSummaryTarget({ leadId: lead.id, via }); };
+  const confirmWeekDoneSummary = (text) => {
+    if (!weekDoneSummaryTarget || !text.trim()) return;
+    const { leadId, via } = weekDoneSummaryTarget;
+    const now = new Date().toISOString();
+    const lead = leads.find((l) => l.id === leadId);
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? {
+      ...l,
+      weekDone: true,
+      weekDoneVia: via,
+      weekDoneAt: now,
+      notes: [{ id: "n_wksum_" + Date.now(), date: now, text: text.trim() }, ...(l.notes || [])],
+    } : l)));
+    if (lead) { setToast("Marcado como feito na Lista da Semana!"); logWeekHistory(lead, via); }
+    setWeekDoneSummaryTarget(null);
+  };
   const toggleWeekDone = (id) => {
     const lead = leads.find((l) => l.id === id);
-    const willBeDone = lead && !lead.weekDone;
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: !l.weekDone, weekDoneVia: !l.weekDone ? "manual" : l.weekDoneVia, weekDoneAt: !l.weekDone ? new Date().toISOString() : null } : l)));
-    if (willBeDone) logWeekHistory(lead, "manual");
+    if (!lead) return;
+    if (lead.weekDone) {
+      // Reabrir: desfaz a marcação de feito, sem exigir resumo pra isso
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekDone: false, weekDoneAt: null } : l)));
+      return;
+    }
+    // Marcar como feito sempre exige escrever um resumo do último contato antes de confirmar
+    requestWeekDoneSummary(lead, "manual");
   };
   const toggleSuperAttention = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, superAttention: !l.superAttention } : l)));
   // Verifica se o lead foi abordado (marcado como feito) nos últimos 7 dias - usado pra
@@ -5275,17 +5405,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       return;
     }
     dispatchContact(type, lead, (id) => {
+      const now = new Date().toISOString();
       setLeads((prev) => prev.map((l) => l.id === id ? {
         ...l,
-        lastContact: new Date().toISOString(),
-        // Falar com o lead por qualquer canal já resolve a tarefa da semana automaticamente -
-        // antes ficava esquisito: você conversava, mas a Lista da Semana continuava mostrando pendente.
-        weekDone: l.weekTag ? true : l.weekDone,
-        weekDoneVia: (l.weekTag && !l.weekDone) ? type : l.weekDoneVia,
-        weekDoneAt: (l.weekTag && !l.weekDone) ? new Date().toISOString() : l.weekDoneAt,
-        notes: [{ id: "n_" + Date.now(), date: new Date().toISOString(), text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])],
+        lastContact: now,
+        notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via ${type === "whatsapp" ? "WhatsApp" : type === "email" ? "Email" : "Telefone"}` }, ...(l.notes || [])],
       } : l));
-      if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, type); }
+      // Contato feito por qualquer canal só resolve de fato a tarefa da semana depois que
+      // o SDR escrever o resumo de como foi - por isso não marca weekDone direto aqui.
+      if (lead.weekTag && !lead.weekDone) requestWeekDoneSummary(lead, type);
     });
   };
 
@@ -5299,12 +5427,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
       lastContact: now,
-      weekDone: l.weekTag ? true : l.weekDone,
-      weekDoneVia: (l.weekTag && !l.weekDone) ? "whatsapp" : l.weekDoneVia,
-      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via WhatsApp: "${message}"` }, ...(l.notes || [])],
     } : l));
-    if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, "whatsapp"); }
+    if (lead.weekTag && !lead.weekDone) requestWeekDoneSummary(lead, "whatsapp");
   };
 
   const dispatchEmailWithMessage = (lead, subject, body) => {
@@ -5314,12 +5439,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
       lastContact: now,
-      weekDone: l.weekTag ? true : l.weekDone,
-      weekDoneVia: (l.weekTag && !l.weekDone) ? "email" : l.weekDoneVia,
-      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via Email: "${subject}"` }, ...(l.notes || [])],
     } : l));
-    if (lead.weekTag && !lead.weekDone) { setToast("Marcado como feito na Lista da Semana também!"); logWeekHistory(lead, "email"); }
+    if (lead.weekTag && !lead.weekDone) requestWeekDoneSummary(lead, "email");
   };
 
   // Toca no aviãozinho: se o lead já está na fila, remove direto. Se não está,
@@ -5351,14 +5473,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setLeads((prev) => prev.map((l) => l.id === leadId ? {
       ...l,
       lastContact: now,
-      weekDone: l.weekTag ? true : l.weekDone,
-      weekDoneVia: (l.weekTag && !l.weekDone) ? "whatsapp-lista" : l.weekDoneVia,
-      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_wa_" + Date.now(), date: now, text: `Contato via WhatsApp (lista de envio): "${message}"` }, ...(l.notes || [])],
     } : l));
     setWaSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setWaSendHistory((prev) => [{ id: "wh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", whatsapp: lead?.whatsapp || "", message, date: now, by: currentUserId }, ...prev].slice(0, 300));
-    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "whatsapp-lista"); }
+    if (lead?.weekTag && !lead?.weekDone) requestWeekDoneSummary(lead, "whatsapp-lista");
   };
 
   // Fila de envio de e-mail - mesma lógica da fila de WhatsApp, mas guardando
@@ -5390,14 +5509,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setLeads((prev) => prev.map((l) => l.id === leadId ? {
       ...l,
       lastContact: now,
-      weekDone: l.weekTag ? true : l.weekDone,
-      weekDoneVia: (l.weekTag && !l.weekDone) ? "email-lista" : l.weekDoneVia,
-      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_email_" + Date.now(), date: now, text: `Contato via Email (lista de envio): "${subject}"` }, ...(l.notes || [])],
     } : l));
     setEmailSendList((prev) => prev.filter((x) => x.leadId !== leadId));
     setEmailSendHistory((prev) => [{ id: "eh_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", email: lead?.email || "", subject, body, date: now, by: currentUserId }, ...prev].slice(0, 300));
-    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "email-lista"); }
+    if (lead?.weekTag && !lead?.weekDone) requestWeekDoneSummary(lead, "email-lista");
   };
 
   // Fila de ligações - mais simples que WA/e-mail: não tem script, é só uma lista de leads
@@ -5411,14 +5527,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setLeads((prev) => prev.map((l) => l.id === leadId ? {
       ...l,
       lastContact: now,
-      weekDone: l.weekTag ? true : l.weekDone,
-      weekDoneVia: (l.weekTag && !l.weekDone) ? "call-lista" : l.weekDoneVia,
-      weekDoneAt: (l.weekTag && !l.weekDone) ? now : l.weekDoneAt,
       notes: [{ id: "n_call_" + Date.now(), date: now, text: "Contato via Telefone (lista de ligação)" }, ...(l.notes || [])],
     } : l));
     setCallSendList((prev) => prev.filter((id) => id !== leadId));
     setCallSendHistory((prev) => [{ id: "ch_" + Date.now() + "_" + leadId, leadId, company: lead?.company || "Lead removido", phone: lead?.phone || "", date: now, by: currentUserId }, ...prev].slice(0, 300));
-    if (lead?.weekTag && !lead?.weekDone) { setToast(`${lead.company}: marcado como feito na Lista da Semana também!`); logWeekHistory(lead, "call-lista"); }
+    if (lead?.weekTag && !lead?.weekDone) requestWeekDoneSummary(lead, "call-lista");
   };
 
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
@@ -5469,6 +5582,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const superNoContact = leads.filter((l) => l.superAttention && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) === null || daysSince(l.lastContact) > 3));
     return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact };
   }, [leads, meetings]);
+
+  // Meta simples e única "Completar abordagens da semana" - se ativada, credita UMA badge
+  // (sem níveis) quando a meta semanal configurada (weeklyGoal) é batida, uma vez por semana.
+  useEffect(() => {
+    if (!loaded || !weekApproachBadgeEnabled || !weeklyGoal) return;
+    if (stats.weekDoneCount < weeklyGoal) return;
+    const periodKey = getPeriodBounds("week").key;
+    const already = weekApproachBadges.some((b) => b.periodKey === periodKey);
+    if (already) return;
+    const newBadge = { id: "weekapproach_" + periodKey, periodKey, earnedAt: new Date().toISOString(), count: stats.weekDoneCount, target: weeklyGoal };
+    setWeekApproachBadges((prev) => [...prev, newBadge]);
+    setWeekApproachBadgeQueue((prev) => [...prev, newBadge]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, weekApproachBadgeEnabled, stats.weekDoneCount, weeklyGoal]);
 
   // Dados filtrados por período - usados só na página de Relatórios
   const reportStats = useMemo(() => {
@@ -6659,6 +6786,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                {/* Meta simples e única - completar as abordagens da semana. Usa a mesma meta configurada
+                    no card "Abordar essa semana" da home (editável por lá), aqui só liga/desliga a badge. */}
+                <Glass style={{ borderRadius: 18, padding: "18px 20px", border: weekApproachBadgeEnabled ? `1.5px solid ${DARK.lime}` : undefined }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: "#14141a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Target size={19} color={DARK.lime} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>Completar abordagens da semana</div>
+                        <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>{weekApproachBadgeEnabled ? `Badge única ao bater a meta de ${weeklyGoal} por semana` : "Desativada"}</div>
+                      </div>
+                    </div>
+                    <ToggleSwitch on={weekApproachBadgeEnabled} onClick={() => setWeekApproachBadgeEnabled((v) => !v)} activeColor={DARK.lime} />
+                  </div>
+                </Glass>
+
                 {METRIC_KEYS.map((metricKey) => {
                   const metric = METRIC_DEFS[metricKey];
                   const cfg = goalsConfig[metricKey];
@@ -7092,6 +7236,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
         {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
         {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
+        {weekDoneSummaryTarget && (
+          <WeekDoneSummaryModal
+            lead={leads.find((l) => l.id === weekDoneSummaryTarget.leadId)}
+            onClose={() => setWeekDoneSummaryTarget(null)}
+            onConfirm={confirmWeekDoneSummary}
+          />
+        )}
         {showWaSendScreen && (
           <WaSendListScreen
             leadsInList={waSendList.map((item) => {
@@ -7227,6 +7378,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           />
         )}
         {badgeQueue.length > 0 && <BadgePopup badge={badgeQueue[0]} onClose={() => setBadgeQueue((prev) => prev.slice(1))} />}
+        {weekApproachBadgeQueue.length > 0 && <WeekApproachBadgePopup badge={weekApproachBadgeQueue[0]} onClose={() => setWeekApproachBadgeQueue((prev) => prev.slice(1))} />}
 
         {/* ── BOTÃO FLUTUANTE: MINHAS LISTAS (WhatsApp + E-mail + Ligação, consolidado num só) ── */}
         {(waSendList.length + emailSendList.length + callSendList.length) > 0 && view !== "assistente" && (
