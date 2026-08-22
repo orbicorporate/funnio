@@ -498,7 +498,22 @@ const DEFAULT_COMMISSION_CONFIG = {
 };
 // Calcula a comissão de um negócio fechado com base na config de regras - encontra a
 // primeira faixa cujo valor do contrato se encaixe (min <= valor <= max, ou max=null=sem limite).
+// Se o lead tiver um valor de comissão personalizado (contrato que foge da regra padrão),
+// esse valor sempre tem prioridade sobre o cálculo automático.
 const computeCommission = (lead, commissionConfig) => {
+  if (!lead || lead.stage !== "Conquistado") return 0;
+  if (typeof lead.commissionOverride === "number") return lead.commissionOverride;
+  if (!commissionConfig) return 0;
+  const bucket = lead.dealType === "mensal" ? commissionConfig.mensal : commissionConfig.avulso;
+  if (!bucket || !bucket.enabled || !Array.isArray(bucket.tiers) || bucket.tiers.length === 0) return 0;
+  const value = getDealValue(lead);
+  const tier = bucket.tiers.find((t) => value >= (t.min || 0) && (t.max === null || t.max === undefined || value <= t.max));
+  if (!tier) return 0;
+  return tier.type === "percent" ? value * ((tier.value || 0) / 100) : (tier.value || 0);
+};
+// Comissão calculada apenas pela regra automática (ignora override) - usada pra mostrar ao
+// gestor "quanto seria pela regra" enquanto edita um valor personalizado.
+const computeAutoCommission = (lead, commissionConfig) => {
   if (!lead || lead.stage !== "Conquistado" || !commissionConfig) return 0;
   const bucket = lead.dealType === "mensal" ? commissionConfig.mensal : commissionConfig.avulso;
   if (!bucket || !bucket.enabled || !Array.isArray(bucket.tiers) || bucket.tiers.length === 0) return 0;
@@ -3630,6 +3645,71 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
   );
 };
 
+// Painel de edição da comissão de UM lead específico - normalmente segue a regra automática
+// configurada em "Comissões", mas dá pra travar um valor personalizado quando o contrato
+// daquele cliente foge da regra padrão (negociação especial, desconto, bônus etc).
+const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
+  const [mode, setMode] = useState(typeof lead?.commissionOverride === "number" ? "custom" : "auto");
+  const [customValue, setCustomValue] = useState(typeof lead?.commissionOverride === "number" ? String(lead.commissionOverride) : "");
+  if (!lead) return null;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+          <div>
+            <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Comissão deste contrato</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "16px 0" }}>
+          <button
+            onClick={() => setMode("auto")}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${mode === "auto" ? "#b8860b" : "rgba(148,163,184,0.3)"}`, background: mode === "auto" ? "rgba(251,191,36,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>Regra automática</div>
+              <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>Calculada pela faixa configurada em Comissões</div>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#b8860b" }}>{formatBRL(autoValue)}</div>
+          </button>
+          <button
+            onClick={() => setMode("custom")}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${mode === "custom" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: mode === "custom" ? "rgba(109,94,248,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>Valor personalizado</div>
+              <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>Pra contratos que fogem da regra padrão</div>
+            </div>
+            <Pencil size={15} color="#6d5ef8" />
+          </button>
+        </div>
+
+        {mode === "custom" && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ ...labelStyle, marginBottom: 6 }}>Valor da comissão (R$)</label>
+            <input
+              type="number" min={0} step="0.01" autoFocus
+              value={customValue}
+              onChange={(e) => setCustomValue(e.target.value)}
+              placeholder="0,00"
+              style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginBottom: 0 }}
+            />
+          </div>
+        )}
+
+        <button
+          onClick={() => onSave(mode === "auto" ? null : Math.max(0, parseFloat(customValue) || 0))}
+          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+        >
+          Salvar
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Menu lateral - atalho pra qualquer seção do app
 const MENU_SECTIONS = [
   { key: "dashboard", label: "Home", icon: HomeIcon },
@@ -5507,6 +5587,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // Marca um cliente conquistado como "trabalho concluído" - continua na lista de Conquistados,
   // só fica com visual apagado pra diferenciar de contratos ainda em andamento.
   const toggleWorkCompleted = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, workCompleted: !l.workCompleted, workCompletedAt: !l.workCompleted ? new Date().toISOString() : null } : l)));
+  // Comissão personalizada por lead - só pra contratos que fogem da regra padrão configurada.
+  const [commissionEditLead, setCommissionEditLead] = useState(null);
+  const setLeadCommissionOverride = (id, value) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, commissionOverride: value } : l)));
   // Configuração de comissão - por tipo de serviço (avulso/mensal), cada um com suas próprias faixas
   const updateCommissionBucket = (bucketKey, patch) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], ...patch } }));
   const updateCommissionTier = (bucketKey, tierId, patch) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: prev[bucketKey].tiers.map((t) => (t.id === tierId ? { ...t, ...patch } : t)) } }));
@@ -5538,7 +5621,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -6911,11 +6994,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(31,169,113,0.12)", color: "#1fa971" }}>
                             {CONTRACT_PERIOD_OPTIONS.find((p) => p.key === (lead.contractPeriod || "mensal"))?.label || "Mensal"}
                           </span>
-                          {commission > 0 && (
-                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(251,191,36,0.15)", color: "#b8860b" }}>
-                              💰 {formatBRL(commission)} comissão
-                            </span>
-                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setCommissionEditLead(lead); }}
+                            title="Editar comissão deste contrato"
+                            style={{
+                              display: "flex", alignItems: "center", gap: 4, fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, border: "none", cursor: "pointer",
+                              background: commission > 0 ? "rgba(251,191,36,0.15)" : "rgba(148,163,184,0.15)",
+                              color: commission > 0 ? "#b8860b" : "#64748b",
+                            }}
+                          >
+                            💰 {commission > 0 ? `${formatBRL(commission)} comissão` : "Definir comissão"}
+                            {typeof lead.commissionOverride === "number" && <span style={{ fontStyle: "italic" }}>(personalizada)</span>}
+                            <Pencil size={9} />
+                          </button>
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
@@ -7948,6 +8039,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             achievement={shareAchievement}
             gestorName={authMembers.find((m) => m.role === "owner")?.display_name}
             onClose={() => setShareAchievement(null)}
+          />
+        )}
+        {commissionEditLead && (
+          <CommissionEditModal
+            lead={commissionEditLead}
+            autoValue={computeAutoCommission(commissionEditLead, commissionConfig)}
+            onClose={() => setCommissionEditLead(null)}
+            onSave={(value) => { setLeadCommissionOverride(commissionEditLead.id, value); setCommissionEditLead(null); }}
           />
         )}
 
