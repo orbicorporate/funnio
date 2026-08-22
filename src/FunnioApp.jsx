@@ -9,7 +9,7 @@ import {
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
   Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
-  Repeat, Lock,
+  Repeat, Lock, DollarSign,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -487,6 +487,26 @@ const CONTRACT_PERIOD_OPTIONS = [
   { key: "semestral", label: "Semestral" },
   { key: "anual", label: "Anual" },
 ];
+
+// Comissão - regras configuráveis por tipo de serviço (avulso/fee mensal), com faixas de
+// valor (volume/preço) e um percentual ou valor fixo por faixa. Página só do gestor.
+const COMMISSION_CONFIG_KEY = "commissionConfig:v1";
+const DEFAULT_COMMISSION_TIER = () => ({ id: "tier_" + Date.now() + Math.random().toString(36).slice(2, 6), min: 0, max: null, type: "percent", value: 10 });
+const DEFAULT_COMMISSION_CONFIG = {
+  avulso: { enabled: false, tiers: [{ id: "tier_avulso_default", min: 0, max: null, type: "percent", value: 10 }] },
+  mensal: { enabled: false, tiers: [{ id: "tier_mensal_default", min: 0, max: null, type: "percent", value: 10 }] },
+};
+// Calcula a comissão de um negócio fechado com base na config de regras - encontra a
+// primeira faixa cujo valor do contrato se encaixe (min <= valor <= max, ou max=null=sem limite).
+const computeCommission = (lead, commissionConfig) => {
+  if (!lead || lead.stage !== "Conquistado" || !commissionConfig) return 0;
+  const bucket = lead.dealType === "mensal" ? commissionConfig.mensal : commissionConfig.avulso;
+  if (!bucket || !bucket.enabled || !Array.isArray(bucket.tiers) || bucket.tiers.length === 0) return 0;
+  const value = getDealValue(lead);
+  const tier = bucket.tiers.find((t) => value >= (t.min || 0) && (t.max === null || t.max === undefined || value <= t.max));
+  if (!tier) return 0;
+  return tier.type === "percent" ? value * ((tier.value || 0) / 100) : (tier.value || 0);
+};
 
 // Origem do lead - de onde ele veio, usado no cadastro, no card e no filtro da tela principal
 const ORIGIN_OPTIONS = [
@@ -3546,12 +3566,77 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
   );
 };
 
+// Card de configuração de comissão de um tipo de serviço (Avulso ou Fee mensal) - faixas de
+// valor com percentual ou valor fixo por faixa, editável só pelo gestor.
+const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onToggleEnabled, onUpdateTier, onAddTier, onRemoveTier, isOwner }) => {
+  const sortedTiers = [...bucket.tiers].sort((a, b) => (a.min || 0) - (b.min || 0));
+  return (
+    <Glass style={{ borderRadius: 20, padding: "20px 22px", border: bucket.enabled ? `1.5px solid ${color}55` : undefined, opacity: isOwner ? 1 : 0.75 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: bucket.enabled ? 18 : 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon size={20} color={color} />
+          </div>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#14141a" }}>{title}</div>
+            <div style={{ fontSize: 12, color: "#9a9aa3" }}>{bucket.enabled ? subtitle : "Desativado"}</div>
+          </div>
+        </div>
+        <ToggleSwitch on={bucket.enabled} onClick={onToggleEnabled} activeColor={color} disabled={!isOwner} />
+      </div>
+
+      {bucket.enabled && (
+        <div style={{ pointerEvents: isOwner ? "auto" : "none" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+            {sortedTiers.map((tier) => (
+              <div key={tier.id} style={{ display: "flex", alignItems: "flex-end", gap: 8, flexWrap: "wrap", padding: "12px 14px", borderRadius: 12, background: "rgba(248,248,250,0.75)" }}>
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>De (R$)</label>
+                  <input type="number" min={0} value={tier.min} onChange={(e) => onUpdateTier(tier.id, { min: Math.max(0, parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 95 }} />
+                </div>
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>Até (R$)</label>
+                  <input type="number" min={0} placeholder="Sem limite" value={tier.max ?? ""} onChange={(e) => onUpdateTier(tier.id, { max: e.target.value === "" ? null : Math.max(0, parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 95 }} />
+                </div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[{ key: "percent", label: "%" }, { key: "fixed", label: "R$" }].map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => onUpdateTier(tier.id, { type: t.key })}
+                      style={{ padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${tier.type === t.key ? color : "rgba(148,163,184,0.3)"}`, background: tier.type === t.key ? color + "15" : "white", color: tier.type === t.key ? color : "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>{tier.type === "percent" ? "Percentual (%)" : "Valor fixo (R$)"}</label>
+                  <input type="number" min={0} step="0.01" value={tier.value} onChange={(e) => onUpdateTier(tier.id, { value: Math.max(0, parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 95 }} />
+                </div>
+                {sortedTiers.length > 1 && (
+                  <button onClick={() => onRemoveTier(tier.id)} title="Remover faixa" style={{ marginLeft: "auto", width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button onClick={onAddTier} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${color}66`, background: "transparent", color: color, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+            <Plus size={14} /> Adicionar faixa
+          </button>
+        </div>
+      )}
+    </Glass>
+  );
+};
+
 // Menu lateral - atalho pra qualquer seção do app
 const MENU_SECTIONS = [
   { key: "dashboard", label: "Home", icon: HomeIcon },
   { key: "agenda", label: "Calendário", icon: CalendarIcon },
   { key: "relatorios", label: "Relatórios", icon: PieChart },
   { key: "conquistados", label: "Conquistados", icon: CheckImgIcon },
+  { key: "comissoes", label: "Comissões", icon: DollarSign },
   { key: "desatendidos", label: "Negociações antigas", icon: Clock },
   { key: "semana", label: "Abordar essa semana", icon: Target },
   { key: "metas", label: "Metas", icon: Flag },
@@ -5097,6 +5182,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [allGoalsReward, setAllGoalsReward] = useState(DEFAULT_ALL_GOALS_REWARD); // prêmio geral (bater todas as metas selecionadas)
   const [allGoalsRewardEarned, setAllGoalsRewardEarned] = useState([]); // [{id, sdrName, comboKey, earnedAt, amount, metrics}]
   const [allGoalsRewardQueue, setAllGoalsRewardQueue] = useState([]); // fila de pop-up do prêmio geral
+  const [commissionConfig, setCommissionConfig] = useState(DEFAULT_COMMISSION_CONFIG); // regras de comissão por tipo de serviço
   // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
@@ -5170,7 +5256,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []), loadData(CALL_SEND_HISTORY_KEY, []),
       loadData(WEEK_APPROACH_BADGE_ENABLED_KEY, false), loadData(WEEK_APPROACH_BADGES_KEY, []),
       loadData(WEEK_APPROACH_REWARD_KEY, 0), loadData(ALL_GOALS_REWARD_KEY, DEFAULT_ALL_GOALS_REWARD), loadData(ALL_GOALS_REWARD_EARNED_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned]) => {
+      loadData(COMMISSION_CONFIG_KEY, DEFAULT_COMMISSION_CONFIG),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -5206,6 +5293,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setWeekApproachReward(typeof weekReward === "number" ? weekReward : 0);
         setAllGoalsReward(allGoalsRewardCfg && typeof allGoalsRewardCfg === "object" ? { ...DEFAULT_ALL_GOALS_REWARD, ...allGoalsRewardCfg } : DEFAULT_ALL_GOALS_REWARD);
         setAllGoalsRewardEarned(Array.isArray(allGoalsEarned) ? allGoalsEarned : []);
+        setCommissionConfig(commissionCfg && typeof commissionCfg === "object" ? {
+          avulso: commissionCfg.avulso && typeof commissionCfg.avulso === "object" ? commissionCfg.avulso : DEFAULT_COMMISSION_CONFIG.avulso,
+          mensal: commissionCfg.mensal && typeof commissionCfg.mensal === "object" ? commissionCfg.mensal : DEFAULT_COMMISSION_CONFIG.mensal,
+        } : DEFAULT_COMMISSION_CONFIG);
         setLoaded(true);
       }
     });
@@ -5223,6 +5314,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_REWARD_KEY, weekApproachReward); }, [weekApproachReward, loaded]);
   useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_KEY, allGoalsReward); }, [allGoalsReward, loaded]);
   useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_EARNED_KEY, allGoalsRewardEarned); }, [allGoalsRewardEarned, loaded]);
+  useEffect(() => { if (loaded) saveData(COMMISSION_CONFIG_KEY, commissionConfig); }, [commissionConfig, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -5412,6 +5504,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     requestWeekDoneSummary(lead, "manual");
   };
   const toggleSuperAttention = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, superAttention: !l.superAttention } : l)));
+  // Marca um cliente conquistado como "trabalho concluído" - continua na lista de Conquistados,
+  // só fica com visual apagado pra diferenciar de contratos ainda em andamento.
+  const toggleWorkCompleted = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, workCompleted: !l.workCompleted, workCompletedAt: !l.workCompleted ? new Date().toISOString() : null } : l)));
+  // Configuração de comissão - por tipo de serviço (avulso/mensal), cada um com suas próprias faixas
+  const updateCommissionBucket = (bucketKey, patch) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], ...patch } }));
+  const updateCommissionTier = (bucketKey, tierId, patch) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: prev[bucketKey].tiers.map((t) => (t.id === tierId ? { ...t, ...patch } : t)) } }));
+  const addCommissionTier = (bucketKey) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: [...prev[bucketKey].tiers, DEFAULT_COMMISSION_TIER()] } }));
+  const removeCommissionTier = (bucketKey, tierId) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: prev[bucketKey].tiers.filter((t) => t.id !== tierId) } }));
   // Verifica se o lead foi abordado (marcado como feito) nos últimos 7 dias - usado pra
   // avisar antes de adicionar ele de novo na Lista da Semana, evitando reabordagem repetida.
   const daysSinceApproached = (lead) => {
@@ -5438,7 +5538,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -6744,7 +6844,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Conquistados</h1>
                   <div style={{ fontSize: 13, color: "#1fa971", fontWeight: 700 }}>
                     {wonLeads.length} negócios fechados
@@ -6752,6 +6852,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     {wonTotalMonthly > 0 && <> · {formatBRL(wonTotalMonthly)}<span style={{ fontWeight: 600 }}>/mês</span> recorrente</>}
                   </div>
                 </div>
+                <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "none", background: "#14141a", color: "#fbbf24", fontSize: 12, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                  <DollarSign size={13} /> Comissões
+                </button>
               </div>
 
               {/* Filtro de período por data de fechamento */}
@@ -6775,17 +6878,26 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {wonLeads.map((lead) => (
+                  {wonLeads.map((lead) => {
+                    const commission = computeCommission(lead, commissionConfig);
+                    return (
                     <Glass
                       key={lead.id}
                       onClick={() => setSelected(lead)}
-                      style={{ borderRadius: 16, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}
+                      style={{ borderRadius: 16, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", opacity: lead.workCompleted ? 0.55 : 1, filter: lead.workCompleted ? "grayscale(0.7)" : "none" }}
                     >
                       <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(31,169,113,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <CheckImgIcon size={18} />
                       </div>
                       <div style={{ flex: 1, minWidth: 160 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.company}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                          <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.company}</div>
+                          {lead.workCompleted && (
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(100,116,139,0.15)", color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}>
+                              <CheckCircle2 size={10} /> Trabalho concluído
+                            </span>
+                          )}
+                        </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
                           <OwnerAvatar name={lead.owner || "Todos"} size={16} />
                           <span style={{ fontSize: 11.5, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
@@ -6799,6 +6911,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(31,169,113,0.12)", color: "#1fa971" }}>
                             {CONTRACT_PERIOD_OPTIONS.find((p) => p.key === (lead.contractPeriod || "mensal"))?.label || "Mensal"}
                           </span>
+                          {commission > 0 && (
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(251,191,36,0.15)", color: "#b8860b" }}>
+                              💰 {formatBRL(commission)} comissão
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
@@ -6810,6 +6927,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#1fa971" }}>{formatBRL(getDealValue(lead))}{lead.dealType === "mensal" && <span style={{ fontSize: 11, fontWeight: 600 }}>/mês</span>}</div>
                       </div>
                       <button
+                        onClick={(e) => { e.stopPropagation(); toggleWorkCompleted(lead.id); }}
+                        title={lead.workCompleted ? "Reabrir - o trabalho ainda está em andamento" : "Marcar como trabalho concluído"}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 9,
+                          border: `1.5px solid ${lead.workCompleted ? "rgba(100,116,139,0.3)" : "#1fa971"}`,
+                          background: lead.workCompleted ? "white" : "rgba(31,169,113,0.08)",
+                          color: lead.workCompleted ? "#64748b" : "#1fa971",
+                          fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0,
+                        }}
+                      >
+                        {lead.workCompleted ? <><Repeat size={12} /> Reabrir</> : <><CheckCircle2 size={12} /> Trabalho concluído</>}
+                      </button>
+                      <button
                         onClick={(e) => { e.stopPropagation(); toggleSuperAttention(lead.id); }}
                         title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
                         style={{ border: "none", background: "transparent", cursor: "pointer", padding: 2, opacity: lead.superAttention ? 1 : 0.3 }}
@@ -6818,9 +6948,64 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </button>
                       <ChevronRight size={16} color="#c4c4cc" />
                     </Glass>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
+            </>
+          )}
+
+          {/* ═══════════════════ COMISSÕES (regras por tipo de serviço, volume e preço) ═══════════════════ */}
+          {view === "comissoes" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                <button onClick={() => setView("conquistados")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <div>
+                  <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Comissões</h1>
+                  <div style={{ fontSize: 13, color: "#9a9aa3" }}>{isOwner ? "Faixas por volume, valor e tipo de serviço" : "Só o gestor do funil pode alterar as comissões"}</div>
+                </div>
+              </div>
+
+              {!isOwner && (
+                <Glass style={{ borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+                  <Lock size={16} color="#9a9aa3" />
+                  <div style={{ fontSize: 12, color: "#6b6b75" }}>Você pode ver as regras de comissão, mas só o gestor do funil pode alterá-las.</div>
+                </Glass>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 20 }}>
+                <CommissionBucketCard
+                  title="Avulso"
+                  subtitle="Pagamento único, projetos pontuais"
+                  icon={Rocket}
+                  color="#6d5ef8"
+                  bucket={commissionConfig.avulso}
+                  onToggleEnabled={() => updateCommissionBucket("avulso", { enabled: !commissionConfig.avulso.enabled })}
+                  onUpdateTier={(tierId, patch) => updateCommissionTier("avulso", tierId, patch)}
+                  onAddTier={() => addCommissionTier("avulso")}
+                  onRemoveTier={(tierId) => removeCommissionTier("avulso", tierId)}
+                  isOwner={isOwner}
+                />
+                <CommissionBucketCard
+                  title="Fee mensal"
+                  subtitle="Contratos recorrentes, cobrança mensal"
+                  icon={Repeat}
+                  color="#1fa971"
+                  bucket={commissionConfig.mensal}
+                  onToggleEnabled={() => updateCommissionBucket("mensal", { enabled: !commissionConfig.mensal.enabled })}
+                  onUpdateTier={(tierId, patch) => updateCommissionTier("mensal", tierId, patch)}
+                  onAddTier={() => addCommissionTier("mensal")}
+                  onRemoveTier={(tierId) => removeCommissionTier("mensal", tierId)}
+                  isOwner={isOwner}
+                />
+              </div>
+
+              <Glass style={{ borderRadius: 16, padding: "14px 18px", marginBottom: 90, display: "flex", alignItems: "center", gap: 10 }}>
+                <DollarSign size={18} color="#b8860b" />
+                <div style={{ fontSize: 12.5, color: "#6b6b75" }}>
+                  A comissão é calculada automaticamente pelo valor de cada negócio fechado e pela faixa em que ele se encaixa, e já aparece direto no card de cada cliente em <strong>Conquistados</strong>.
+                </div>
+              </Glass>
             </>
           )}
 
