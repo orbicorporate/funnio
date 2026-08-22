@@ -438,6 +438,13 @@ const WEEK_HISTORY_KEY = "weekCompletionHistory:v1";
 // Premia quem bate a meta semanal de abordagens ("Abordar essa semana") com uma badge só.
 const WEEK_APPROACH_BADGE_ENABLED_KEY = "weekApproachBadgeEnabled:v1";
 const WEEK_APPROACH_BADGES_KEY = "weekApproachBadges:v1";
+const WEEK_APPROACH_REWARD_KEY = "weekApproachReward:v1"; // valor em R$ do prêmio dessa badge única
+
+// Prêmio geral (bater TODAS as metas selecionadas ao mesmo tempo) - o gestor escolhe
+// quais metas entram na conta e o valor do prêmio.
+const ALL_GOALS_REWARD_KEY = "allGoalsReward:v1";
+const ALL_GOALS_REWARD_EARNED_KEY = "allGoalsRewardEarned:v1";
+const DEFAULT_ALL_GOALS_REWARD = { enabled: false, amount: 0, metrics: [] };
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
@@ -449,10 +456,10 @@ const METRIC_DEFS = {
 const METRIC_KEYS = Object.keys(METRIC_DEFS);
 
 const DEFAULT_GOALS_CONFIG = {
-  leads: { enabled: true, period: "week", target: 20 },
-  proposals: { enabled: true, period: "week", target: 10 },
-  meetings: { enabled: false, period: "week", target: 8 },
-  contracts: { enabled: false, period: "month", target: 4 },
+  leads: { enabled: true, period: "week", target: 20, reward: 0 },
+  proposals: { enabled: true, period: "week", target: 10, reward: 0 },
+  meetings: { enabled: false, period: "week", target: 8, reward: 0 },
+  contracts: { enabled: false, period: "month", target: 4, reward: 0 },
 };
 
 // Níveis de badge - porcentagem da meta configurada que precisa bater pra ganhar cada nível.
@@ -3378,7 +3385,12 @@ const BadgePopup = ({ badge, onClose }) => {
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: tier.color, marginBottom: 6 }}>{tier.label} conquistada!</div>
           <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{badge.sdrName}</div>
           <div style={{ fontSize: 13.5, color: "#6b6b75", marginBottom: 4 }}>{metric.label}</div>
-          <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: 20 }}>{badge.value} de {badge.target} · Meta {(PERIOD_OPTIONS.find((p) => p.key === badge.period)?.label || "").toLowerCase()}</div>
+          <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.value} de {badge.target} · Meta {(PERIOD_OPTIONS.find((p) => p.key === badge.period)?.label || "").toLowerCase()}</div>
+          {badge.reward > 0 && (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 10, background: "rgba(22,163,74,0.1)", color: "#16a34a", fontSize: 14, fontWeight: 800, marginBottom: 20 }}>
+              💰 R$ {badge.reward.toLocaleString("pt-BR")} destravado!
+            </div>
+          )}
           <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
             Continuar
           </button>
@@ -3415,8 +3427,52 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
         </div>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#8fae0e", marginBottom: 6 }}>Meta semanal batida!</div>
         <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>Abordagens da semana</div>
-        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: 20 }}>{badge.count} de {badge.target} leads abordados</div>
+        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.count} de {badge.target} leads abordados</div>
+        {badge.reward > 0 && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 10, background: "rgba(22,163,74,0.1)", color: "#16a34a", fontSize: 14, fontWeight: 800, marginBottom: 20 }}>
+            💰 R$ {badge.reward.toLocaleString("pt-BR")} destravado!
+          </div>
+        )}
         <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
+          Continuar
+        </button>
+      </div>
+    </div>
+    <CoinRain zIndex={210} />
+  </>
+);
+
+// Pop-up do prêmio geral - quando o SDR bate TODAS as metas selecionadas pelo gestor ao mesmo tempo.
+const AllGoalsRewardPopup = ({ badge, onClose }) => (
+  <>
+    <CoinRain zIndex={199} />
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.55)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "white", borderRadius: 24, padding: "34px 26px 26px", textAlign: "center", boxShadow: "0 40px 100px -20px rgba(0,0,0,0.5)", animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+        <div style={{
+          position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 190, height: 190,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #16a34acc 0%, #16a34a55 40%, #16a34a00 72%)",
+          filter: "blur(6px)", animation: "badgeGlow 1.4s ease-in-out infinite", pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute", top: 40, left: "50%", transform: "translateX(-50%)", width: 110, height: 110,
+          borderRadius: "50%", background: "#16a34a", opacity: 0.55, filter: "blur(18px)",
+          animation: "badgeGlow 1.4s ease-in-out infinite 0.15s", pointerEvents: "none",
+        }} />
+        <div style={{ position: "relative", display: "flex", justifyContent: "center", marginBottom: 16, animation: "badgeBounce 0.6s ease 0.1s both" }}>
+          <div style={{ width: 100, height: 100, borderRadius: "50%", background: "#14141a", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 5px #16a34a" }}>
+            <Trophy size={44} color="#16a34a" />
+          </div>
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#16a34a", marginBottom: 6 }}>Todas as metas batidas!</div>
+        <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{badge.sdrName}</div>
+        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginBottom: 10 }}>
+          {badge.metrics.map((k) => METRIC_DEFS[k]?.shortLabel).filter(Boolean).join(" · ")}
+        </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 10, background: "rgba(22,163,74,0.1)", color: "#16a34a", fontSize: 14, fontWeight: 800, marginBottom: 20 }}>
+          💰 R$ {badge.amount.toLocaleString("pt-BR")} destravado!
+        </div>
+        <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "#14141a", color: "#16a34a", fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
           Continuar
         </button>
       </div>
@@ -3430,9 +3486,15 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
 // igual ao fluxo de convite de membros).
 const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
   if (!achievement) return null;
-  const message = achievement.type === "week"
-    ? `🎯 Batemos a meta semanal de abordagens no Funnio! ${achievement.count}/${achievement.target} leads abordados essa semana.`
-    : `🏆 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`;
+  const message = achievement.type === "allgoals"
+    ? `🎉 Vc bateu todas as metas e destravou os R$ ${achievement.amount.toLocaleString("pt-BR")}!`
+    : achievement.type === "week"
+    ? (achievement.reward > 0
+        ? `🎯💰 Batemos a meta semanal de abordagens no Funnio e destravei R$ ${achievement.reward.toLocaleString("pt-BR")}! ${achievement.count}/${achievement.target} leads abordados essa semana.`
+        : `🎯 Batemos a meta semanal de abordagens no Funnio! ${achievement.count}/${achievement.target} leads abordados essa semana.`)
+    : (achievement.reward > 0
+        ? `🏆💰 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio e destravei R$ ${achievement.reward.toLocaleString("pt-BR")}! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`
+        : `🏆 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 165, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
@@ -5012,6 +5074,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [weekApproachBadgeEnabled, setWeekApproachBadgeEnabled] = useState(false); // meta simples/única - liga/desliga
   const [weekApproachBadges, setWeekApproachBadges] = useState([]); // [{id, periodKey, earnedAt, count, target}]
   const [weekApproachBadgeQueue, setWeekApproachBadgeQueue] = useState([]); // fila de pop-up dessa badge única
+  const [weekApproachReward, setWeekApproachReward] = useState(0); // prêmio em R$ dessa badge única, 0 = sem prêmio
+  const [allGoalsReward, setAllGoalsReward] = useState(DEFAULT_ALL_GOALS_REWARD); // prêmio geral (bater todas as metas selecionadas)
+  const [allGoalsRewardEarned, setAllGoalsRewardEarned] = useState([]); // [{id, sdrName, comboKey, earnedAt, amount, metrics}]
+  const [allGoalsRewardQueue, setAllGoalsRewardQueue] = useState([]); // fila de pop-up do prêmio geral
   // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
@@ -5084,7 +5150,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(GOALS_CONFIG_KEY, DEFAULT_GOALS_CONFIG), loadData(BADGES_KEY, []), loadData(chatHistoryKey, []),
       loadData(WA_SEND_HISTORY_KEY, []), loadData(WEEK_HISTORY_KEY, []), loadData(EMAIL_SEND_HISTORY_KEY, []), loadData(CALL_SEND_HISTORY_KEY, []),
       loadData(WEEK_APPROACH_BADGE_ENABLED_KEY, false), loadData(WEEK_APPROACH_BADGES_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges]) => {
+      loadData(WEEK_APPROACH_REWARD_KEY, 0), loadData(ALL_GOALS_REWARD_KEY, DEFAULT_ALL_GOALS_REWARD), loadData(ALL_GOALS_REWARD_EARNED_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -5117,6 +5184,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setCallSendHistory(Array.isArray(callHistory) ? callHistory : []);
         setWeekApproachBadgeEnabled(!!weekBadgeEnabled);
         setWeekApproachBadges(Array.isArray(weekBadges) ? weekBadges : []);
+        setWeekApproachReward(typeof weekReward === "number" ? weekReward : 0);
+        setAllGoalsReward(allGoalsRewardCfg && typeof allGoalsRewardCfg === "object" ? { ...DEFAULT_ALL_GOALS_REWARD, ...allGoalsRewardCfg } : DEFAULT_ALL_GOALS_REWARD);
+        setAllGoalsRewardEarned(Array.isArray(allGoalsEarned) ? allGoalsEarned : []);
         setLoaded(true);
       }
     });
@@ -5131,6 +5201,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGE_ENABLED_KEY, weekApproachBadgeEnabled); }, [weekApproachBadgeEnabled, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGES_KEY, weekApproachBadges); }, [weekApproachBadges, loaded]);
+  useEffect(() => { if (loaded) saveData(WEEK_APPROACH_REWARD_KEY, weekApproachReward); }, [weekApproachReward, loaded]);
+  useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_KEY, allGoalsReward); }, [allGoalsReward, loaded]);
+  useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_EARNED_KEY, allGoalsRewardEarned); }, [allGoalsRewardEarned, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -5161,7 +5234,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           const badgeId = `${sdr.name}__${metricKey}__${tier.key}__${bounds.key}`;
           const already = earnedBadges.some((b) => b.id === badgeId);
           if (!already) {
-            newlyEarned.push({ id: badgeId, sdrName: sdr.name, metric: metricKey, tier: tier.key, periodKey: bounds.key, period: cfg.period, earnedAt: new Date().toISOString(), value: Math.round(value), target: cfg.target });
+            newlyEarned.push({ id: badgeId, sdrName: sdr.name, metric: metricKey, tier: tier.key, periodKey: bounds.key, period: cfg.period, earnedAt: new Date().toISOString(), value: Math.round(value), target: cfg.target, reward: tier.key === "super" ? (cfg.reward || 0) : 0 });
           }
         });
       });
@@ -5642,11 +5715,41 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const periodKey = getPeriodBounds("week").key;
     const already = weekApproachBadges.some((b) => b.periodKey === periodKey);
     if (already) return;
-    const newBadge = { id: "weekapproach_" + periodKey, periodKey, earnedAt: new Date().toISOString(), count: stats.weekDoneCount, target: weeklyGoal };
+    const newBadge = { id: "weekapproach_" + periodKey, periodKey, earnedAt: new Date().toISOString(), count: stats.weekDoneCount, target: weeklyGoal, reward: weekApproachReward || 0 };
     setWeekApproachBadges((prev) => [...prev, newBadge]);
     setWeekApproachBadgeQueue((prev) => [...prev, newBadge]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, weekApproachBadgeEnabled, stats.weekDoneCount, weeklyGoal]);
+  }, [loaded, weekApproachBadgeEnabled, stats.weekDoneCount, weeklyGoal, weekApproachReward]);
+
+  // Prêmio geral - quando um SDR bate TODAS as metas selecionadas pelo gestor ao mesmo tempo
+  // (cada uma no seu próprio período), credita o prêmio uma vez por combinação de períodos.
+  useEffect(() => {
+    if (!loaded || !allGoalsReward.enabled || !allGoalsReward.amount || allGoalsReward.metrics.length === 0) return;
+    const newlyEarned = [];
+    sdrs.forEach((sdr) => {
+      const allMet = allGoalsReward.metrics.every((metricKey) => {
+        const cfg = goalsConfig[metricKey];
+        if (!cfg || !cfg.enabled || !cfg.target) return false;
+        const bounds = getPeriodBounds(cfg.period);
+        const value = computeMetricValue(metricKey, sdr.name, bounds, leads, meetings);
+        return value >= cfg.target;
+      });
+      if (!allMet) return;
+      // Combina o período atual de cada meta selecionada numa chave única - assim o prêmio só
+      // é liberado de novo quando pelo menos uma dessas metas entrar num novo ciclo.
+      const comboKey = allGoalsReward.metrics.map((k) => `${k}:${getPeriodBounds(goalsConfig[k].period).key}`).join("|");
+      const id = `allgoals__${sdr.name}__${comboKey}`;
+      const already = allGoalsRewardEarned.some((b) => b.id === id);
+      if (!already) {
+        newlyEarned.push({ id, sdrName: sdr.name, comboKey, earnedAt: new Date().toISOString(), amount: allGoalsReward.amount, metrics: allGoalsReward.metrics.slice() });
+      }
+    });
+    if (newlyEarned.length > 0) {
+      setAllGoalsRewardEarned((prev) => [...prev, ...newlyEarned]);
+      setAllGoalsRewardQueue((prev) => [...prev, ...newlyEarned]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, leads, meetings, goalsConfig, sdrs, allGoalsReward, allGoalsRewardEarned]);
 
   // Dados filtrados por período - usados só na página de Relatórios
   const reportStats = useMemo(() => {
@@ -6847,7 +6950,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {/* Meta simples e única - completar as abordagens da semana. Usa a mesma meta configurada
                     no card "Abordar essa semana" da home (editável por lá), aqui só liga/desliga a badge. */}
                 <Glass style={{ borderRadius: 18, padding: "18px 20px", border: weekApproachBadgeEnabled ? `1.5px solid ${DARK.lime}` : undefined, opacity: isOwner ? 1 : 0.7 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: weekApproachBadgeEnabled ? 14 : 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 40, height: 40, borderRadius: 12, background: "#14141a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Target size={19} color={DARK.lime} />
@@ -6859,6 +6962,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
                     <ToggleSwitch on={weekApproachBadgeEnabled} onClick={() => setWeekApproachBadgeEnabled((v) => !v)} activeColor={DARK.lime} disabled={!isOwner} />
                   </div>
+                  {weekApproachBadgeEnabled && (
+                    <div>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio em dinheiro (R$) - opcional</label>
+                      <input
+                        type="number" min={0} step="0.01"
+                        value={weekApproachReward}
+                        onChange={(e) => setWeekApproachReward(Math.max(0, parseFloat(e.target.value) || 0))}
+                        placeholder="0"
+                        style={{ ...inputStyle, width: 120, marginBottom: 0 }}
+                      />
+                    </div>
+                  )}
                 </Glass>
 
                 {METRIC_KEYS.map((metricKey) => {
@@ -6875,7 +6990,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           </div>
                           <div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>{metric.label}</div>
-                            <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>{cfg.enabled ? `Meta: ${cfg.target} por ${periodNoun(cfg.period)}` : "Desativada"}</div>
+                            <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>{cfg.enabled ? `Meta: ${cfg.target} por ${periodNoun(cfg.period)}${cfg.reward > 0 ? ` · 💰 R$ ${cfg.reward.toLocaleString("pt-BR")}` : ""}` : "Desativada"}</div>
                           </div>
                         </div>
                         <ToggleSwitch on={cfg.enabled} onClick={() => updateCfg({ enabled: !cfg.enabled })} activeColor={metric.color} disabled={!isOwner} />
@@ -6913,20 +7028,97 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               style={{ ...inputStyle, width: 100 }}
                             />
                           </div>
+                          <div>
+                            <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio (R$)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={cfg.reward || 0}
+                              onChange={(e) => updateCfg({ reward: Math.max(0, parseFloat(e.target.value) || 0) })}
+                              placeholder="0"
+                              style={{ ...inputStyle, width: 100 }}
+                            />
+                          </div>
                           <div style={{ flex: 1, minWidth: 160, fontSize: 11, color: "#9a9aa3", lineHeight: 1.5 }}>
-                            🏅 Badge 50% aos {Math.round(cfg.target * 0.5)} · ⭐ Super Badge aos {cfg.target} · 👑 Badge Lendária aos {Math.round(cfg.target * 1.5)}
+                            🏅 Badge 50% aos {Math.round(cfg.target * 0.5)} · ⭐ Super Badge aos {cfg.target}{cfg.reward > 0 ? ` (+R$ ${cfg.reward.toLocaleString("pt-BR")})` : ""} · 👑 Badge Lendária aos {Math.round(cfg.target * 1.5)}
                           </div>
                         </div>
                       )}
                     </Glass>
                   );
                 })}
+
+                {/* Prêmio geral - o gestor escolhe quais metas contam pra fechar o "bateu todas" e o valor. */}
+                <Glass style={{ borderRadius: 18, padding: "18px 20px", border: allGoalsReward.enabled ? "1.5px solid #16a34a" : undefined, opacity: isOwner ? 1 : 0.7 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: allGoalsReward.enabled ? 14 : 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(22,163,74,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Trophy size={19} color="#16a34a" />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>Prêmio geral (bater todas as metas)</div>
+                        <div style={{ fontSize: 11.5, color: "#9a9aa3" }}>
+                          {allGoalsReward.enabled
+                            ? `R$ ${allGoalsReward.amount.toLocaleString("pt-BR")} ao completar ${allGoalsReward.metrics.length} meta${allGoalsReward.metrics.length === 1 ? "" : "s"} selecionada${allGoalsReward.metrics.length === 1 ? "" : "s"}`
+                            : "Desativado"}
+                        </div>
+                      </div>
+                    </div>
+                    <ToggleSwitch on={allGoalsReward.enabled} onClick={() => setAllGoalsReward((prev) => ({ ...prev, enabled: !prev.enabled }))} activeColor="#16a34a" disabled={!isOwner} />
+                  </div>
+
+                  {allGoalsReward.enabled && (
+                    <>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ ...labelStyle, marginBottom: 4 }}>Valor do prêmio (R$)</label>
+                        <input
+                          type="number" min={0} step="0.01"
+                          value={allGoalsReward.amount}
+                          onChange={(e) => setAllGoalsReward((prev) => ({ ...prev, amount: Math.max(0, parseFloat(e.target.value) || 0) }))}
+                          placeholder="0"
+                          style={{ ...inputStyle, width: 120, marginBottom: 0 }}
+                        />
+                      </div>
+                      <label style={{ ...labelStyle, marginBottom: 6 }}>Quais metas entram na conta</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {METRIC_KEYS.map((metricKey) => {
+                          const metric = METRIC_DEFS[metricKey];
+                          const active = allGoalsReward.metrics.includes(metricKey);
+                          return (
+                            <button
+                              key={metricKey}
+                              onClick={() => setAllGoalsReward((prev) => ({
+                                ...prev,
+                                metrics: active ? prev.metrics.filter((k) => k !== metricKey) : [...prev.metrics, metricKey],
+                              }))}
+                              style={{
+                                padding: "6px 11px", borderRadius: 8,
+                                border: `1.5px solid ${active ? metric.color : "rgba(148,163,184,0.3)"}`,
+                                background: active ? metric.color + "15" : "white",
+                                color: active ? metric.color : "#64748b",
+                                fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+                              }}
+                            >
+                              {active ? "✓ " : ""}{metric.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {allGoalsReward.metrics.some((k) => !goalsConfig[k]?.enabled) && (
+                        <div style={{ fontSize: 11, color: "#e08a1c", marginTop: 8 }}>
+                          ⚠️ Alguma meta selecionada está desativada acima - ative pra ela contar pro prêmio geral.
+                        </div>
+                      )}
+                    </>
+                  )}
+                </Glass>
               </div>
 
               <Glass style={{ borderRadius: 16, padding: "14px 18px", marginBottom: 90, display: "flex", alignItems: "center", gap: 10 }}>
                 <Trophy size={18} color="#b8860b" />
                 <div style={{ fontSize: 12.5, color: "#6b6b75" }}>
-                  Toda vez que um SDR chega na metade da meta ele ganha a <strong>Badge 50%</strong>, quando bate a meta ganha a <strong>Super Badge</strong>, e se passar bem além ganha a <strong>Badge Lendária</strong> - tudo automático.{" "}
+                  Toda vez que um SDR chega na metade da meta ele ganha a <strong>Badge 50%</strong>, quando bate a meta ganha a <strong>Super Badge</strong> (e o prêmio em dinheiro, se configurado), e se passar bem além ganha a <strong>Badge Lendária</strong> - tudo automático.{" "}
                   <span onClick={() => setView("conquistas")} style={{ color: "#6d5ef8", fontWeight: 700, cursor: "pointer" }}>Ver conquistas →</span>
                 </div>
               </Glass>
@@ -7455,6 +7647,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               const badge = weekApproachBadgeQueue[0];
               setWeekApproachBadgeQueue((prev) => prev.slice(1));
               setShareAchievement({ type: "week", ...badge });
+            }}
+          />
+        )}
+        {allGoalsRewardQueue.length > 0 && (
+          <AllGoalsRewardPopup
+            badge={allGoalsRewardQueue[0]}
+            onClose={() => {
+              const badge = allGoalsRewardQueue[0];
+              setAllGoalsRewardQueue((prev) => prev.slice(1));
+              if (currentUserName && badge.sdrName && badge.sdrName.toLowerCase() === currentUserName.toLowerCase()) {
+                setShareAchievement({ type: "allgoals", ...badge });
+              }
             }}
           />
         )}
