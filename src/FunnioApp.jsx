@@ -7239,7 +7239,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           return (
                             <div key={tier.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6 }}>
                               <AchievementHex tier={tier} metric={metric} active={isActive} size={56} />
-                              <div style={{ fontSize: 17, fontWeight: 800, color: isActive ? "#14141a" : "#6b6b75", lineHeight: 1 }}>{count}</div>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                                <span style={{ fontSize: 17, fontWeight: 800, color: isActive ? "#14141a" : "#6b6b75", lineHeight: 1 }}>{count}</span>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: "#9a9aa3" }}>{count === 1 ? "vez" : "vezes"}</span>
+                              </div>
                               <div>
                                 <div className="ach-tier-label" style={{ fontSize: 11, fontWeight: 700, color: isActive ? tier.color : "#9a9aa3" }}>{tier.label}</div>
                                 <div className="ach-tier-desc" style={{ fontSize: 9, color: "#9a9aa3", lineHeight: 1.25, marginTop: 1 }}>{tier.description}</div>
