@@ -6952,7 +6952,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     {wonTotalMonthly > 0 && <> · {formatBRL(wonTotalMonthly)}<span style={{ fontWeight: 600 }}>/mês</span> recorrente</>}
                   </div>
                 </div>
-                <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "none", background: "#14141a", color: "#fbbf24", fontSize: 12, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 12, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                   <DollarSign size={13} /> Comissões
                 </button>
               </div>
