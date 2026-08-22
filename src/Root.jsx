@@ -251,6 +251,7 @@ export default function Root() {
         currentUserId={session.user.id}
         workspaceName={activeWorkspace.name}
         onSwitchWorkspace={handleSwitchWorkspace}
+        isOwner={activeWorkspace.role === "owner"}
       />
       <WorkspaceMenu
         workspaceName={activeWorkspace.name}
