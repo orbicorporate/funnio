@@ -3314,11 +3314,30 @@ const BADGE_IMAGES = {
   contracts_b50: BADGE_IMG_CONTRACTS_B50, contracts_super: BADGE_IMG_CONTRACTS_SUPER, contracts_lendaria: BADGE_IMG_CONTRACTS_LENDARIA,
 };
 
-const AchievementHex = ({ tier, metric, active, size = 84 }) => {
+const AchievementHex = ({ tier, metric, active, size = 84, pct = null }) => {
   const src = BADGE_IMAGES[`${metric.key}_${tier.key}`];
+  // Anel fino ao redor do hex mostrando o preenchimento atual da meta vigente rumo a esse nível
+  // (não é histórico - reseta a cada novo período, junto com a própria meta).
+  const ringSize = size + 14;
+  const radius = (ringSize - 6) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clampedPct = pct === null ? null : Math.max(0, Math.min(1, pct));
   return (
-    <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, filter: active ? "none" : "grayscale(1) opacity(0.55)" }}>
-      <img src={src} alt={`${metric.label} - ${tier.label}`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    <div style={{ position: "relative", width: ringSize, height: ringSize, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      {clampedPct !== null && (
+        <svg width={ringSize} height={ringSize} style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+          <circle cx={ringSize / 2} cy={ringSize / 2} r={radius} fill="none" stroke="#eef0f3" strokeWidth="3" />
+          <circle
+            cx={ringSize / 2} cy={ringSize / 2} r={radius} fill="none"
+            stroke={clampedPct >= 1 ? tier.color : "#b7bac2"}
+            strokeWidth="3" strokeLinecap="round"
+            strokeDasharray={`${clampedPct * circumference} ${circumference}`}
+          />
+        </svg>
+      )}
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", filter: active ? "none" : "grayscale(1) opacity(0.55)" }}>
+        <img src={src} alt={`${metric.label} - ${tier.label}`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+      </div>
     </div>
   );
 };
@@ -7210,6 +7229,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     .filter((b) => b.metric === metricKey && (achievementsFilterSdr === "all" || b.sdrName === achievementsFilterSdr))
                     .sort((a, b) => new Date(b.earnedAt) - new Date(a.earnedAt));
                   const isExpanded = expandedHistoryMetric === metricKey;
+                  // Progresso atual (não histórico) rumo a cada nível, com base na meta vigente -
+                  // usa o melhor valor entre os SDRs quando o filtro está em "Todos".
+                  const bounds = isActive && cfg.target ? getPeriodBounds(cfg.period) : null;
+                  const currentValue = bounds
+                    ? Math.max(0, ...(achievementsFilterSdr === "all" ? sdrs.map((s) => s.name) : [achievementsFilterSdr]).map((name) => computeMetricValue(metricKey, name, bounds, leads, meetings)))
+                    : 0;
                   return (
                     <Glass key={metricKey} style={{ borderRadius: 20, padding: "18px 20px", opacity: isActive ? 1 : 0.75 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
@@ -7233,16 +7258,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <div style={{ fontSize: 12, color: "#9a9aa3" }}>{metric.description}</div>
                         </div>
                       </div>
-                      <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, filter: isActive ? "none" : "grayscale(1)" }}>
+                      <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                         {BADGE_TIERS.map((tier) => {
-                          const count = earnedBadges.filter((b) => b.metric === metricKey && b.tier === tier.key && (achievementsFilterSdr === "all" || b.sdrName === achievementsFilterSdr)).length;
+                          const currentPct = bounds ? currentValue / (cfg.target * tier.pct) : null;
                           return (
                             <div key={tier.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6 }}>
-                              <AchievementHex tier={tier} metric={metric} active={isActive} size={56} />
-                              <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-                                <span style={{ fontSize: 17, fontWeight: 800, color: isActive ? "#14141a" : "#6b6b75", lineHeight: 1 }}>{count}</span>
-                                <span style={{ fontSize: 10, fontWeight: 700, color: "#9a9aa3" }}>{count === 1 ? "vez" : "vezes"}</span>
-                              </div>
+                              <AchievementHex tier={tier} metric={metric} active={isActive} size={56} pct={currentPct} />
+                              {currentPct !== null && (
+                                <div style={{ fontSize: 12.5, fontWeight: 800, color: currentPct >= 1 ? tier.color : "#6b6b75", lineHeight: 1 }}>
+                                  {Math.min(100, Math.round(currentPct * 100))}%
+                                </div>
+                              )}
                               <div>
                                 <div className="ach-tier-label" style={{ fontSize: 11, fontWeight: 700, color: isActive ? tier.color : "#9a9aa3" }}>{tier.label}</div>
                                 <div className="ach-tier-desc" style={{ fontSize: 9, color: "#9a9aa3", lineHeight: 1.25, marginTop: 1 }}>{tier.description}</div>
