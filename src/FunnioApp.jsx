@@ -3843,6 +3843,175 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
   );
 };
 
+// Página dedicada de Scripts - central pra ver e editar todos os templates de WhatsApp
+// e cases de e-mail num lugar só, fora do fluxo de envio. Edições salvas aqui valem
+// pra todos os envios futuros (mesma persistência dos pickers).
+const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, onSaveEmail, onResetWa, onResetEmail }) => {
+  const [tab, setTab] = useState("whatsapp"); // whatsapp | email
+  const [editingKey, setEditingKey] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [savedKey, setSavedKey] = useState(null);
+
+  const flashSaved = (key) => { setSavedKey(key); setTimeout(() => setSavedKey(null), 1600); };
+  const startEditWa = (s) => { setEditingKey(s.key); setDraft(customWaScripts[s.key] ?? s.template); };
+  const startEditEmail = (s) => { setEditingKey(s.key); setDraftSubject(customEmailScripts[s.key]?.subject ?? s.subject); setDraftBody(customEmailScripts[s.key]?.body ?? s.body); };
+  const cancelEdit = () => { setEditingKey(null); setDraft(""); setDraftSubject(""); setDraftBody(""); };
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+        <div>
+          <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Scripts</h1>
+          <div style={{ fontSize: 13, color: "#9a9aa3" }}>Edite os templates padrão - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos automaticamente em cada envio</div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        {[{ key: "whatsapp", label: "WhatsApp", color: "#25d366" }, { key: "email", label: "E-mail (cases)", color: "#3b82f6" }].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => { setTab(t.key); cancelEdit(); }}
+            style={{ padding: "9px 16px", borderRadius: 11, border: `1.5px solid ${tab === t.key ? t.color : "rgba(148,163,184,0.3)"}`, background: tab === t.key ? t.color + "15" : "white", color: tab === t.key ? t.color : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 90 }}>
+        {tab === "whatsapp" && SCRIPT_LIBRARY.map((s) => {
+          const isCustomized = customWaScripts[s.key] !== undefined;
+          const isEditing = editingKey === s.key;
+          const effective = customWaScripts[s.key] ?? s.template;
+          return (
+            <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <s.icon size={16} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    {s.title}
+                    {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                  </div>
+                  {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
+                </div>
+                {!isEditing && (
+                  <button onClick={() => startEditWa(s)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${s.color}55`, background: "white", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                    <Pencil size={12} /> Editar
+                  </button>
+                )}
+              </div>
+
+              {isEditing && (
+                <div style={{ marginTop: 12 }}>
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    rows={6}
+                    autoFocus
+                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
+                  />
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => { if (draft.trim()) { onSaveWa(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }}
+                      disabled={!draft.trim()}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: draft.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: draft.trim() ? "pointer" : "not-allowed" }}
+                    >
+                      <Check size={13} /> Salvar padrão
+                    </button>
+                    <button onClick={cancelEdit} style={{ padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                      Cancelar
+                    </button>
+                    {isCustomized && (
+                      <button
+                        onClick={() => { onResetWa(s.key); cancelEdit(); }}
+                        title="Voltar pro texto original de fábrica"
+                        style={{ marginLeft: "auto", padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        Restaurar original
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
+            </Glass>
+          );
+        })}
+
+        {tab === "email" && EMAIL_SCRIPT_LIBRARY.map((s) => {
+          const isCustomized = customEmailScripts[s.key] !== undefined;
+          const isEditing = editingKey === s.key;
+          const effSubject = customEmailScripts[s.key]?.subject ?? s.subject;
+          const effBody = customEmailScripts[s.key]?.body ?? s.body;
+          return (
+            <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <s.icon size={16} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3" }}>{s.caseTitle} · {s.category}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+                    {effSubject}
+                    {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                  </div>
+                  {!isEditing && <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{effBody}</div>}
+                </div>
+                {!isEditing && (
+                  <button onClick={() => startEditEmail(s)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${s.color}55`, background: "white", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                    <Pencil size={12} /> Editar
+                  </button>
+                )}
+              </div>
+
+              {isEditing && (
+                <div style={{ marginTop: 12 }}>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
+                  <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>Corpo do e-mail</label>
+                  <textarea
+                    value={draftBody}
+                    onChange={(e) => setDraftBody(e.target.value)}
+                    rows={10}
+                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
+                  />
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => { if (draftBody.trim()) { onSaveEmail(s.key, { subject: draftSubject.trim(), body: draftBody.trim() }); flashSaved(s.key); setEditingKey(null); } }}
+                      disabled={!draftBody.trim()}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
+                    >
+                      <Check size={13} /> Salvar padrão
+                    </button>
+                    <button onClick={cancelEdit} style={{ padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                      Cancelar
+                    </button>
+                    {isCustomized && (
+                      <button
+                        onClick={() => { onResetEmail(s.key); cancelEdit(); }}
+                        title="Voltar pro texto original de fábrica"
+                        style={{ marginLeft: "auto", padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      >
+                        Restaurar original
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
+            </Glass>
+          );
+        })}
+      </div>
+    </>
+  );
+};
+
 // Menu lateral - atalho pra qualquer seção do app
 const MENU_SECTIONS = [
   { key: "dashboard", label: "Home", icon: HomeIcon },
@@ -3852,6 +4021,7 @@ const MENU_SECTIONS = [
   { key: "comissoes", label: "Comissões", icon: DollarSign },
   { key: "desatendidos", label: "Negociações antigas", icon: Clock },
   { key: "semana", label: "Abordar essa semana", icon: Target },
+  { key: "scripts", label: "Scripts", icon: ClipboardList },
   { key: "metas", label: "Metas", icon: Flag },
   { key: "conquistas", label: "Conquistas", icon: Trophy },
   { key: "assistente", label: "Assistente de vendas", icon: Sparkles },
@@ -7225,6 +7395,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
             </>
+          )}
+
+          {/* ═══════════════════ SCRIPTS (biblioteca editável de templates) ═══════════════════ */}
+          {view === "scripts" && (
+            <ScriptsPage
+              onBack={() => setView("dashboard")}
+              customWaScripts={customWaScripts}
+              customEmailScripts={customEmailScripts}
+              onSaveWa={(key, template) => setCustomWaScripts((prev) => ({ ...prev, [key]: template }))}
+              onSaveEmail={(key, data) => setCustomEmailScripts((prev) => ({ ...prev, [key]: data }))}
+              onResetWa={(key) => setCustomWaScripts((prev) => { const next = { ...prev }; delete next[key]; return next; })}
+              onResetEmail={(key) => setCustomEmailScripts((prev) => { const next = { ...prev }; delete next[key]; return next; })}
+            />
           )}
 
           {/* ═══════════════════ COMISSÕES (regras por tipo de serviço, volume e preço) ═══════════════════ */}
