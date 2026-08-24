@@ -1407,6 +1407,22 @@ const buildWaListDefaultMessage = (lead) => {
     : `Olá! Tudo bem?\n\nPassando aqui sobre a proposta para a ${lead.company}.`;
 };
 
+// Mensagem pra compartilhar um lead (e a próxima ação dele) com outro SDR pelo WhatsApp -
+// abre sem número fixo, quem envia escolhe o colega na hora, igual ao convite de membros.
+const buildLeadShareMessage = (lead) => {
+  const parts = [
+    `📌 Lead: ${lead.company}`,
+    lead.contactName ? `👤 Contato: ${lead.contactName}` : null,
+    lead.nextAction?.description ? `✅ Próxima ação: ${lead.nextAction.description}${lead.nextAction?.date ? ` (${new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })})` : ""}` : null,
+    (lead.whatsapp || lead.phone) ? `📞 ${lead.whatsapp || lead.phone}` : null,
+    lead.email ? `✉️ ${lead.email}` : null,
+    lead.feedback ? `📝 Status: ${lead.feedback}` : null,
+    "",
+    "via Funnio",
+  ].filter((x) => x !== null);
+  return parts.join("\n");
+};
+
 // Biblioteca de scripts de reativação - agrupados por situação do lead, sem
 // cara de vendedor, focados em gerar resposta. {nome} e {empresa} são trocados
 // pelos dados reais na hora de montar a mensagem.
@@ -3338,16 +3354,23 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
 
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(150px, 1fr) minmax(0, 1.4fr)", gap: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
               <div style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando</span>
-                <input type="date" value={draft.nextAction?.date ? draft.nextAction.date.slice(0, 10) : ""} onChange={(e) => { const date = e.target.value ? new Date(e.target.value).toISOString() : null; update({ nextAction: date ? { date, description: draft.nextAction?.description || "" } : null }); }} style={{ ...inputStyle, background: "white", minWidth: 0 }} />
+                <input type="date" value={draft.nextAction?.date ? draft.nextAction.date.slice(0, 10) : ""} onChange={(e) => { const date = e.target.value ? new Date(e.target.value).toISOString() : null; update({ nextAction: date ? { date, description: draft.nextAction?.description || "" } : null }); }} style={{ ...inputStyle, background: "white", minWidth: 0, height: 42, WebkitAppearance: "none", appearance: "none" }} />
               </div>
               <div style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
-                <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0 }} />
+                <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
               </div>
             </div>
+            <button
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft))}`, "_blank")}
+              title="Envia o resumo desse lead e da próxima ação pra outro SDR pelo WhatsApp"
+              style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+            >
+              <Share2 size={13} /> Compartilhar com outro SDR
+            </button>
           </div>
 
           <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, background: draft.weekDone ? "rgba(220, 252, 231, 0.6)" : "rgba(241, 245, 249, 0.6)" }}>
@@ -4046,6 +4069,7 @@ const MENU_SECTIONS = [
   { key: "comissoes", label: "Comissões", icon: DollarSign },
   { key: "desatendidos", label: "Negociações antigas", icon: Clock },
   { key: "semana", label: "Abordar essa semana", icon: Target },
+  { key: "acoes", label: "Próximas ações", icon: Bell },
   { key: "scripts", label: "Scripts", icon: ClipboardList },
   { key: "metas", label: "Metas", icon: Flag },
   { key: "conquistas", label: "Conquistas", icon: Trophy },
@@ -6294,6 +6318,27 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     return { list, completed, done: completed.length, total: list.length + completed.length };
   }, [stats, weekSdrFilter]);
 
+  // Próximas ações com lembrete - atrasadas, de hoje e futuras, ordenadas por data.
+  // Alimenta o box de lembrete na home e a página "Próximas ações" do menu.
+  const nextActions = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const items = leads
+      .filter((l) => l.nextAction?.date && l.stage !== "Conquistado" && l.stage !== "Perdida")
+      .map((l) => {
+        const d = new Date(l.nextAction.date); d.setHours(0, 0, 0, 0);
+        const diff = Math.round((d - today) / 86400000);
+        return { lead: l, date: d, diff }; // diff < 0 atrasada · 0 hoje · > 0 futura
+      })
+      .sort((a, b) => a.date - b.date);
+    return {
+      all: items,
+      due: items.filter((x) => x.diff <= 0),
+      overdue: items.filter((x) => x.diff < 0),
+      todayList: items.filter((x) => x.diff === 0),
+      upcoming: items.filter((x) => x.diff > 0),
+    };
+  }, [leads]);
+
   // Meta simples e única "Completar abordagens da semana" - se ativada, credita UMA badge
   // (sem níveis) quando a meta semanal configurada (weeklyGoal) é batida, uma vez por semana.
   useEffect(() => {
@@ -6786,6 +6831,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <button onClick={() => { setQuickStage(null); setSuperOnly(false); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 7, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#6366f1", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
                     <X size={11} /> limpar
                   </button>
+                </div>
+              )}
+
+              {/* Lembrete de próximas ações vencendo - aparece quando alguma ação está atrasada ou é pra hoje */}
+              {nextActions.due.length > 0 && (
+                <div onClick={() => setView("acoes")} style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 16, padding: "13px 16px", marginBottom: 14, background: "linear-gradient(135deg, #fff1f0, #ffe4e1)", border: "1px solid #f5b5ae", cursor: "pointer" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: "linear-gradient(160deg, #f87171, #dc2626)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Bell size={17} color="white" />
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#b91c1c" }}>
+                      {nextActions.due.length === 1 ? "1 ação vencendo" : `${nextActions.due.length} ações vencendo`}
+                      {nextActions.overdue.length > 0 && ` · ${nextActions.overdue.length} atrasada${nextActions.overdue.length === 1 ? "" : "s"}`}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#dc2626", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {nextActions.due.slice(0, 2).map((x) => `${x.lead.company}: ${x.lead.nextAction.description || "sem descrição"}`).join(" · ")}
+                    </div>
+                  </div>
+                  <ChevronRight size={16} color="#dc2626" style={{ flexShrink: 0 }} />
                 </div>
               )}
 
@@ -7474,6 +7538,72 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               )}
             </>
           )}
+
+          {/* ═══════════════════ PRÓXIMAS AÇÕES (lembretes por data) ═══════════════════ */}
+          {view === "acoes" && (() => {
+            const sections = [
+              { key: "overdue", title: "Atrasadas", items: nextActions.overdue, color: "#dc2626", bg: "rgba(220,38,38,0.08)" },
+              { key: "today", title: "Hoje", items: nextActions.todayList, color: "#d97706", bg: "rgba(217,119,6,0.08)" },
+              { key: "upcoming", title: "Próximas", items: nextActions.upcoming, color: "#6d5ef8", bg: "rgba(109,94,248,0.08)" },
+            ];
+            const diffLabel = (diff) => diff === 0 ? "hoje" : diff < 0 ? `há ${Math.abs(diff)} dia${Math.abs(diff) === 1 ? "" : "s"}` : `em ${diff} dia${diff === 1 ? "" : "s"}`;
+            return (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                  <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                  <div>
+                    <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Próximas ações</h1>
+                    <div style={{ fontSize: 13, color: "#9a9aa3" }}>Lembretes com base na "Próxima ação" de cada lead</div>
+                  </div>
+                </div>
+
+                {nextActions.all.length === 0 && (
+                  <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
+                    <Bell size={32} style={{ color: "#c4c4cc", marginBottom: 12 }} />
+                    <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, color: "#475569", marginBottom: 6 }}>Nenhuma ação agendada</div>
+                    <div style={{ fontSize: 13, color: "#94a3b8" }}>Abra um lead e preencha a "Próxima ação" com data - ela aparece aqui como lembrete</div>
+                  </Glass>
+                )}
+
+                {sections.map((sec) => sec.items.length > 0 && (
+                  <div key={sec.key} style={{ marginBottom: 22 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: sec.color }}>{sec.title}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: sec.color, background: sec.bg, padding: "2px 8px", borderRadius: 7 }}>{sec.items.length}</span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {sec.items.map(({ lead, diff }) => (
+                        <Glass key={lead.id} onClick={() => setSelected(lead)} style={{ borderRadius: 16, padding: "13px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, borderLeft: `3px solid ${sec.color}` }}>
+                          <div style={{ textAlign: "center", flexShrink: 0, minWidth: 46 }}>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: sec.color, lineHeight: 1 }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit" })}</div>
+                            <div style={{ fontSize: 9.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase" }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</div>
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
+                            <div style={{ fontSize: 12, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.nextAction.description || "Sem descrição"}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
+                              <OwnerAvatar name={lead.owner || "Todos"} size={15} />
+                              <span style={{ fontSize: 10.5, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
+                              <span style={{ fontSize: 10, fontWeight: 700, color: sec.color, background: sec.bg, padding: "1px 7px", borderRadius: 6 }}>{diffLabel(diff)}</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead))}`, "_blank"); }}
+                            title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
+                            style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                          >
+                            <Share2 size={14} />
+                          </button>
+                          <ChevronRight size={15} color="#c4c4cc" style={{ flexShrink: 0 }} />
+                        </Glass>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div style={{ height: 90 }} />
+              </>
+            );
+          })()}
 
           {/* ═══════════════════ SCRIPTS (biblioteca editável de templates) ═══════════════════ */}
           {view === "scripts" && (
