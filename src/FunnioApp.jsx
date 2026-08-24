@@ -1444,7 +1444,7 @@ const fillScriptTemplate = (template, lead) => {
 // Tela colorida de escolha de script - abre ao tocar no aviãozinho num lead.
 // Mostra os 10 tipos de abordagem já com o texto preenchido pro lead específico,
 // pra escolher rapidinho qual mais combina com a situação.
-const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
+const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript }) => {
   // Se abrir já com uma mensagem pronta (editando um lead que já está na fila),
   // pula direto pra etapa de edição. Senão, começa mostrando a lista de scripts.
   const [step, setStep] = useState(initialMessage ? "edit" : "pick");
@@ -1478,6 +1478,20 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect }) => {
         {step === "pick" && (
           <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
+              {/* Opção destacada: abrir a conversa sem nenhum script pré-preenchido */}
+              {onNoScript && (
+                <button
+                  onClick={onNoScript}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    padding: "14px 16px", borderRadius: 16, border: "none", cursor: "pointer",
+                    background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white",
+                    fontSize: 14, fontWeight: 800, boxShadow: "0 10px 24px -10px rgba(37,211,102,0.6)",
+                  }}
+                >
+                  <Send size={16} /> Enviar sem script
+                </button>
+              )}
               {SCRIPT_LIBRARY.map((s) => {
                 const filled = fillScriptTemplate(s.template, lead);
                 return (
@@ -1636,7 +1650,7 @@ const EMAIL_SCRIPT_LIBRARY = [
 
 // Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
 // de WhatsApp, mas com campo de assunto além do corpo.
-const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect }) => {
+const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect, onNoScript }) => {
   const isEditingExisting = initialBody !== undefined && initialBody !== null;
   const [step, setStep] = useState(isEditingExisting ? "edit" : "pick");
   const [draftSubject, setDraftSubject] = useState(initialSubject || "");
@@ -1671,6 +1685,20 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
         {step === "pick" && (
           <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 520, margin: "0 auto" }}>
+              {/* Opção destacada: abrir o e-mail sem nenhum case pré-preenchido */}
+              {onNoScript && (
+                <button
+                  onClick={onNoScript}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    padding: "14px 16px", borderRadius: 16, border: "none", cursor: "pointer",
+                    background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white",
+                    fontSize: 14, fontWeight: 800, boxShadow: "0 10px 24px -10px rgba(59,130,246,0.6)",
+                  }}
+                >
+                  <Send size={16} /> Enviar sem script
+                </button>
+              )}
               {EMAIL_SCRIPT_LIBRARY.map((s) => {
                 const filledSubject = fillScriptTemplate(s.subject, lead);
                 const filledBody = fillScriptTemplate(s.body, lead);
@@ -1892,7 +1920,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
   const currentLead = validLeads[idx];
 
   useEffect(() => {
-    if (mode === "sending" && currentLead) setMessage(currentLead.waMessage || buildWaListDefaultMessage(currentLead));
+    if (mode === "sending" && currentLead) setMessage(currentLead.waMessage ?? buildWaListDefaultMessage(currentLead));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, mode]);
 
@@ -1906,8 +1934,8 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
   // usado pelo botão de envio rápido em cada linha da lista.
   const sendDirect = (lead) => {
     const num = cleanPhone(lead.whatsapp);
-    const msg = lead.waMessage || buildWaListDefaultMessage(lead);
-    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+    const msg = lead.waMessage ?? buildWaListDefaultMessage(lead);
+    window.open(msg ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}` : `https://wa.me/${num}`, "_blank");
     onLogSent(lead.id, msg);
     triggerCoin();
   };
@@ -1932,7 +1960,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
 
   const handleSend = () => {
     const num = cleanPhone(currentLead.whatsapp);
-    window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`, "_blank");
     onLogSent(currentLead.id, message);
     setSentCount((c) => c + 1);
     triggerCoin();
@@ -5803,27 +5831,28 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   // Dispara o contato direto (não entra na fila de envio) depois que o script foi escolhido no painel -
   // usado pelos botões de contato rápido (círculos coloridos), diferente da fila de envio em massa.
+  // message === null significa "sem script": abre a conversa em branco, sem texto pré-preenchido.
   const dispatchWhatsAppWithMessage = (lead, message) => {
     const num = cleanPhone(lead.whatsapp);
     if (!num) return;
-    window.open(`https://wa.me/${num}?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`, "_blank");
     const now = new Date().toISOString();
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
       lastContact: now,
-      notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via WhatsApp: "${message}"` }, ...(l.notes || [])],
+      notes: [{ id: "n_" + Date.now(), date: now, text: message ? `Contato via WhatsApp: "${message}"` : "Contato via WhatsApp (sem script)" }, ...(l.notes || [])],
     } : l));
     if (lead.weekTag && !lead.weekDone) requestWeekDoneSummary(lead, "whatsapp");
   };
 
   const dispatchEmailWithMessage = (lead, subject, body) => {
     if (!lead.email) return;
-    window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+    window.open(body ? `mailto:${lead.email}?subject=${encodeURIComponent(subject || "")}&body=${encodeURIComponent(body)}` : `mailto:${lead.email}`, "_blank");
     const now = new Date().toISOString();
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
       lastContact: now,
-      notes: [{ id: "n_" + Date.now(), date: now, text: `Contato via Email: "${subject}"` }, ...(l.notes || [])],
+      notes: [{ id: "n_" + Date.now(), date: now, text: body ? `Contato via Email: "${subject}"` : "Contato via Email (sem script)" }, ...(l.notes || [])],
     } : l));
     if (lead.weekTag && !lead.weekDone) requestWeekDoneSummary(lead, "email");
   };
@@ -7950,6 +7979,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 addToWaListWithScript(message);
               }
             }}
+            onNoScript={() => {
+              if (scriptPickerMode === "dispatch") {
+                // Abre a conversa em branco, sem nenhum texto pré-preenchido
+                dispatchWhatsAppWithMessage(scriptPickerLead, null);
+                setScriptPickerLead(null);
+              } else {
+                // Entra na fila sem mensagem - na hora do envio a conversa abre vazia
+                addToWaListWithScript("");
+              }
+            }}
           />
         )}
         {showEmailSendScreen && (
@@ -7976,6 +8015,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 setEmailScriptPickerLead(null);
               } else {
                 addToEmailListWithScript(subject, body);
+              }
+            }}
+            onNoScript={() => {
+              if (scriptPickerMode === "dispatch") {
+                // Abre o e-mail em branco, só com o destinatário preenchido
+                dispatchEmailWithMessage(emailScriptPickerLead, null, null);
+                setEmailScriptPickerLead(null);
+              } else {
+                // Entra na fila sem assunto/corpo - na hora do envio o e-mail abre em branco
+                addToEmailListWithScript("", "");
               }
             }}
           />
