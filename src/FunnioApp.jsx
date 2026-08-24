@@ -796,6 +796,31 @@ const ToggleSwitch = ({ on, onClick, activeColor = DARK.lime, disabled = false }
   </button>
 );
 
+// Campo numérico que deixa apagar tudo enquanto digita - só aplica o mínimo/parse quando
+// o campo perde o foco. Sem isso, o onChange controlado força o valor de volta a cada
+// tecla e fica impossível limpar o campo pra digitar outro número.
+const NumberField = ({ value, onCommit, min = 0, style, ...rest }) => {
+  const [draft, setDraft] = useState(null); // null = não está editando; espelha o valor externo
+  return (
+    <input
+      type="number"
+      min={min}
+      value={draft !== null ? draft : (value ?? "")}
+      onFocus={() => setDraft(value === null || value === undefined ? "" : String(value))}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        if (draft === null) return;
+        const n = parseFloat(draft);
+        onCommit(Number.isFinite(n) ? Math.max(min, n) : min);
+        setDraft(null);
+      }}
+      onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+      style={style}
+      {...rest}
+    />
+  );
+};
+
 const OwnerAvatar = ({ name, size = 26, avatarUrl }) => {
   const color = RESPONSIBLE_COLORS[name] || "#64748b";
   if (avatarUrl) {
@@ -3740,7 +3765,7 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
               <div key={tier.id} style={{ display: "flex", alignItems: "flex-end", gap: 8, flexWrap: "wrap", padding: "12px 14px", borderRadius: 12, background: "rgba(248,248,250,0.75)" }}>
                 <div>
                   <label style={{ ...labelStyle, marginBottom: 4 }}>De (R$)</label>
-                  <input type="number" min={0} value={tier.min} onChange={(e) => onUpdateTier(tier.id, { min: Math.max(0, parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 95 }} />
+                  <NumberField value={tier.min} min={0} onCommit={(v) => onUpdateTier(tier.id, { min: v })} style={{ ...inputStyle, width: 95 }} />
                 </div>
                 <div>
                   <label style={{ ...labelStyle, marginBottom: 4 }}>Até (R$)</label>
@@ -3759,7 +3784,7 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
                 </div>
                 <div>
                   <label style={{ ...labelStyle, marginBottom: 4 }}>{tier.type === "percent" ? "Percentual (%)" : "Valor fixo (R$)"}</label>
-                  <input type="number" min={0} step="0.01" value={tier.value} onChange={(e) => onUpdateTier(tier.id, { value: Math.max(0, parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 95 }} />
+                  <NumberField value={tier.value} min={0} step="0.01" onCommit={(v) => onUpdateTier(tier.id, { value: v })} style={{ ...inputStyle, width: 95 }} />
                 </div>
                 {sortedTiers.length > 1 && (
                   <button onClick={() => onRemoveTier(tier.id)} title="Remover faixa" style={{ marginLeft: "auto", width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -7662,10 +7687,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   {weekApproachBadgeEnabled && (
                     <div>
                       <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio em dinheiro (R$) - opcional</label>
-                      <input
-                        type="number" min={0} step="0.01"
+                      <NumberField
                         value={weekApproachReward}
-                        onChange={(e) => setWeekApproachReward(Math.max(0, parseFloat(e.target.value) || 0))}
+                        min={0}
+                        step="0.01"
+                        onCommit={setWeekApproachReward}
                         placeholder="0"
                         style={{ ...inputStyle, width: 120, marginBottom: 0 }}
                       />
@@ -7717,34 +7743,31 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           </div>
                           <div>
                             <label style={{ ...labelStyle, marginBottom: 4 }}>Meta (quantidade)</label>
-                            <input
-                              type="number"
-                              min={1}
+                            <NumberField
                               value={cfg.target}
-                              onChange={(e) => updateCfg({ target: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                              min={1}
+                              onCommit={(v) => updateCfg({ target: Math.round(v) })}
                               style={{ ...inputStyle, width: 100 }}
                             />
                           </div>
                           <div>
                             <label style={{ ...labelStyle, marginBottom: 4 }}>Prêmio 100% (R$)</label>
-                            <input
-                              type="number"
+                            <NumberField
+                              value={cfg.reward || 0}
                               min={0}
                               step="0.01"
-                              value={cfg.reward || 0}
-                              onChange={(e) => updateCfg({ reward: Math.max(0, parseFloat(e.target.value) || 0) })}
+                              onCommit={(v) => updateCfg({ reward: v })}
                               placeholder="0"
                               style={{ ...inputStyle, width: 100 }}
                             />
                           </div>
                           <div>
                             <label style={{ ...labelStyle, marginBottom: 4 }}>Bônus Lendária (R$)</label>
-                            <input
-                              type="number"
+                            <NumberField
+                              value={cfg.legendaryReward || 0}
                               min={0}
                               step="0.01"
-                              value={cfg.legendaryReward || 0}
-                              onChange={(e) => updateCfg({ legendaryReward: Math.max(0, parseFloat(e.target.value) || 0) })}
+                              onCommit={(v) => updateCfg({ legendaryReward: v })}
                               placeholder="0"
                               style={{ ...inputStyle, width: 100 }}
                             />
@@ -7781,10 +7804,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     <>
                       <div style={{ marginBottom: 12 }}>
                         <label style={{ ...labelStyle, marginBottom: 4 }}>Valor do prêmio (R$)</label>
-                        <input
-                          type="number" min={0} step="0.01"
+                        <NumberField
                           value={allGoalsReward.amount}
-                          onChange={(e) => setAllGoalsReward((prev) => ({ ...prev, amount: Math.max(0, parseFloat(e.target.value) || 0) }))}
+                          min={0}
+                          step="0.01"
+                          onCommit={(v) => setAllGoalsReward((prev) => ({ ...prev, amount: v }))}
                           placeholder="0"
                           style={{ ...inputStyle, width: 120, marginBottom: 0 }}
                         />
