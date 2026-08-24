@@ -5597,6 +5597,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
   const [achievementsFilterSdr, setAchievementsFilterSdr] = useState("all");
+  const [weekSdrFilter, setWeekSdrFilter] = useState("all"); // filtro por SDR na lista da semana (hero + tela semana)
   const [expandedHistoryMetric, setExpandedHistoryMetric] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [tourActive, setTourActive] = useState(false);
@@ -6284,6 +6285,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact };
   }, [leads, meetings]);
 
+  // Lista da semana filtrada por SDR - quando um SDR é selecionado nos chips do hero
+  // (ou da tela semana), a lista e os contadores viram só dele. A meta do time continua global.
+  const weekFiltered = useMemo(() => {
+    const byOwner = (l) => weekSdrFilter === "all" || (l.owner || "") === weekSdrFilter;
+    const list = stats.weekList.filter(byOwner);
+    const completed = stats.weekCompleted.filter(byOwner);
+    return { list, completed, done: completed.length, total: list.length + completed.length };
+  }, [stats, weekSdrFilter]);
+
   // Meta simples e única "Completar abordagens da semana" - se ativada, credita UMA badge
   // (sem níveis) quando a meta semanal configurada (weeklyGoal) é batida, uma vez por semana.
   useEffect(() => {
@@ -6822,15 +6832,36 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 18, fontWeight: 800, lineHeight: 1.15 }}>Abordar essa semana</div>
-                              <span style={{ fontSize: 11, fontWeight: 800, background: "rgba(20,20,26,0.14)", padding: "2px 8px", borderRadius: 20, lineHeight: 1.4 }}>{stats.weekList.length}</span>
+                              <span style={{ fontSize: 11, fontWeight: 800, background: "rgba(20,20,26,0.14)", padding: "2px 8px", borderRadius: 20, lineHeight: 1.4 }}>{weekFiltered.list.length}</span>
                             </div>
-                            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.75 }}>Foque nos leads da sua lista</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.75 }}>{weekSdrFilter === "all" ? "Foque nos leads da sua lista" : `Lista de ${weekSdrFilter}`}</div>
                           </div>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setView("semana"); }} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                           Ver lista <ChevronRight size={14} />
                         </button>
                       </div>
+                      {/* Chips de SDR: tocar num deles filtra a lista da semana só pra ele */}
+                      {sdrs.length > 1 && (
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => setWeekSdrFilter("all")}
+                            style={{ padding: "6px 12px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11.5, fontWeight: 800, background: weekSdrFilter === "all" ? "#14141a" : "rgba(20,20,26,0.12)", color: weekSdrFilter === "all" ? DARK.lime : "#14141a" }}
+                          >
+                            Todos
+                          </button>
+                          {sdrs.map((s) => (
+                            <button
+                              key={s.name}
+                              onClick={() => setWeekSdrFilter(weekSdrFilter === s.name ? "all" : s.name)}
+                              style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 12px 4px 4px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11.5, fontWeight: 800, background: weekSdrFilter === s.name ? "#14141a" : "rgba(20,20,26,0.12)", color: weekSdrFilter === s.name ? DARK.lime : "#14141a" }}
+                            >
+                              <OwnerAvatar name={s.name} size={20} />
+                              {s.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       {stats.weekTotalTagged === 0 && <div style={{ fontSize: 12, fontWeight: 600, marginTop: 10 }}>Nenhum lead marcado ainda - abra um lead e adicione a tag "Hoje" ou "Esta semana".</div>}
                     </div>
 
@@ -7142,11 +7173,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {/* ═══════════════════ LISTA DA SEMANA (montada por tag manual) ═══════════════════ */}
           {view === "semana" && (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
                 <div style={{ flex: 1 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 500, margin: 0, color: "#0f172a" }}>Abordar essa semana</h1>
-                  <div style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>{stats.weekList.length} pendentes · {stats.weekDoneCount} já feitos</div>
+                  <div style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>{weekFiltered.list.length} pendentes · {weekFiltered.done} já feitos{weekSdrFilter !== "all" ? ` · ${weekSdrFilter}` : ""}</div>
                 </div>
                 <button
                   onClick={() => setShowWeekHistory(true)}
@@ -7157,34 +7188,56 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </button>
               </div>
 
-              {stats.weekTotalTagged > 0 && (
+              {/* Chips de SDR: mesma seleção do hero da home - a lista abaixo vira só do SDR escolhido */}
+              {sdrs.length > 1 && (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                  <button
+                    onClick={() => setWeekSdrFilter("all")}
+                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === "all" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: weekSdrFilter === "all" ? "rgba(109,94,248,0.1)" : "white", color: weekSdrFilter === "all" ? "#6d5ef8" : "#64748b" }}
+                  >
+                    Todos
+                  </button>
+                  {sdrs.map((s) => (
+                    <button
+                      key={s.name}
+                      onClick={() => setWeekSdrFilter(weekSdrFilter === s.name ? "all" : s.name)}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px 5px 5px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === s.name ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: weekSdrFilter === s.name ? "rgba(109,94,248,0.1)" : "white", color: weekSdrFilter === s.name ? "#6d5ef8" : "#64748b" }}
+                    >
+                      <OwnerAvatar name={s.name} size={22} />
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {weekFiltered.total > 0 && (
                 <Glass style={{ borderRadius: 16, padding: "12px 16px", marginBottom: 18 }}>
-                  <ProgressDots total={stats.weekTotalTagged} done={stats.weekDoneCount} />
+                  <ProgressDots total={weekFiltered.total} done={weekFiltered.done} />
                 </Glass>
               )}
 
-              {stats.weekList.length === 0 ? (
+              {weekFiltered.list.length === 0 ? (
                 <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                   <CheckCircle2 size={32} style={{ color: "#34d399", marginBottom: 12 }} />
-                  <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, color: "#475569", marginBottom: 6 }}>Nenhum lead marcado pra semana</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"</div>
+                  <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, color: "#475569", marginBottom: 6 }}>{weekSdrFilter === "all" ? "Nenhum lead marcado pra semana" : `Nenhum lead pendente de ${weekSdrFilter}`}</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>{weekSdrFilter === "all" ? 'Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"' : "Troque o filtro acima pra ver a lista de outro SDR ou de todos"}</div>
                 </Glass>
               ) : (
                 <div className="leads-grid">
-                  {stats.weekList.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
+                  {weekFiltered.list.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
                 </div>
               )}
 
               {/* Concluídos essa semana - agora mostra POR QUAL CANAL cada um foi resolvido */}
-              {stats.weekCompleted.length > 0 && (
+              {weekFiltered.completed.length > 0 && (
                 <div style={{ marginTop: 24 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
                     <CheckCircle2 size={15} color="#059669" />
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Concluídos essa semana</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(16,185,129,0.12)", padding: "2px 8px", borderRadius: 7 }}>{stats.weekCompleted.length}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(16,185,129,0.12)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.completed.length}</span>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {stats.weekCompleted.map((lead) => {
+                    {weekFiltered.completed.map((lead) => {
                       const via = WEEK_VIA_CONFIG[lead.weekDoneVia] || WEEK_VIA_CONFIG.manual;
                       return (
                         <div
