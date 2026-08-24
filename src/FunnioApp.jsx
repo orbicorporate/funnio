@@ -446,6 +446,11 @@ const ALL_GOALS_REWARD_KEY = "allGoalsReward:v1";
 const ALL_GOALS_REWARD_EARNED_KEY = "allGoalsRewardEarned:v1";
 const DEFAULT_ALL_GOALS_REWARD = { enabled: false, amount: 0, metrics: [] };
 
+// Scripts padrão personalizados - quando alguém edita e salva um script da biblioteca,
+// a versão editada (com {nome}/{empresa} ainda como variáveis) substitui a original.
+const WA_CUSTOM_SCRIPTS_KEY = "customWaScripts:v1";
+const EMAIL_CUSTOM_SCRIPTS_KEY = "customEmailScripts:v1";
+
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
   leads: { key: "leads", label: "Encher funil", shortLabel: "Funil", icon: Target, color: "#22a35a", topIcon: Star, description: "Mais leads, mais oportunidades." },
@@ -1444,22 +1449,39 @@ const fillScriptTemplate = (template, lead) => {
 // Tela colorida de escolha de script - abre ao tocar no aviãozinho num lead.
 // Mostra os 10 tipos de abordagem já com o texto preenchido pro lead específico,
 // pra escolher rapidinho qual mais combina com a situação.
-const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript }) => {
+// "Editar script padrão" edita o TEMPLATE cru (com {nome}/{empresa}) e permite salvar
+// a versão editada como novo padrão via onSaveDefault - persiste pra todos os envios futuros.
+const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault }) => {
   // Se abrir já com uma mensagem pronta (editando um lead que já está na fila),
   // pula direto pra etapa de edição. Senão, começa mostrando a lista de scripts.
   const [step, setStep] = useState(initialMessage ? "edit" : "pick");
   const [draftMessage, setDraftMessage] = useState(initialMessage || "");
   const [pickedTitle, setPickedTitle] = useState("");
+  const [pickedKey, setPickedKey] = useState(null); // chave do script sendo editado como template cru
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const effectiveTemplate = (s) => scriptOverrides?.[s.key] ?? s.template;
 
   const pickScript = (s) => {
-    setDraftMessage(fillScriptTemplate(s.template, lead));
+    // Edita o template CRU (com as variáveis) - assim dá pra salvar como padrão sem
+    // hardcodar o nome/empresa desse lead específico no script de todo mundo.
+    setDraftMessage(effectiveTemplate(s));
     setPickedTitle(s.title);
+    setPickedKey(s.key);
     setStep("edit");
   };
 
   const confirm = () => {
     if (!draftMessage.trim()) return;
-    onSelect(draftMessage.trim());
+    // No modo template cru, preenche as variáveis antes de usar; no modo fila, usa direto.
+    onSelect(pickedKey ? fillScriptTemplate(draftMessage.trim(), lead) : draftMessage.trim());
+  };
+
+  const saveAsDefault = () => {
+    if (!pickedKey || !draftMessage.trim() || !onSaveDefault) return;
+    onSaveDefault(pickedKey, draftMessage.trim());
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1800);
   };
 
   return (
@@ -1493,7 +1515,8 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                 </button>
               )}
               {SCRIPT_LIBRARY.map((s) => {
-                const filled = fillScriptTemplate(s.template, lead);
+                const filled = fillScriptTemplate(effectiveTemplate(s), lead);
+                const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
                 return (
                   <div
                     key={s.key}
@@ -1514,7 +1537,10 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                         <s.icon size={16} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3 }}>{s.title}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 3, display: "flex", alignItems: "center", gap: 6 }}>
+                          {s.title}
+                          {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                        </div>
                         <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
                       </div>
                     </button>
@@ -1547,6 +1573,14 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   </div>
                 </div>
               )}
+              {pickedKey && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                  <Sparkles size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
+                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead. Edite à vontade e, se quiser que a mudança valha pra sempre, toque em <strong>Salvar como padrão</strong>.
+                  </div>
+                </div>
+              )}
               <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
                 <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#6d5ef8" />Ajuste o texto à vontade</label>
                 <textarea
@@ -1557,10 +1591,25 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
                 />
               </div>
+              {pickedKey && draftMessage.trim() && (
+                <div style={{ background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.25)", borderRadius: 14, padding: "12px 14px", marginTop: 12 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 800, color: "#1eb356", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 5 }}>Como vai chegar pra {lead.contactName || lead.company}</div>
+                  <div style={{ fontSize: 12.5, color: "#334155", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{fillScriptTemplate(draftMessage, lead)}</div>
+                </div>
+              )}
+              {pickedKey && onSaveDefault && (
+                <button
+                  onClick={saveAsDefault}
+                  disabled={!draftMessage.trim()}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  {savedFlash ? <><Check size={15} /> Salvo como padrão!</> : <>💾 Salvar como padrão</>}
+                </button>
+              )}
               <button
                 onClick={confirm}
                 disabled={!draftMessage.trim()}
-                style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: pickedKey ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
               >
                 {initialMessage ? "Salvar na fila" : "Usar essa mensagem"}
               </button>
@@ -1650,23 +1699,42 @@ const EMAIL_SCRIPT_LIBRARY = [
 
 // Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
 // de WhatsApp, mas com campo de assunto além do corpo.
-const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect, onNoScript }) => {
+const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault }) => {
   const isEditingExisting = initialBody !== undefined && initialBody !== null;
   const [step, setStep] = useState(isEditingExisting ? "edit" : "pick");
   const [draftSubject, setDraftSubject] = useState(initialSubject || "");
   const [draftBody, setDraftBody] = useState(initialBody || "");
   const [pickedTitle, setPickedTitle] = useState("");
+  const [pickedKey, setPickedKey] = useState(null); // chave do case sendo editado como template cru
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const effectiveSubject = (s) => scriptOverrides?.[s.key]?.subject ?? s.subject;
+  const effectiveBody = (s) => scriptOverrides?.[s.key]?.body ?? s.body;
 
   const pickScript = (s) => {
-    setDraftSubject(fillScriptTemplate(s.subject, lead));
-    setDraftBody(fillScriptTemplate(s.body, lead));
+    // Edita o template CRU (com as variáveis) pra poder salvar como padrão sem
+    // hardcodar nome/empresa desse lead no case de todo mundo.
+    setDraftSubject(effectiveSubject(s));
+    setDraftBody(effectiveBody(s));
     setPickedTitle(`${s.caseTitle} · ${s.category}`);
+    setPickedKey(s.key);
     setStep("edit");
   };
 
   const confirm = () => {
     if (!draftBody.trim()) return;
-    onSelect(draftSubject.trim(), draftBody.trim());
+    if (pickedKey) {
+      onSelect(fillScriptTemplate(draftSubject.trim(), lead), fillScriptTemplate(draftBody.trim(), lead));
+    } else {
+      onSelect(draftSubject.trim(), draftBody.trim());
+    }
+  };
+
+  const saveAsDefault = () => {
+    if (!pickedKey || !draftBody.trim() || !onSaveDefault) return;
+    onSaveDefault(pickedKey, { subject: draftSubject.trim(), body: draftBody.trim() });
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1800);
   };
 
   return (
@@ -1700,8 +1768,9 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                 </button>
               )}
               {EMAIL_SCRIPT_LIBRARY.map((s) => {
-                const filledSubject = fillScriptTemplate(s.subject, lead);
-                const filledBody = fillScriptTemplate(s.body, lead);
+                const filledSubject = fillScriptTemplate(effectiveSubject(s), lead);
+                const filledBody = fillScriptTemplate(effectiveBody(s), lead);
+                const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
                 return (
                   <div
                     key={s.key}
@@ -1756,6 +1825,14 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   </div>
                 </div>
               )}
+              {pickedKey && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                  <Sparkles size={13} color="#3b82f6" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: 11.5, color: "#1d4ed8", lineHeight: 1.4 }}>
+                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead. Edite à vontade e, se quiser que a mudança valha pra sempre, toque em <strong>Salvar como padrão</strong>.
+                  </div>
+                </div>
+              )}
               <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
                 <label style={{ ...labelStyle }}><SecIcon icon={Mail} color="#3b82f6" />Assunto</label>
                 <input
@@ -1772,10 +1849,19 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
                 />
               </div>
+              {pickedKey && onSaveDefault && (
+                <button
+                  onClick={saveAsDefault}
+                  disabled={!draftBody.trim()}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#3b82f6", fontSize: 13, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  {savedFlash ? <><Check size={15} /> Salvo como padrão!</> : <>💾 Salvar como padrão</>}
+                </button>
+              )}
               <button
                 onClick={confirm}
                 disabled={!draftBody.trim()}
-                style={{ width: "100%", marginTop: 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: pickedKey ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
               >
                 {isEditingExisting ? "Salvar na fila" : "Usar esse e-mail"}
               </button>
@@ -5310,6 +5396,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [allGoalsRewardEarned, setAllGoalsRewardEarned] = useState([]); // [{id, sdrName, comboKey, earnedAt, amount, metrics}]
   const [allGoalsRewardQueue, setAllGoalsRewardQueue] = useState([]); // fila de pop-up do prêmio geral
   const [commissionConfig, setCommissionConfig] = useState(DEFAULT_COMMISSION_CONFIG); // regras de comissão por tipo de serviço
+  const [customWaScripts, setCustomWaScripts] = useState({}); // { scriptKey: template } - scripts padrão editados
+  const [customEmailScripts, setCustomEmailScripts] = useState({}); // { scriptKey: { subject, body } }
   // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
@@ -5384,7 +5472,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(WEEK_APPROACH_BADGE_ENABLED_KEY, false), loadData(WEEK_APPROACH_BADGES_KEY, []),
       loadData(WEEK_APPROACH_REWARD_KEY, 0), loadData(ALL_GOALS_REWARD_KEY, DEFAULT_ALL_GOALS_REWARD), loadData(ALL_GOALS_REWARD_EARNED_KEY, []),
       loadData(COMMISSION_CONFIG_KEY, DEFAULT_COMMISSION_CONFIG),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg]) => {
+      loadData(WA_CUSTOM_SCRIPTS_KEY, {}), loadData(EMAIL_CUSTOM_SCRIPTS_KEY, {}),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -5424,6 +5513,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           avulso: commissionCfg.avulso && typeof commissionCfg.avulso === "object" ? commissionCfg.avulso : DEFAULT_COMMISSION_CONFIG.avulso,
           mensal: commissionCfg.mensal && typeof commissionCfg.mensal === "object" ? commissionCfg.mensal : DEFAULT_COMMISSION_CONFIG.mensal,
         } : DEFAULT_COMMISSION_CONFIG);
+        setCustomWaScripts(waScriptsCustom && typeof waScriptsCustom === "object" ? waScriptsCustom : {});
+        setCustomEmailScripts(emailScriptsCustom && typeof emailScriptsCustom === "object" ? emailScriptsCustom : {});
         setLoaded(true);
       }
     });
@@ -5442,6 +5533,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_KEY, allGoalsReward); }, [allGoalsReward, loaded]);
   useEffect(() => { if (loaded) saveData(ALL_GOALS_REWARD_EARNED_KEY, allGoalsRewardEarned); }, [allGoalsRewardEarned, loaded]);
   useEffect(() => { if (loaded) saveData(COMMISSION_CONFIG_KEY, commissionConfig); }, [commissionConfig, loaded]);
+  useEffect(() => { if (loaded) saveData(WA_CUSTOM_SCRIPTS_KEY, customWaScripts); }, [customWaScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(EMAIL_CUSTOM_SCRIPTS_KEY, customEmailScripts); }, [customEmailScripts, loaded]);
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -7970,6 +8063,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {scriptPickerLead && (
           <ScriptPickerModal
             lead={scriptPickerLead}
+            scriptOverrides={customWaScripts}
+            onSaveDefault={(key, template) => setCustomWaScripts((prev) => ({ ...prev, [key]: template }))}
             onClose={() => setScriptPickerLead(null)}
             onSelect={(message) => {
               if (scriptPickerMode === "dispatch") {
@@ -8008,6 +8103,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {emailScriptPickerLead && (
           <EmailScriptPickerModal
             lead={emailScriptPickerLead}
+            scriptOverrides={customEmailScripts}
+            onSaveDefault={(key, data) => setCustomEmailScripts((prev) => ({ ...prev, [key]: data }))}
             onClose={() => setEmailScriptPickerLead(null)}
             onSelect={(subject, body) => {
               if (scriptPickerMode === "dispatch") {
