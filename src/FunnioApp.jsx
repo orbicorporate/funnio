@@ -420,6 +420,7 @@ const SDRS_KEY = "sdrs:v1";
 const WEEKLY_GOAL_KEY = "weeklyGoal:v1";
 const DEFAULT_WEEKLY_GOAL = 20;
 const REVENUE_GOAL_KEY = "revenueGoal:v1";
+const REVENUE_GOAL_ENABLED_KEY = "revenueGoalEnabled:v1"; // meta de receita é opcional - desligada por padrão
 const DEFAULT_REVENUE_GOAL = 50000;
 
 // ════════════════════════════════════════════════════════════════════════
@@ -5601,6 +5602,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   const [editingGoal, setEditingGoal] = useState(false);
   const [revenueGoal, setRevenueGoal] = useState(DEFAULT_REVENUE_GOAL);
+  const [revenueGoalEnabled, setRevenueGoalEnabled] = useState(false); // campo de meta fechado até o gestor ativar
   const [editingRevenueGoal, setEditingRevenueGoal] = useState(false);
   const [reportPeriod, setReportPeriod] = useState("all"); // all | 7 | 30 | 90
   const [wonPeriod, setWonPeriod] = useState("all"); // all | 30 | 90 | 365
@@ -5693,7 +5695,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(WEEK_APPROACH_REWARD_KEY, 0), loadData(ALL_GOALS_REWARD_KEY, DEFAULT_ALL_GOALS_REWARD), loadData(ALL_GOALS_REWARD_EARNED_KEY, []),
       loadData(COMMISSION_CONFIG_KEY, DEFAULT_COMMISSION_CONFIG),
       loadData(WA_CUSTOM_SCRIPTS_KEY, {}), loadData(EMAIL_CUSTOM_SCRIPTS_KEY, {}),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom]) => {
+      loadData(REVENUE_GOAL_ENABLED_KEY, false),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom, revGoalEnabled]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -5735,6 +5738,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         } : DEFAULT_COMMISSION_CONFIG);
         setCustomWaScripts(waScriptsCustom && typeof waScriptsCustom === "object" ? waScriptsCustom : {});
         setCustomEmailScripts(emailScriptsCustom && typeof emailScriptsCustom === "object" ? emailScriptsCustom : {});
+        setRevenueGoalEnabled(!!revGoalEnabled);
         setLoaded(true);
       }
     });
@@ -5745,6 +5749,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(SDRS_KEY, sdrs); }, [sdrs, loaded]);
   useEffect(() => { if (loaded) saveData(WEEKLY_GOAL_KEY, weeklyGoal); }, [weeklyGoal, loaded]);
   useEffect(() => { if (loaded) saveData(REVENUE_GOAL_KEY, revenueGoal); }, [revenueGoal, loaded]);
+  useEffect(() => { if (loaded) saveData(REVENUE_GOAL_ENABLED_KEY, revenueGoalEnabled); }, [revenueGoalEnabled, loaded]);
   useEffect(() => { if (loaded) saveData(GOALS_CONFIG_KEY, goalsConfig); }, [goalsConfig, loaded]);
   useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGE_ENABLED_KEY, weekApproachBadgeEnabled); }, [weekApproachBadgeEnabled, loaded]);
@@ -6317,6 +6322,33 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const completed = stats.weekCompleted.filter(byOwner);
     return { list, completed, done: completed.length, total: list.length + completed.length };
   }, [stats, weekSdrFilter]);
+
+  // Receita do mês e do ano - o mês soma o MRR ativo (fees mensais em andamento) mais os
+  // avulsos fechados no mês corrente; o ano soma avulsos do ano mais o valor contratado dos
+  // recorrentes ativos (fee × meses do período: mensal ×1, trimestral ×3, semestral ×6, anual ×12).
+  const revenueBreakdown = useMemo(() => {
+    const now = new Date();
+    const curMonth = now.getMonth(), curYear = now.getFullYear();
+    const periodMonths = { mensal: 1, trimestral: 3, semestral: 6, anual: 12 };
+    let month = 0, year = 0;
+    leads.filter((l) => l.stage === "Conquistado").forEach((l) => {
+      const v = getDealValue(l);
+      if (!v) return;
+      if (l.dealType === "mensal") {
+        if (!l.workCompleted) {
+          month += v;
+          year += v * (periodMonths[l.contractPeriod || "mensal"] || 1);
+        }
+      } else {
+        const d = l.wonDate ? new Date(l.wonDate) : null;
+        if (!d || d.getFullYear() === curYear) {
+          year += v;
+          if (d && d.getMonth() === curMonth) month += v;
+        }
+      }
+    });
+    return { month, year };
+  }, [leads]);
 
   // Próximas ações com lembrete - atrasadas, de hoje e futuras, ordenadas por data.
   // Alimenta o box de lembrete na home e a página "Próximas ações" do menu.
@@ -8330,43 +8362,79 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 )}
               </Glass>
 
-              {/* Receita com meta editável */}
+              {/* Receita - meta opcional (fechada por padrão); ao ativar mostra mês e ano */}
               <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Receita</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 600 }}>Meta:</span>
-                    {editingRevenueGoal ? (
-                      <input
-                        type="number"
-                        min={1}
-                        autoFocus
-                        defaultValue={revenueGoal}
-                        onBlur={(e) => { const v = parseInt(e.target.value, 10); setRevenueGoal(v > 0 ? v : DEFAULT_REVENUE_GOAL); setEditingRevenueGoal(false); }}
-                        onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
-                        style={{ width: 90, padding: "3px 6px", borderRadius: 7, border: "1.5px solid #6d5ef8", fontSize: 12.5, fontWeight: 700, color: "#14141a", outline: "none" }}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => setEditingRevenueGoal(true)}
-                        title="Clique para definir a meta de receita"
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 7, border: "1px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
-                      >
-                        {formatBRL(revenueGoal)} <Pencil size={11} />
-                      </button>
-                    )}
-                  </div>
+                  {!revenueGoalEnabled && isOwner && (
+                    <button
+                      onClick={() => setRevenueGoalEnabled(true)}
+                      title="Ativa a meta de receita e a visão de mês/ano"
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 8, border: "1px dashed rgba(148,163,184,0.4)", background: "white", color: "#64748b", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      <Target size={11} /> Ativar meta
+                    </button>
+                  )}
+                  {revenueGoalEnabled && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 11, color: "#9a9aa3", fontWeight: 600 }}>Meta:</span>
+                      {editingRevenueGoal && isOwner ? (
+                        <input
+                          type="number"
+                          min={1}
+                          autoFocus
+                          defaultValue={revenueGoal}
+                          onBlur={(e) => { const v = parseInt(e.target.value, 10); setRevenueGoal(v > 0 ? v : DEFAULT_REVENUE_GOAL); setEditingRevenueGoal(false); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+                          style={{ width: 90, padding: "3px 6px", borderRadius: 7, border: "1.5px solid #6d5ef8", fontSize: 12.5, fontWeight: 700, color: "#14141a", outline: "none" }}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => { if (isOwner) setEditingRevenueGoal(true); }}
+                          title={isOwner ? "Clique para definir a meta de receita" : "Só o gestor do funil pode alterar a meta"}
+                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 7, border: "1px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: isOwner ? "pointer" : "default" }}
+                        >
+                          {formatBRL(revenueGoal)} {isOwner ? <Pencil size={11} /> : <Lock size={11} />}
+                        </button>
+                      )}
+                      {isOwner && (
+                        <button
+                          onClick={() => setRevenueGoalEnabled(false)}
+                          title="Fechar a meta de receita"
+                          style={{ width: 22, height: 22, borderRadius: 7, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          <X size={11} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontSize: 30, fontWeight: 800, color: "#14141a", marginBottom: 8 }}>{formatBRL(stats.receita)}</div>
-                <div style={{ height: 8, borderRadius: 4, background: "#eef0f3" }}>
-                  <div style={{
-                    height: "100%", borderRadius: 4,
-                    width: `${Math.min(100, Math.round((stats.receita / revenueGoal) * 100))}%`,
-                    background: stats.receita >= revenueGoal ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #a79bfc, #6d5ef8)",
-                    transition: "width 0.3s ease",
-                  }} />
-                </div>
-                <div style={{ fontSize: 11.5, color: "#9a9aa3", marginTop: 6 }}>{Math.round((stats.receita / revenueGoal) * 100)}% da meta de {formatBRL(revenueGoal)}</div>
+                <div style={{ fontSize: 30, fontWeight: 800, color: "#14141a", marginBottom: revenueGoalEnabled ? 12 : 0 }}>{formatBRL(stats.receita)}</div>
+                {revenueGoalEnabled && (
+                  <>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                      <div style={{ background: "rgba(109,94,248,0.06)", border: "1px solid rgba(109,94,248,0.15)", borderRadius: 12, padding: "10px 12px" }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do mês</div>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: "#6d5ef8", marginTop: 2 }}>{formatBRL(revenueBreakdown.month)}</div>
+                        <div style={{ fontSize: 9.5, color: "#9a9aa3", marginTop: 1 }}>fees ativos + avulsos do mês</div>
+                      </div>
+                      <div style={{ background: "rgba(31,169,113,0.06)", border: "1px solid rgba(31,169,113,0.15)", borderRadius: 12, padding: "10px 12px" }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do ano</div>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: "#1fa971", marginTop: 2 }}>{formatBRL(revenueBreakdown.year)}</div>
+                        <div style={{ fontSize: 9.5, color: "#9a9aa3", marginTop: 1 }}>avulsos do ano + contratos pelo período</div>
+                      </div>
+                    </div>
+                    <div style={{ height: 8, borderRadius: 4, background: "#eef0f3" }}>
+                      <div style={{
+                        height: "100%", borderRadius: 4,
+                        width: `${Math.min(100, Math.round((stats.receita / revenueGoal) * 100))}%`,
+                        background: stats.receita >= revenueGoal ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #a79bfc, #6d5ef8)",
+                        transition: "width 0.3s ease",
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#9a9aa3", marginTop: 6 }}>{Math.round((stats.receita / revenueGoal) * 100)}% da meta de {formatBRL(revenueGoal)}</div>
+                  </>
+                )}
               </Glass>
 
               <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
