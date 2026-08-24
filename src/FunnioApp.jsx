@@ -2017,6 +2017,11 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{h.company}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{h.owner} · {cfg.label}</div>
+                            {h.summary && (
+                              <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                                "{h.summary}"
+                              </div>
+                            )}
                           </div>
                           <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{new Date(h.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
                         </div>
@@ -5769,8 +5774,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   // Registra no histórico persistente (dura semanas/meses, não só a semana atual)
   // toda vez que uma tarefa da semana é marcada como concluída, e por qual canal.
-  const logWeekHistory = (lead, via) => {
-    setWeekHistory((prev) => [{ id: "wk_" + Date.now() + "_" + lead.id, leadId: lead.id, company: lead.company, owner: lead.owner, via, date: new Date().toISOString() }, ...prev].slice(0, 500));
+  const logWeekHistory = (lead, via, summary = null) => {
+    setWeekHistory((prev) => [{ id: "wk_" + Date.now() + "_" + lead.id, leadId: lead.id, company: lead.company, owner: lead.owner, via, summary, date: new Date().toISOString() }, ...prev].slice(0, 500));
   };
 
   // Detecta automaticamente quando um SDR bate um nível de meta (bronze/prata/ouro) e credita a badge.
@@ -5934,7 +5939,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       weekDoneAt: now,
       notes: [{ id: "n_wksum_" + Date.now(), date: now, text: text.trim() }, ...(l.notes || [])],
     } : l)));
-    if (lead) { setToast("Marcado como feito na Lista da Semana!"); logWeekHistory(lead, via); }
+    if (lead) { setToast("Marcado como feito na Lista da Semana!"); logWeekHistory(lead, via, text.trim()); }
     setWeekDoneSummaryTarget(null);
   };
   const toggleWeekDone = (id) => {
