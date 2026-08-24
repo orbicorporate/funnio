@@ -451,6 +451,11 @@ const DEFAULT_ALL_GOALS_REWARD = { enabled: false, amount: 0, metrics: [] };
 // a versão editada (com {nome}/{empresa} ainda como variáveis) substitui a original.
 const WA_CUSTOM_SCRIPTS_KEY = "customWaScripts:v1";
 const EMAIL_CUSTOM_SCRIPTS_KEY = "customEmailScripts:v1";
+// Scripts criados do zero pelo time (além das sugestões de fábrica) e sugestões ocultadas.
+const USER_WA_SCRIPTS_KEY = "userWaScripts:v1";
+const USER_EMAIL_SCRIPTS_KEY = "userEmailScripts:v1";
+const HIDDEN_WA_SCRIPTS_KEY = "hiddenWaScripts:v1";
+const HIDDEN_EMAIL_SCRIPTS_KEY = "hiddenEmailScripts:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
@@ -1493,16 +1498,20 @@ const fillScriptTemplate = (template, lead) => {
 // pra escolher rapidinho qual mais combina com a situação.
 // "Editar script padrão" edita o TEMPLATE cru (com {nome}/{empresa}) e permite salvar
 // a versão editada como novo padrão via onSaveDefault - persiste pra todos os envios futuros.
-const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault }) => {
+const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault, userScripts = [], hiddenKeys = [], onSaveUserScript, onDeleteUserScript }) => {
   // Se abrir já com uma mensagem pronta (editando um lead que já está na fila),
   // pula direto pra etapa de edição. Senão, começa mostrando a lista de scripts.
   const [step, setStep] = useState(initialMessage ? "edit" : "pick");
   const [draftMessage, setDraftMessage] = useState(initialMessage || "");
+  const [draftTitle, setDraftTitle] = useState("");
   const [pickedTitle, setPickedTitle] = useState("");
-  const [pickedKey, setPickedKey] = useState(null); // chave do script sendo editado como template cru
+  const [pickedKey, setPickedKey] = useState(null); // chave da sugestão sendo editada como template cru
+  const [pickedUserId, setPickedUserId] = useState(null); // id do script do time sendo editado
+  const [creating, setCreating] = useState(false); // criando um script novo do zero
   const [savedFlash, setSavedFlash] = useState(false);
 
   const effectiveTemplate = (s) => scriptOverrides?.[s.key] ?? s.template;
+  const visibleSuggestions = SCRIPT_LIBRARY.filter((s) => !hiddenKeys.includes(s.key));
 
   const pickScript = (s) => {
     // Edita o template CRU (com as variáveis) - assim dá pra salvar como padrão sem
@@ -1510,18 +1519,45 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
     setDraftMessage(effectiveTemplate(s));
     setPickedTitle(s.title);
     setPickedKey(s.key);
+    setPickedUserId(null);
+    setCreating(false);
+    setStep("edit");
+  };
+
+  const pickUserScript = (s) => {
+    setDraftMessage(s.template);
+    setDraftTitle(s.title);
+    setPickedTitle(s.title);
+    setPickedUserId(s.id);
+    setPickedKey(null);
+    setCreating(false);
+    setStep("edit");
+  };
+
+  const startCreate = () => {
+    setDraftMessage("");
+    setDraftTitle("");
+    setPickedTitle("");
+    setPickedKey(null);
+    setPickedUserId(null);
+    setCreating(true);
     setStep("edit");
   };
 
   const confirm = () => {
     if (!draftMessage.trim()) return;
+    // Criando um script novo: salva na biblioteca do time antes de usar.
+    if (creating && onSaveUserScript) onSaveUserScript(null, { title: draftTitle.trim() || "Script sem título", template: draftMessage.trim() });
     // No modo template cru, preenche as variáveis antes de usar; no modo fila, usa direto.
-    onSelect(pickedKey ? fillScriptTemplate(draftMessage.trim(), lead) : draftMessage.trim());
+    onSelect((pickedKey || pickedUserId || creating) ? fillScriptTemplate(draftMessage.trim(), lead) : draftMessage.trim());
   };
 
   const saveAsDefault = () => {
-    if (!pickedKey || !draftMessage.trim() || !onSaveDefault) return;
-    onSaveDefault(pickedKey, draftMessage.trim());
+    if (!draftMessage.trim()) return;
+    if (pickedKey && onSaveDefault) onSaveDefault(pickedKey, draftMessage.trim());
+    else if (pickedUserId && onSaveUserScript) onSaveUserScript(pickedUserId, { title: draftTitle.trim() || pickedTitle || "Script", template: draftMessage.trim() });
+    else if (creating && onSaveUserScript) { onSaveUserScript(null, { title: draftTitle.trim() || "Script sem título", template: draftMessage.trim() }); setCreating(false); setStep("pick"); return; }
+    else return;
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 1800);
   };
@@ -1556,7 +1592,54 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   <Send size={16} /> Enviar sem script
                 </button>
               )}
-              {SCRIPT_LIBRARY.map((s) => {
+              {/* Criar um script novo do zero - vai pra biblioteca do time e já pode usar na hora */}
+              {onSaveUserScript && (
+                <button
+                  onClick={startCreate}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 14, border: "1.5px dashed rgba(109,94,248,0.45)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+                >
+                  <Plus size={15} /> Criar novo script
+                </button>
+              )}
+
+              {/* Scripts criados pelo time aparecem primeiro */}
+              {userScripts.length > 0 && (
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
+              )}
+              {userScripts.map((s) => {
+                const filled = fillScriptTemplate(s.template, lead);
+                return (
+                  <div key={s.id} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(14,165,233,0.25)", overflow: "hidden" }}>
+                    <button onClick={() => onSelect(filled)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Pencil size={14} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: "#0ea5e9", marginBottom: 3 }}>{s.title}</div>
+                        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                      </div>
+                    </button>
+                    <div style={{ display: "flex", gap: 8, padding: "0 14px 11px", alignItems: "center" }}>
+                      <button onClick={() => pickUserScript(s)} style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#0ea5e9", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+                        <Pencil size={11} /> Editar script
+                      </button>
+                      {onDeleteUserScript && (
+                        <button
+                          onClick={() => { if (window.confirm(`Excluir o script "${s.title}"?`)) onDeleteUserScript(s.id); }}
+                          style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#dc2626", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0, marginLeft: "auto" }}
+                        >
+                          <Trash2 size={11} /> Excluir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {visibleSuggestions.length > 0 && (
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
+              )}
+              {visibleSuggestions.map((s) => {
                 const filled = fillScriptTemplate(effectiveTemplate(s), lead);
                 const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
                 return (
@@ -1615,15 +1698,26 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   </div>
                 </div>
               )}
-              {pickedKey && (
+              {(pickedKey || pickedUserId || creating) && (
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                   <Sparkles size={13} color="#6d5ef8" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ fontSize: 11.5, color: "#4c3fa0", lineHeight: 1.4 }}>
-                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead. Edite à vontade e, se quiser que a mudança valha pra sempre, toque em <strong>Salvar como padrão</strong>.
+                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead.{creating ? " Dê um título e escreva o script - ele fica salvo na sua biblioteca." : " Edite à vontade e, se quiser que a mudança valha pra sempre, toque em Salvar."}
                   </div>
                 </div>
               )}
               <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+                {(creating || pickedUserId) && (
+                  <>
+                    <label style={{ ...labelStyle }}><SecIcon icon={FileText} color="#0ea5e9" />Título do script</label>
+                    <input
+                      value={draftTitle}
+                      onChange={(e) => setDraftTitle(e.target.value)}
+                      placeholder="Ex: Follow-up pós-evento"
+                      style={{ ...inputStyle, marginBottom: 14 }}
+                    />
+                  </>
+                )}
                 <label style={{ ...labelStyle }}><SecIcon icon={Pencil} color="#6d5ef8" />Ajuste o texto à vontade</label>
                 <textarea
                   value={draftMessage}
@@ -1633,27 +1727,27 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
                 />
               </div>
-              {pickedKey && draftMessage.trim() && (
+              {(pickedKey || pickedUserId || creating) && draftMessage.trim() && (
                 <div style={{ background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.25)", borderRadius: 14, padding: "12px 14px", marginTop: 12 }}>
                   <div style={{ fontSize: 10.5, fontWeight: 800, color: "#1eb356", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 5 }}>Como vai chegar pra {lead.contactName || lead.company}</div>
                   <div style={{ fontSize: 12.5, color: "#334155", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{fillScriptTemplate(draftMessage, lead)}</div>
                 </div>
               )}
-              {pickedKey && onSaveDefault && (
+              {(pickedKey || pickedUserId || creating) && (onSaveDefault || onSaveUserScript) && (
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftMessage.trim()}
                   style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
-                  {savedFlash ? <><Check size={15} /> Salvo como padrão!</> : <>💾 Salvar como padrão</>}
+                  {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
               )}
               <button
                 onClick={confirm}
                 disabled={!draftMessage.trim()}
-                style={{ width: "100%", marginTop: pickedKey ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
               >
-                {initialMessage ? "Salvar na fila" : "Usar essa mensagem"}
+                {initialMessage ? "Salvar na fila" : creating ? "Salvar e usar essa mensagem" : "Usar essa mensagem"}
               </button>
             </div>
           </div>
@@ -1741,17 +1835,21 @@ const EMAIL_SCRIPT_LIBRARY = [
 
 // Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
 // de WhatsApp, mas com campo de assunto além do corpo.
-const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault }) => {
+const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, onSelect, onNoScript, scriptOverrides, onSaveDefault, userScripts = [], hiddenKeys = [], onSaveUserScript, onDeleteUserScript }) => {
   const isEditingExisting = initialBody !== undefined && initialBody !== null;
   const [step, setStep] = useState(isEditingExisting ? "edit" : "pick");
   const [draftSubject, setDraftSubject] = useState(initialSubject || "");
   const [draftBody, setDraftBody] = useState(initialBody || "");
+  const [draftTitle, setDraftTitle] = useState("");
   const [pickedTitle, setPickedTitle] = useState("");
-  const [pickedKey, setPickedKey] = useState(null); // chave do case sendo editado como template cru
+  const [pickedKey, setPickedKey] = useState(null); // chave do case de fábrica sendo editado
+  const [pickedUserId, setPickedUserId] = useState(null); // id do script do time sendo editado
+  const [creating, setCreating] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
 
   const effectiveSubject = (s) => scriptOverrides?.[s.key]?.subject ?? s.subject;
   const effectiveBody = (s) => scriptOverrides?.[s.key]?.body ?? s.body;
+  const visibleSuggestions = EMAIL_SCRIPT_LIBRARY.filter((s) => !hiddenKeys.includes(s.key));
 
   const pickScript = (s) => {
     // Edita o template CRU (com as variáveis) pra poder salvar como padrão sem
@@ -1760,12 +1858,37 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
     setDraftBody(effectiveBody(s));
     setPickedTitle(`${s.caseTitle} · ${s.category}`);
     setPickedKey(s.key);
+    setPickedUserId(null);
+    setCreating(false);
+    setStep("edit");
+  };
+
+  const pickUserScript = (s) => {
+    setDraftSubject(s.subject);
+    setDraftBody(s.body);
+    setDraftTitle(s.title);
+    setPickedTitle(s.title);
+    setPickedUserId(s.id);
+    setPickedKey(null);
+    setCreating(false);
+    setStep("edit");
+  };
+
+  const startCreate = () => {
+    setDraftSubject("");
+    setDraftBody("");
+    setDraftTitle("");
+    setPickedTitle("");
+    setPickedKey(null);
+    setPickedUserId(null);
+    setCreating(true);
     setStep("edit");
   };
 
   const confirm = () => {
     if (!draftBody.trim()) return;
-    if (pickedKey) {
+    if (creating && onSaveUserScript) onSaveUserScript(null, { title: draftTitle.trim() || "Script sem título", subject: draftSubject.trim(), body: draftBody.trim() });
+    if (pickedKey || pickedUserId || creating) {
       onSelect(fillScriptTemplate(draftSubject.trim(), lead), fillScriptTemplate(draftBody.trim(), lead));
     } else {
       onSelect(draftSubject.trim(), draftBody.trim());
@@ -1773,8 +1896,11 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
   };
 
   const saveAsDefault = () => {
-    if (!pickedKey || !draftBody.trim() || !onSaveDefault) return;
-    onSaveDefault(pickedKey, { subject: draftSubject.trim(), body: draftBody.trim() });
+    if (!draftBody.trim()) return;
+    if (pickedKey && onSaveDefault) onSaveDefault(pickedKey, { subject: draftSubject.trim(), body: draftBody.trim() });
+    else if (pickedUserId && onSaveUserScript) onSaveUserScript(pickedUserId, { title: draftTitle.trim() || pickedTitle || "Script", subject: draftSubject.trim(), body: draftBody.trim() });
+    else if (creating && onSaveUserScript) { onSaveUserScript(null, { title: draftTitle.trim() || "Script sem título", subject: draftSubject.trim(), body: draftBody.trim() }); setCreating(false); setStep("pick"); return; }
+    else return;
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 1800);
   };
@@ -1809,7 +1935,55 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   <Send size={16} /> Enviar sem script
                 </button>
               )}
-              {EMAIL_SCRIPT_LIBRARY.map((s) => {
+              {/* Criar um script novo do zero - vai pra biblioteca do time e já pode usar na hora */}
+              {onSaveUserScript && (
+                <button
+                  onClick={startCreate}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 14, border: "1.5px dashed rgba(59,130,246,0.45)", background: "rgba(59,130,246,0.05)", color: "#3b82f6", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+                >
+                  <Plus size={15} /> Criar novo script
+                </button>
+              )}
+
+              {userScripts.length > 0 && (
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
+              )}
+              {userScripts.map((s) => {
+                const filledSubject = fillScriptTemplate(s.subject || "", lead);
+                const filledBody = fillScriptTemplate(s.body, lead);
+                return (
+                  <div key={s.id} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(14,165,233,0.25)", overflow: "hidden" }}>
+                    <button onClick={() => onSelect(filledSubject, filledBody)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Mail size={14} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3" }}>{s.title} · Seu script</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{filledSubject || "(sem assunto)"}</div>
+                        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.45, marginTop: 3, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{filledBody}</div>
+                      </div>
+                    </button>
+                    <div style={{ display: "flex", gap: 8, padding: "0 14px 11px", alignItems: "center" }}>
+                      <button onClick={() => pickUserScript(s)} style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#0ea5e9", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+                        <Pencil size={11} /> Editar script
+                      </button>
+                      {onDeleteUserScript && (
+                        <button
+                          onClick={() => { if (window.confirm(`Excluir o script "${s.title}"?`)) onDeleteUserScript(s.id); }}
+                          style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#dc2626", fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0, marginLeft: "auto" }}
+                        >
+                          <Trash2 size={11} /> Excluir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {visibleSuggestions.length > 0 && (
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
+              )}
+              {visibleSuggestions.map((s) => {
                 const filledSubject = fillScriptTemplate(effectiveSubject(s), lead);
                 const filledBody = fillScriptTemplate(effectiveBody(s), lead);
                 const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
@@ -1867,15 +2041,26 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   </div>
                 </div>
               )}
-              {pickedKey && (
+              {(pickedKey || pickedUserId || creating) && (
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                   <Sparkles size={13} color="#3b82f6" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ fontSize: 11.5, color: "#1d4ed8", lineHeight: 1.4 }}>
-                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead. Edite à vontade e, se quiser que a mudança valha pra sempre, toque em <strong>Salvar como padrão</strong>.
+                    <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são trocados automaticamente pelos dados de cada lead.{creating ? " Dê um título e escreva o e-mail - ele fica salvo na sua biblioteca." : " Edite à vontade e, se quiser que a mudança valha pra sempre, toque em Salvar."}
                   </div>
                 </div>
               )}
               <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+                {(creating || pickedUserId) && (
+                  <>
+                    <label style={{ ...labelStyle }}><SecIcon icon={FileText} color="#0ea5e9" />Título do script</label>
+                    <input
+                      value={draftTitle}
+                      onChange={(e) => setDraftTitle(e.target.value)}
+                      placeholder="Ex: Proposta pós-reunião"
+                      style={{ ...inputStyle, marginBottom: 14 }}
+                    />
+                  </>
+                )}
                 <label style={{ ...labelStyle }}><SecIcon icon={Mail} color="#3b82f6" />Assunto</label>
                 <input
                   value={draftSubject}
@@ -1891,21 +2076,21 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13.5 }}
                 />
               </div>
-              {pickedKey && onSaveDefault && (
+              {(pickedKey || pickedUserId || creating) && (onSaveDefault || onSaveUserScript) && (
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftBody.trim()}
                   style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#3b82f6", fontSize: 13, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
-                  {savedFlash ? <><Check size={15} /> Salvo como padrão!</> : <>💾 Salvar como padrão</>}
+                  {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
               )}
               <button
                 onClick={confirm}
                 disabled={!draftBody.trim()}
-                style={{ width: "100%", marginTop: pickedKey ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
               >
-                {isEditingExisting ? "Salvar na fila" : "Usar esse e-mail"}
+                {isEditingExisting ? "Salvar na fila" : creating ? "Salvar e usar esse e-mail" : "Usar esse e-mail"}
               </button>
             </div>
           </div>
@@ -3900,18 +4085,31 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
 // Página dedicada de Scripts - central pra ver e editar todos os templates de WhatsApp
 // e cases de e-mail num lugar só, fora do fluxo de envio. Edições salvas aqui valem
 // pra todos os envios futuros (mesma persistência dos pickers).
-const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, onSaveEmail, onResetWa, onResetEmail }) => {
+const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, onSaveEmail, onResetWa, onResetEmail, userWaScripts, userEmailScripts, onSaveUserWa, onDeleteUserWa, onSaveUserEmail, onDeleteUserEmail, hiddenWa, hiddenEmail, onHideWa, onHideEmail, onUnhideAllWa, onUnhideAllEmail }) => {
   const [tab, setTab] = useState("whatsapp"); // whatsapp | email
-  const [editingKey, setEditingKey] = useState(null);
+  const [editingKey, setEditingKey] = useState(null); // chave de sugestão OU "u_"+id de script do time OU "new"
   const [draft, setDraft] = useState("");
+  const [draftTitle, setDraftTitle] = useState("");
   const [draftSubject, setDraftSubject] = useState("");
   const [draftBody, setDraftBody] = useState("");
   const [savedKey, setSavedKey] = useState(null);
 
   const flashSaved = (key) => { setSavedKey(key); setTimeout(() => setSavedKey(null), 1600); };
-  const startEditWa = (s) => { setEditingKey(s.key); setDraft(customWaScripts[s.key] ?? s.template); };
-  const startEditEmail = (s) => { setEditingKey(s.key); setDraftSubject(customEmailScripts[s.key]?.subject ?? s.subject); setDraftBody(customEmailScripts[s.key]?.body ?? s.body); };
-  const cancelEdit = () => { setEditingKey(null); setDraft(""); setDraftSubject(""); setDraftBody(""); };
+  const cancelEdit = () => { setEditingKey(null); setDraft(""); setDraftTitle(""); setDraftSubject(""); setDraftBody(""); };
+  const startEditWa = (s) => { cancelEdit(); setEditingKey(s.key); setDraft(customWaScripts[s.key] ?? s.template); };
+  const startEditUserWa = (s) => { cancelEdit(); setEditingKey("u_" + s.id); setDraft(s.template); setDraftTitle(s.title); };
+  const startEditEmail = (s) => { cancelEdit(); setEditingKey(s.key); setDraftSubject(customEmailScripts[s.key]?.subject ?? s.subject); setDraftBody(customEmailScripts[s.key]?.body ?? s.body); };
+  const startEditUserEmail = (s) => { cancelEdit(); setEditingKey("u_" + s.id); setDraftTitle(s.title); setDraftSubject(s.subject || ""); setDraftBody(s.body); };
+  const startCreate = () => { cancelEdit(); setEditingKey("new"); };
+
+  const visibleWa = SCRIPT_LIBRARY.filter((s) => !hiddenWa.includes(s.key));
+  const visibleEmail = EMAIL_SCRIPT_LIBRARY.filter((s) => !hiddenEmail.includes(s.key));
+
+  const editBtn = (color) => ({ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${color}55`, background: "white", color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 });
+  const saveBtn = (grad, ok) => ({ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: ok ? grad : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: ok ? "pointer" : "not-allowed" });
+  const cancelBtn = { padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" };
+  const dangerBtn = { padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" };
+  const sectionLabel = { fontSize: 10.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: -2 };
 
   return (
     <>
@@ -3919,11 +4117,11 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
         <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
         <div>
           <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Scripts</h1>
-          <div style={{ fontSize: 13, color: "#9a9aa3" }}>Edite os templates padrão - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos automaticamente em cada envio</div>
+          <div style={{ fontSize: 13, color: "#9a9aa3" }}>Crie os seus, edite os padrões - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos em cada envio</div>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
         {[{ key: "whatsapp", label: "WhatsApp", color: "#25d366" }, { key: "email", label: "E-mail (cases)", color: "#3b82f6" }].map((t) => (
           <button
             key={t.key}
@@ -3933,134 +4131,218 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
             {t.label}
           </button>
         ))}
+        <button
+          onClick={startCreate}
+          style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", padding: "9px 16px", borderRadius: 11, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+        >
+          <Plus size={14} /> Novo script
+        </button>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 90 }}>
-        {tab === "whatsapp" && SCRIPT_LIBRARY.map((s) => {
-          const isCustomized = customWaScripts[s.key] !== undefined;
-          const isEditing = editingKey === s.key;
-          const effective = customWaScripts[s.key] ?? s.template;
-          return (
-            <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <s.icon size={16} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    {s.title}
-                    {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
-                  </div>
-                  {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
-                </div>
-                {!isEditing && (
-                  <button onClick={() => startEditWa(s)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${s.color}55`, background: "white", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
-                    <Pencil size={12} /> Editar
-                  </button>
-                )}
-              </div>
+        {/* Formulário de criação - vale pra aba ativa */}
+        {editingKey === "new" && (
+          <Glass style={{ borderRadius: 18, padding: "16px 18px", border: "1.5px solid #6d5ef8" }}>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6d5ef8", marginBottom: 12 }}>Novo script de {tab === "whatsapp" ? "WhatsApp" : "e-mail"}</div>
+            <label style={{ ...labelStyle, marginBottom: 4 }}>Título</label>
+            <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder={tab === "whatsapp" ? "Ex: Follow-up pós-evento" : "Ex: Proposta pós-reunião"} autoFocus style={{ ...inputStyle, marginBottom: 12 }} />
+            {tab === "email" && (
+              <>
+                <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
+                <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} placeholder="Assunto do e-mail" style={{ ...inputStyle, marginBottom: 12 }} />
+              </>
+            )}
+            <label style={{ ...labelStyle, marginBottom: 4 }}>{tab === "whatsapp" ? "Mensagem" : "Corpo do e-mail"}</label>
+            <textarea
+              value={tab === "whatsapp" ? draft : draftBody}
+              onChange={(e) => tab === "whatsapp" ? setDraft(e.target.value) : setDraftBody(e.target.value)}
+              rows={tab === "whatsapp" ? 6 : 10}
+              placeholder="Use {nome} e {empresa} onde quiser que os dados do lead entrem"
+              style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
+            />
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                onClick={() => {
+                  const body = tab === "whatsapp" ? draft : draftBody;
+                  if (!body.trim()) return;
+                  if (tab === "whatsapp") onSaveUserWa(null, { title: draftTitle.trim() || "Script sem título", template: draft.trim() });
+                  else onSaveUserEmail(null, { title: draftTitle.trim() || "Script sem título", subject: draftSubject.trim(), body: draftBody.trim() });
+                  cancelEdit();
+                }}
+                disabled={!(tab === "whatsapp" ? draft : draftBody).trim()}
+                style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!(tab === "whatsapp" ? draft : draftBody).trim())}
+              >
+                <Check size={13} /> Criar script
+              </button>
+              <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+            </div>
+          </Glass>
+        )}
 
-              {isEditing && (
-                <div style={{ marginTop: 12 }}>
-                  <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    rows={6}
-                    autoFocus
-                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
-                  />
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => { if (draft.trim()) { onSaveWa(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }}
-                      disabled={!draft.trim()}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: draft.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: draft.trim() ? "pointer" : "not-allowed" }}
-                    >
-                      <Check size={13} /> Salvar padrão
-                    </button>
-                    <button onClick={cancelEdit} style={{ padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-                      Cancelar
-                    </button>
-                    {isCustomized && (
-                      <button
-                        onClick={() => { onResetWa(s.key); cancelEdit(); }}
-                        title="Voltar pro texto original de fábrica"
-                        style={{ marginLeft: "auto", padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                      >
-                        Restaurar original
-                      </button>
-                    )}
+        {/* ══════ Aba WhatsApp ══════ */}
+        {tab === "whatsapp" && (
+          <>
+            {userWaScripts.length > 0 && <div style={sectionLabel}>Seus scripts</div>}
+            {userWaScripts.map((s) => {
+              const isEditing = editingKey === "u_" + s.id;
+              return (
+                <Glass key={s.id} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? "1.5px solid #0ea5e9" : "1px solid rgba(14,165,233,0.25)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Pencil size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: "#0ea5e9" }}>{s.title}</div>
+                      {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditUserWa(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
                   </div>
-                </div>
-              )}
-              {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
-            </Glass>
-          );
-        })}
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Título</label>
+                      <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draft.trim()) { onSaveUserWa(s.id, { title: draftTitle.trim() || "Script", template: draft.trim() }); flashSaved("u_" + s.id); cancelEdit(); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #0ea5e9, #38bdf8)", !!draft.trim())}><Check size={13} /> Salvar</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        <button onClick={() => { if (window.confirm(`Excluir o script "${s.title}"?`)) { onDeleteUserWa(s.id); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === "u_" + s.id && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo!</div>}
+                </Glass>
+              );
+            })}
 
-        {tab === "email" && EMAIL_SCRIPT_LIBRARY.map((s) => {
-          const isCustomized = customEmailScripts[s.key] !== undefined;
-          const isEditing = editingKey === s.key;
-          const effSubject = customEmailScripts[s.key]?.subject ?? s.subject;
-          const effBody = customEmailScripts[s.key]?.body ?? s.body;
-          return (
-            <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <s.icon size={16} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3" }}>{s.caseTitle} · {s.category}</div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
-                    {effSubject}
-                    {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+            {visibleWa.length > 0 && <div style={sectionLabel}>Sugestões</div>}
+            {visibleWa.map((s) => {
+              const isCustomized = customWaScripts[s.key] !== undefined;
+              const isEditing = editingKey === s.key;
+              const effective = customWaScripts[s.key] ?? s.template;
+              return (
+                <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <s.icon size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        {s.title}
+                        {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                      </div>
+                      {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditWa(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
                   </div>
-                  {!isEditing && <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{effBody}</div>}
-                </div>
-                {!isEditing && (
-                  <button onClick={() => startEditEmail(s)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${s.color}55`, background: "white", color: s.color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
-                    <Pencil size={12} /> Editar
-                  </button>
-                )}
-              </div>
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draft.trim()) { onSaveWa(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        {isCustomized && <button onClick={() => { onResetWa(s.key); cancelEdit(); }} title="Voltar pro texto original de fábrica" style={dangerBtn}>Restaurar original</button>}
+                        <button onClick={() => { if (window.confirm(`Ocultar a sugestão "${s.title}"? Dá pra restaurar depois.`)) { onHideWa(s.key); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir sugestão</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
+                </Glass>
+              );
+            })}
+            {hiddenWa.length > 0 && (
+              <button onClick={onUnhideAllWa} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>
+                Mostrar {hiddenWa.length} sugestão{hiddenWa.length === 1 ? "" : "s"} oculta{hiddenWa.length === 1 ? "" : "s"}
+              </button>
+            )}
+          </>
+        )}
 
-              {isEditing && (
-                <div style={{ marginTop: 12 }}>
-                  <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
-                  <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
-                  <label style={{ ...labelStyle, marginBottom: 4 }}>Corpo do e-mail</label>
-                  <textarea
-                    value={draftBody}
-                    onChange={(e) => setDraftBody(e.target.value)}
-                    rows={10}
-                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
-                  />
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => { if (draftBody.trim()) { onSaveEmail(s.key, { subject: draftSubject.trim(), body: draftBody.trim() }); flashSaved(s.key); setEditingKey(null); } }}
-                      disabled={!draftBody.trim()}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
-                    >
-                      <Check size={13} /> Salvar padrão
-                    </button>
-                    <button onClick={cancelEdit} style={{ padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-                      Cancelar
-                    </button>
-                    {isCustomized && (
-                      <button
-                        onClick={() => { onResetEmail(s.key); cancelEdit(); }}
-                        title="Voltar pro texto original de fábrica"
-                        style={{ marginLeft: "auto", padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-                      >
-                        Restaurar original
-                      </button>
-                    )}
+        {/* ══════ Aba E-mail ══════ */}
+        {tab === "email" && (
+          <>
+            {userEmailScripts.length > 0 && <div style={sectionLabel}>Seus scripts</div>}
+            {userEmailScripts.map((s) => {
+              const isEditing = editingKey === "u_" + s.id;
+              return (
+                <Glass key={s.id} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? "1.5px solid #0ea5e9" : "1px solid rgba(14,165,233,0.25)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Mail size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3" }}>{s.title} · Seu script</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{s.subject || "(sem assunto)"}</div>
+                      {!isEditing && <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s.body}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditUserEmail(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
                   </div>
-                </div>
-              )}
-              {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
-            </Glass>
-          );
-        })}
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Título</label>
+                      <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
+                      <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Corpo do e-mail</label>
+                      <textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} rows={10} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draftBody.trim()) { onSaveUserEmail(s.id, { title: draftTitle.trim() || "Script", subject: draftSubject.trim(), body: draftBody.trim() }); flashSaved("u_" + s.id); cancelEdit(); } }} disabled={!draftBody.trim()} style={saveBtn("linear-gradient(135deg, #0ea5e9, #38bdf8)", !!draftBody.trim())}><Check size={13} /> Salvar</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        <button onClick={() => { if (window.confirm(`Excluir o script "${s.title}"?`)) { onDeleteUserEmail(s.id); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === "u_" + s.id && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo!</div>}
+                </Glass>
+              );
+            })}
+
+            {visibleEmail.length > 0 && <div style={sectionLabel}>Sugestões</div>}
+            {visibleEmail.map((s) => {
+              const isCustomized = customEmailScripts[s.key] !== undefined;
+              const isEditing = editingKey === s.key;
+              const effSubject = customEmailScripts[s.key]?.subject ?? s.subject;
+              const effBody = customEmailScripts[s.key]?.body ?? s.body;
+              return (
+                <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <s.icon size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3" }}>{s.caseTitle} · {s.category}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+                        {effSubject}
+                        {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                      </div>
+                      {!isEditing && <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{effBody}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditEmail(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
+                  </div>
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
+                      <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Corpo do e-mail</label>
+                      <textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} rows={10} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draftBody.trim()) { onSaveEmail(s.key, { subject: draftSubject.trim(), body: draftBody.trim() }); flashSaved(s.key); setEditingKey(null); } }} disabled={!draftBody.trim()} style={saveBtn("linear-gradient(135deg, #3b82f6, #0ea5e9)", !!draftBody.trim())}><Check size={13} /> Salvar padrão</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        {isCustomized && <button onClick={() => { onResetEmail(s.key); cancelEdit(); }} title="Voltar pro texto original de fábrica" style={dangerBtn}>Restaurar original</button>}
+                        <button onClick={() => { if (window.confirm(`Ocultar a sugestão "${s.caseTitle}"? Dá pra restaurar depois.`)) { onHideEmail(s.key); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir sugestão</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
+                </Glass>
+              );
+            })}
+            {hiddenEmail.length > 0 && (
+              <button onClick={onUnhideAllEmail} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>
+                Mostrar {hiddenEmail.length} sugestão{hiddenEmail.length === 1 ? "" : "s"} oculta{hiddenEmail.length === 1 ? "" : "s"}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </>
   );
@@ -5624,6 +5906,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [commissionConfig, setCommissionConfig] = useState(DEFAULT_COMMISSION_CONFIG); // regras de comissão por tipo de serviço
   const [customWaScripts, setCustomWaScripts] = useState({}); // { scriptKey: template } - scripts padrão editados
   const [customEmailScripts, setCustomEmailScripts] = useState({}); // { scriptKey: { subject, body } }
+  const [userWaScripts, setUserWaScripts] = useState([]); // [{ id, title, template }] - criados pelo time
+  const [userEmailScripts, setUserEmailScripts] = useState([]); // [{ id, title, subject, body }]
+  const [hiddenWaScripts, setHiddenWaScripts] = useState([]); // chaves de sugestões de fábrica ocultadas
+  const [hiddenEmailScripts, setHiddenEmailScripts] = useState([]);
   // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
@@ -5701,7 +5987,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(COMMISSION_CONFIG_KEY, DEFAULT_COMMISSION_CONFIG),
       loadData(WA_CUSTOM_SCRIPTS_KEY, {}), loadData(EMAIL_CUSTOM_SCRIPTS_KEY, {}),
       loadData(REVENUE_GOAL_ENABLED_KEY, false),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom, revGoalEnabled]) => {
+      loadData(USER_WA_SCRIPTS_KEY, []), loadData(USER_EMAIL_SCRIPTS_KEY, []),
+      loadData(HIDDEN_WA_SCRIPTS_KEY, []), loadData(HIDDEN_EMAIL_SCRIPTS_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom, revGoalEnabled, userWa, userEmail, hiddenWa, hiddenEmail]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -5744,6 +6032,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setCustomWaScripts(waScriptsCustom && typeof waScriptsCustom === "object" ? waScriptsCustom : {});
         setCustomEmailScripts(emailScriptsCustom && typeof emailScriptsCustom === "object" ? emailScriptsCustom : {});
         setRevenueGoalEnabled(!!revGoalEnabled);
+        setUserWaScripts(Array.isArray(userWa) ? userWa : []);
+        setUserEmailScripts(Array.isArray(userEmail) ? userEmail : []);
+        setHiddenWaScripts(Array.isArray(hiddenWa) ? hiddenWa : []);
+        setHiddenEmailScripts(Array.isArray(hiddenEmail) ? hiddenEmail : []);
         setLoaded(true);
       }
     });
@@ -5765,6 +6057,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(COMMISSION_CONFIG_KEY, commissionConfig); }, [commissionConfig, loaded]);
   useEffect(() => { if (loaded) saveData(WA_CUSTOM_SCRIPTS_KEY, customWaScripts); }, [customWaScripts, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_CUSTOM_SCRIPTS_KEY, customEmailScripts); }, [customEmailScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(USER_WA_SCRIPTS_KEY, userWaScripts); }, [userWaScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(USER_EMAIL_SCRIPTS_KEY, userEmailScripts); }, [userEmailScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(HIDDEN_WA_SCRIPTS_KEY, hiddenWaScripts); }, [hiddenWaScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(HIDDEN_EMAIL_SCRIPTS_KEY, hiddenEmailScripts); }, [hiddenEmailScripts, loaded]);
+
+  // Salva (cria ou atualiza) e exclui scripts criados pelo time - usados nos pickers e na página Scripts
+  const saveUserWaScript = (id, data) => setUserWaScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "uws_" + Date.now(), ...data }]);
+  const deleteUserWaScript = (id) => setUserWaScripts((prev) => prev.filter((s) => s.id !== id));
+  const saveUserEmailScript = (id, data) => setUserEmailScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "ues_" + Date.now(), ...data }]);
+  const deleteUserEmailScript = (id) => setUserEmailScripts((prev) => prev.filter((s) => s.id !== id));
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -7652,6 +7954,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               onSaveEmail={(key, data) => setCustomEmailScripts((prev) => ({ ...prev, [key]: data }))}
               onResetWa={(key) => setCustomWaScripts((prev) => { const next = { ...prev }; delete next[key]; return next; })}
               onResetEmail={(key) => setCustomEmailScripts((prev) => { const next = { ...prev }; delete next[key]; return next; })}
+              userWaScripts={userWaScripts}
+              userEmailScripts={userEmailScripts}
+              onSaveUserWa={saveUserWaScript}
+              onDeleteUserWa={deleteUserWaScript}
+              onSaveUserEmail={saveUserEmailScript}
+              onDeleteUserEmail={deleteUserEmailScript}
+              hiddenWa={hiddenWaScripts}
+              hiddenEmail={hiddenEmailScripts}
+              onHideWa={(key) => setHiddenWaScripts((prev) => [...prev, key])}
+              onHideEmail={(key) => setHiddenEmailScripts((prev) => [...prev, key])}
+              onUnhideAllWa={() => setHiddenWaScripts([])}
+              onUnhideAllEmail={() => setHiddenEmailScripts([])}
             />
           )}
 
@@ -8528,6 +8842,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             lead={scriptPickerLead}
             scriptOverrides={customWaScripts}
             onSaveDefault={(key, template) => setCustomWaScripts((prev) => ({ ...prev, [key]: template }))}
+            userScripts={userWaScripts}
+            hiddenKeys={hiddenWaScripts}
+            onSaveUserScript={saveUserWaScript}
+            onDeleteUserScript={deleteUserWaScript}
             onClose={() => setScriptPickerLead(null)}
             onSelect={(message) => {
               if (scriptPickerMode === "dispatch") {
@@ -8568,6 +8886,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             lead={emailScriptPickerLead}
             scriptOverrides={customEmailScripts}
             onSaveDefault={(key, data) => setCustomEmailScripts((prev) => ({ ...prev, [key]: data }))}
+            userScripts={userEmailScripts}
+            hiddenKeys={hiddenEmailScripts}
+            onSaveUserScript={saveUserEmailScript}
+            onDeleteUserScript={deleteUserEmailScript}
             onClose={() => setEmailScriptPickerLead(null)}
             onSelect={(subject, body) => {
               if (scriptPickerMode === "dispatch") {
