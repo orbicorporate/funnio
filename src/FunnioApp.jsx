@@ -904,23 +904,28 @@ const Chip = ({ color, dotColor, children, active, onClick, count, onGreen }) =>
   </button>
 );
 
-// Barra de pontos de progresso (usada no card "Abordar essa semana")
+// Barra de pontos de progresso (usada na tela "Abordar essa semana", fundo claro).
+// Quando tem mais itens que bolinhas, as bolinhas viram proporção do avanço e o
+// número exato aparece do lado - antes mostrava 6 checks + "+48" sem relação com os feitos.
 const ProgressDots = ({ total, done, max = 6 }) => {
   const shown = Math.min(total, max);
+  const greenCount = total <= max
+    ? done
+    : done === 0 ? 0 : done >= total ? shown : Math.min(shown - 1, Math.max(1, Math.round((done / total) * shown)));
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
       {Array.from({ length: shown }).map((_, i) => (
         <span key={i} style={{
           width: 22, height: 22, borderRadius: "50%",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          background: i < done ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.25)",
-          color: i < done ? "#059669" : "transparent",
+          background: i < greenCount ? "#059669" : "#e2e8f0",
+          color: i < greenCount ? "white" : "transparent",
           flexShrink: 0, transition: "all 0.2s ease",
         }}>
-          {i < done && <Check size={12} strokeWidth={3} />}
+          {i < greenCount && <Check size={12} strokeWidth={3} />}
         </span>
       ))}
-      {total > max && <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 12 }}>+{total - max}</span>}
+      <span style={{ color: "#475569", fontSize: 12.5, fontWeight: 700, marginLeft: 4 }}>{done}/{total} feitos</span>
     </div>
   );
 };
@@ -7579,7 +7584,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
                 <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
                 <div style={{ flex: 1 }}>
-                  <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 500, margin: 0, color: "#0f172a" }}>Abordar essa semana</h1>
+                  <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 26, fontWeight: 800, margin: 0, color: "#0f172a", lineHeight: 1.15 }}>Abordar essa semana</h1>
                   <div style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>{weekFiltered.list.length} pendentes · {weekFiltered.done} já feitos{weekSdrFilter !== "all" ? ` · ${weekSdrFilter}` : ""}</div>
                 </div>
                 <button
