@@ -699,8 +699,8 @@ const buildWhatsAppUrl = (lead) => {
   const sdrFirstName = (lead.owner || "").trim().split(" ")[0];
   const from = sdrFirstName ? `Aqui é o(a) ${sdrFirstName}` : "Aqui é da equipe comercial";
   const greeting = firstName
-    ? `Olá, ${firstName}! Tudo bem? ${from}, sobre a proposta para a ${lead.company}.`
-    : `Olá! Tudo bem? ${from}, sobre a proposta para a ${lead.company}.`;
+    ? `Olá, ${firstName}! Tudo bem?\n\n${from}, sobre a proposta para a ${lead.company}.`
+    : `Olá! Tudo bem?\n\n${from}, sobre a proposta para a ${lead.company}.`;
   return `https://wa.me/${num}?text=${encodeURIComponent(greeting)}`;
 };
 const buildMailUrl = (lead) => {
@@ -1373,8 +1373,8 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
 const buildWaListDefaultMessage = (lead) => {
   const firstName = (lead.contactName || "").trim().split(" ")[0];
   return firstName
-    ? `Olá, ${firstName}! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`
-    : `Olá! Tudo bem? Passando aqui sobre a proposta para a ${lead.company}.`;
+    ? `Olá, ${firstName}! Tudo bem?\n\nPassando aqui sobre a proposta para a ${lead.company}.`
+    : `Olá! Tudo bem?\n\nPassando aqui sobre a proposta para a ${lead.company}.`;
 };
 
 // Biblioteca de scripts de reativação - agrupados por situação do lead, sem
@@ -1383,48 +1383,50 @@ const buildWaListDefaultMessage = (lead) => {
 const SCRIPT_LIBRARY = [
   {
     key: "sumiu", title: "Conversou, gostou, mas sumiu", color: "#6d5ef8", icon: MessageCircle,
-    template: "Oi, {nome}! Lembrei da nossa conversa esses dias. Como ficou aquela frente de marketing da {empresa}? Vocês chegaram a tocar alguma coisa por aí?",
+    template: "Oi, {nome}! Lembrei da nossa conversa esses dias.\n\nComo ficou aquela frente de marketing da {empresa}? Vocês chegaram a tocar alguma coisa por aí?",
   },
   {
     key: "proposta", title: "Recebeu proposta e não fechou", color: "#0ea5e9", icon: FileText,
-    template: "Faz um tempo desde que conversamos e imagino que bastante coisa tenha mudado por aí. Como estão as coisas na {empresa} hoje? Seria interessante batermos um papo com novos dados e ver o que faz sentido planejar?",
+    template: "Faz um tempo desde que conversamos e imagino que bastante coisa tenha mudado por aí.\n\nComo estão as coisas na {empresa} hoje?\n\nSeria interessante batermos um papo com novos dados e ver o que faz sentido planejar?",
   },
   {
     key: "antigo", title: "Lead antigo, trazer de volta", color: "#f59e0b", icon: Clock,
-    template: "Oi, quanto tempo! Como estão as coisas por aí? Faz tempo que a gente conversou sobre o marketing, queria saber se topa retomar o assunto - podemos dar uma consultoria trazendo dados e sugestões pras suas redes sociais e performance. Se topar eu preparo tudo, sem compromisso.",
+    template: "Oi, quanto tempo! Como estão as coisas por aí?\n\nFaz tempo que a gente conversou sobre o marketing, queria saber se topa retomar o assunto - podemos dar uma consultoria trazendo dados e sugestões pras suas redes sociais e performance.\n\nSe topar eu preparo tudo, sem compromisso.",
   },
   {
     key: "agoranao", title: "Disse \"agora não\"", color: "#ec4899", icon: XCircle,
-    template: "Oi, {nome}! Quando conversamos, não era muito o momento de vocês mexerem nisso. Mudou alguma coisa de lá pra cá? O que acha de te darmos uma breve consultoria sem compromisso?",
+    template: "Oi, {nome}! Quando conversamos, não era muito o momento de vocês mexerem nisso.\n\nMudou alguma coisa de lá pra cá?\n\nO que acha de te darmos uma breve consultoria sem compromisso?",
   },
   {
     key: "comparando", title: "Estava comparando fornecedores", color: "#10b981", icon: Users2,
-    template: "Oi, {nome}! Tudo bem? Vocês acabaram encontrando uma solução boa pra aquela frente de marketing?",
+    template: "Oi, {nome}! Tudo bem?\n\nVocês acabaram encontrando uma solução boa pra aquela frente de marketing?",
   },
   {
     key: "intimidade", title: "Já tem intimidade", color: "#f0431f", icon: Flame,
-    template: "Fala, {nome}! Gostaria de retomar nossa conversa sobre o marketing? Podemos trabalhar em um planejamento novo, topa?",
+    template: "Fala, {nome}! Gostaria de retomar nossa conversa sobre o marketing?\n\nPodemos trabalhar em um planejamento novo, topa?",
   },
   {
     key: "ideia", title: "Reativação com uma ideia", color: "#8b5cf6", icon: Sparkles,
-    template: "{Nome}, tive uma ideia esses dias que tem bastante a cara da {empresa}. Não sei se vocês já estão fazendo algo parecido.",
+    template: "{Nome}, tive uma ideia esses dias que tem bastante a cara da {empresa}.\n\nNão sei se vocês já estão fazendo algo parecido.",
   },
   {
     key: "senior", title: "Lead grande / decisor sênior", color: "#0f172a", icon: Building2,
-    template: "Olá, {nome}. Faz algum tempo desde nossa última conversa e fiquei curioso pra saber como evoluiu aquela frente na {empresa}. Chegaram a avançar?",
+    template: "Olá, {nome}. Faz algum tempo desde nossa última conversa e fiquei curioso pra saber como evoluiu aquela frente na {empresa}.\n\nChegaram a avançar?",
   },
   {
     key: "coringa", title: "Coringa (serve pra qualquer um)", color: "#64748b", icon: Rocket,
-    template: "Oi, {nome}! Lembrei da nossa conversa esses dias e fiquei curioso pra saber como as coisas evoluíram por aí. Como está a {empresa}?",
+    template: "Oi, {nome}! Lembrei da nossa conversa esses dias e fiquei curioso pra saber como as coisas evoluíram por aí.\n\nComo está a {empresa}?",
   },
   {
     key: "consultoria", title: "Bônus: consultoria pura", color: "#16a34a", icon: Target,
-    template: "Oi, {nome}! Lembrei da nossa conversa sobre o marketing e queria te oferecer algo: uma consultoria mais avançada com dados de buscas reais do seu público, uma pesquisa SEO e um direcionamento de estratégia de conteúdo. Sem compromisso, você pode usar a favor do seu próximo planejamento - topa marcar essa call?",
+    template: "Oi, {nome}! Lembrei da nossa conversa sobre o marketing e queria te oferecer algo: uma consultoria mais avançada com dados de buscas reais do seu público, uma pesquisa SEO e um direcionamento de estratégia de conteúdo.\n\nSem compromisso, você pode usar a favor do seu próximo planejamento - topa marcar essa call?",
   },
 ];
 
 // Troca {nome}/{Nome} e {empresa}/{Empresa} pelos dados reais do lead. Se não
 // tiver nome de contato cadastrado, remove a saudação com nome com elegância.
+// Importante: colapsa só espaços repetidos DENTRO da linha - preserva as quebras
+// de parágrafo (\n\n) que deixam a mensagem formatada bonita no WhatsApp.
 const fillScriptTemplate = (template, lead) => {
   const firstName = (lead.contactName || "").trim().split(" ")[0];
   let result = template
@@ -1436,7 +1438,7 @@ const fillScriptTemplate = (template, lead) => {
       .replace(/^, tive/i, "Tive")
       .replace(/,\s+!/g, "!");
   }
-  return result.replace(/\s{2,}/g, " ").trim();
+  return result.replace(/[^\S\n]{2,}/g, " ").replace(/ +\n/g, "\n").trim();
 };
 
 // Tela colorida de escolha de script - abre ao tocar no aviãozinho num lead.
