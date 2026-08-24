@@ -2207,11 +2207,16 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{h.company}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{h.owner} · {cfg.label}</div>
-                            {h.summary && (
-                              <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                                "{h.summary}"
-                              </div>
-                            )}
+                            {(() => {
+                              // Resumo escrito na conclusão; registros antigos (sem resumo gravado)
+                              // caem pra última atualização/anotação do lead.
+                              const info = h.summary || lead?.notes?.[0]?.text;
+                              return info ? (
+                                <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                                  "{info}"
+                                </div>
+                              ) : null;
+                            })()}
                           </div>
                           <div style={{ fontSize: 10.5, color: "#94a3b8", flexShrink: 0 }}>{new Date(h.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
                         </div>
