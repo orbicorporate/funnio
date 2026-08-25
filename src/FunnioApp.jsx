@@ -1046,7 +1046,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
         // Calendário da home), no lugar do preto - overlay levemente mais forte pra manter
         // a leitura dos textos pequenos.
         ...(dark
-          ? { backgroundImage: `linear-gradient(rgba(30,20,80,0.3), rgba(30,20,80,0.3)), url(${BG_PURPLE_VIVID})`, backgroundSize: "cover", backgroundPosition: "center" }
+          ? { backgroundImage: `linear-gradient(rgba(20,14,60,0.45), rgba(20,14,60,0.45)), url(${BG_PURPLE_VIVID})`, backgroundSize: "cover", backgroundPosition: "center" }
           : { background: "white" }),
         border: `1px solid ${lead.superAttention ? "rgba(245,158,11,0.35)" : (dark ? "rgba(255,255,255,0.16)" : "#eef0f3")}`,
         boxShadow: dark ? "0 8px 22px -8px rgba(76,63,215,0.55)" : "0 2px 10px -4px rgba(20,20,22,0.08)",
