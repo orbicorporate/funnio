@@ -1026,25 +1026,30 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
     return days <= 7 ? days : null;
   })();
 
-  // Quando "Falar essa semana" está ativo, o card vira escuro (igual à referência)
+  // Quando "Falar essa semana" está ativo, o card vira roxo vibrante (mesma arte do Calendário)
   const dark = isOnWeekList;
   const txtTitle = dark ? "#ffffff" : "#14141a";
-  const txtOwner = dark ? "#c7c7cf" : "#6b6b75";
-  const txtIcon = dark ? "#8f8f99" : "#9a9aa3";
-  const txtLabel = dark ? "#9a9aa3" : "#9a9aa3";
+  const txtOwner = dark ? "#e4e1fb" : "#6b6b75";
+  const txtIcon = dark ? "#cfc9f5" : "#9a9aa3";
+  const txtLabel = dark ? "#cfc9f5" : "#9a9aa3";
   const txtNext = dark ? "#ffffff" : "#14141a";
-  const borderDivider = dark ? "rgba(255,255,255,0.1)" : "#f1f2f5";
-  const arrowBorder = dark ? "rgba(255,255,255,0.25)" : "#e2e4e9";
-  const arrowColor = dark ? "#e5e5ea" : "#6b6b75";
+  const borderDivider = dark ? "rgba(255,255,255,0.16)" : "#f1f2f5";
+  const arrowBorder = dark ? "rgba(255,255,255,0.35)" : "#e2e4e9";
+  const arrowColor = dark ? "#ffffff" : "#6b6b75";
 
   return (
     <div
       className="lead-card lead-card-compact"
       style={{
         position: "relative", borderRadius: 18,
-        background: dark ? DARK.card : "white",
-        border: `1px solid ${lead.superAttention ? "rgba(245,158,11,0.35)" : (dark ? "#232327" : "#eef0f3")}`,
-        boxShadow: dark ? "0 8px 22px -8px rgba(20,20,22,0.5)" : "0 2px 10px -4px rgba(20,20,22,0.08)",
+        // Cards da lista da semana: fundo roxo vibrante com as marcas (mesma arte do card
+        // Calendário da home), no lugar do preto - overlay levemente mais forte pra manter
+        // a leitura dos textos pequenos.
+        ...(dark
+          ? { backgroundImage: `linear-gradient(rgba(30,20,80,0.3), rgba(30,20,80,0.3)), url(${BG_PURPLE_VIVID})`, backgroundSize: "cover", backgroundPosition: "center" }
+          : { background: "white" }),
+        border: `1px solid ${lead.superAttention ? "rgba(245,158,11,0.35)" : (dark ? "rgba(255,255,255,0.16)" : "#eef0f3")}`,
+        boxShadow: dark ? "0 8px 22px -8px rgba(76,63,215,0.55)" : "0 2px 10px -4px rgba(20,20,22,0.08)",
         cursor: "pointer", transition: "all 0.2s ease",
         overflow: "hidden",
         animation: lead.superAttention ? "superCardGlow 2.6s ease-in-out infinite" : "none",
@@ -1114,7 +1119,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
 
         {/* Mensagem de status / situação atual do lead */}
         {lead.feedback && (
-          <div className="lc-status" style={{ display: "flex", alignItems: "flex-start", gap: 5, color: dark ? "#c7c7cf" : "#6b6b75", background: dark ? "rgba(255,255,255,0.06)" : "#f7f8fa", borderRadius: 8, padding: "6px 9px", marginBottom: 8, lineHeight: 1.35 }}>
+          <div className="lc-status" style={{ display: "flex", alignItems: "flex-start", gap: 5, color: dark ? "#c7c7cf" : "#6b6b75", background: dark ? "rgba(255,255,255,0.12)" : "#f7f8fa", borderRadius: 8, padding: "6px 9px", marginBottom: 8, lineHeight: 1.35 }}>
             <MessageCircle size={11} style={{ flexShrink: 0, marginTop: 1.5, opacity: 0.7 }} />
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{lead.feedback}</span>
           </div>
@@ -1191,7 +1196,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
               title="Adicionar a uma lista de envio (WhatsApp/E-mail/Ligação)"
               style={{
                 width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${(inWaList || inEmailList || inCallList) ? "#6d5ef8" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db")}`,
-                background: (inWaList || inEmailList || inCallList) ? "#6d5ef8" : (dark ? "rgba(255,255,255,0.06)" : "white"),
+                background: (inWaList || inEmailList || inCallList) ? "#6d5ef8" : (dark ? "rgba(255,255,255,0.12)" : "white"),
                 color: (inWaList || inEmailList || inCallList) ? "white" : (dark ? "rgba(255,255,255,0.28)" : "#d4d6db"),
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
                 transition: "all 0.15s ease", transform: (inWaList || inEmailList || inCallList) ? "scale(1.05)" : "scale(1)", flexShrink: 0,
@@ -1212,7 +1217,7 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           <button
             onClick={onMarkWeekDone}
             title="Marcar este lead como abordado essa semana"
-            style={{ width: "100%", padding: "8px 0", borderRadius: 9, cursor: "pointer", fontSize: 11.5, fontWeight: 700, background: dark ? "rgba(255,255,255,0.06)" : "white", color: "#34d399", border: "1.5px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
+            style={{ width: "100%", padding: "8px 0", borderRadius: 9, cursor: "pointer", fontSize: 11.5, fontWeight: 700, background: dark ? "rgba(255,255,255,0.12)" : "white", color: "#34d399", border: "1.5px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
           >
             <CheckCircle2 size={13} /> Marcar como feito
           </button>
@@ -1269,7 +1274,7 @@ const CircleContactBtn = ({ icon: Icon, color, onClick, dark, hasData }) => {
       style={{
         width: 34, height: 34, borderRadius: "50%",
         border: `1.5px solid ${activeColor}`,
-        background: dark ? "rgba(255,255,255,0.06)" : "white",
+        background: dark ? "rgba(255,255,255,0.12)" : "white",
         color: activeColor,
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: "pointer", opacity: hasData ? 1 : 0.7, transition: "all 0.15s ease",
