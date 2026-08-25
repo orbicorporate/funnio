@@ -2213,10 +2213,10 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                             <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{h.company}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{h.owner} · {cfg.label}</div>
                             {(() => {
-                              // O "resumo do último retorno" que o SDR escreveu no card do lead
-                              // (campo de status/feedback, tipo "aguardando retorno"). Fallback só
-                              // pro resumo escrito na conclusão - nunca pra notas automáticas de contato.
-                              const info = (lead?.feedback || "").trim() || h.summary;
+                              // Última atualização do Histórico de Conversas (linha do tempo) do lead -
+                              // a entrada mais recente, manual ou automática. Fallback pro resumo da
+                              // conclusão só se o lead não tiver nenhum registro na linha do tempo.
+                              const info = lead?.notes?.[0]?.text || h.summary;
                               return info ? (
                                 <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                                   "{info}"
