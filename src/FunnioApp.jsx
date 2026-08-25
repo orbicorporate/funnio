@@ -456,6 +456,10 @@ const USER_WA_SCRIPTS_KEY = "userWaScripts:v1";
 const USER_EMAIL_SCRIPTS_KEY = "userEmailScripts:v1";
 const HIDDEN_WA_SCRIPTS_KEY = "hiddenWaScripts:v1";
 const HIDDEN_EMAIL_SCRIPTS_KEY = "hiddenEmailScripts:v1";
+// Scripts de ligação - mesmos três conjuntos (padrões editados, criados pelo time, ocultos)
+const CALL_CUSTOM_SCRIPTS_KEY = "customCallScripts:v1";
+const USER_CALL_SCRIPTS_KEY = "userCallScripts:v1";
+const HIDDEN_CALL_SCRIPTS_KEY = "hiddenCallScripts:v1";
 
 // Definição de cada métrica que pode virar meta - ícone, label, cor e como ela é calculada
 const METRIC_DEFS = {
@@ -1493,7 +1497,8 @@ const fillScriptTemplate = (template, lead) => {
   const firstName = (lead.contactName || "").trim().split(" ")[0];
   let result = template
     .replace(/\{nome\}/gi, firstName || "")
-    .replace(/\{empresa\}/gi, lead.company || "sua empresa");
+    .replace(/\{empresa\}/gi, lead.company || "sua empresa")
+    .replace(/\{segmento\}/gi, (lead.sector || "").trim() || "seu segmento");
   if (!firstName) {
     result = result
       .replace(/^Oi, !\s*/i, "Oi! ")
@@ -1842,6 +1847,45 @@ const EMAIL_SCRIPT_LIBRARY = [
     body: "Oi, {nome}.\n\nEm um case de alimentos e bebidas, geramos 4.609 solicitações de rota, 1.815 ligações e mais de 10 mil acessos em 60 dias.\n\nO trabalho integrou branding, social media e tráfego pago para transformar atenção em intenção de compra.\n\nA Nume atua há 18 anos e já trabalhou com marcas como Harley-Davidson, Cielo e BYD, entre outras nacionais e globais.\n\nPosso te mostrar em 15 minutos como aplicaríamos essa lógica na {empresa}?\n\nPedro\nNume Company",
   },
 ];
+
+// Biblioteca de scripts de LIGAÇÃO - roteiros fixos da Nume pra cold call e retomada,
+// lidos em voz alta pelo SDR. {nome}/{empresa}/{segmento} são preenchidos com os dados
+// do lead; "(seu nome)" o SDR fala o próprio nome na hora.
+const CALL_SCRIPT_LIBRARY = [
+  {
+    key: "descobrir", title: "Descobrir o responsável", color: "#6d5ef8", icon: Phone,
+    template: "Oi, tudo bem? Meu nome é (seu nome), falo da Nume Company.\n\nEu queria falar rapidamente com a pessoa que cuida do planejamento de marketing e aquisição de clientes da {empresa}.\n\nNão é uma ligação para apresentar proposta agora. Nosso time está analisando algumas empresas do setor e acredito que conseguimos trazer algumas informações interessantes para vocês.\n\nQuem seria a melhor pessoa para eu conversar?",
+  },
+  {
+    key: "retomada", title: "Retomada de contato", color: "#f59e0b", icon: Clock,
+    template: "Oi, {nome}, tudo bem? Aqui é (seu nome), da Nume.\n\nFaz um tempo desde que conversamos e imaginei que bastante coisa possa ter mudado por aí.\n\nQueria entender como vocês estão trabalhando hoje redes sociais, conteúdo e aquisição de novos clientes.\n\nSe fizer sentido, nosso time pode fazer uma leitura atual da {empresa}, levantar algumas oportunidades e apresentar para vocês sem compromisso.\n\nPodemos conversar uns 20 minutos?",
+  },
+  {
+    key: "dados", title: "Abordagem por dados", color: "#0ea5e9", icon: PieChart,
+    template: "Oi, {nome}. Aqui é (seu nome), da Nume Company.\n\nVou ser breve.\n\nNosso time de SEO e redes sociais consegue levantar alguns dados interessantes sobre o que o público do mercado de vocês está buscando no Google e como ele se comporta nas redes.\n\nA ideia seria preparar uma leitura da {empresa}, mostrar esses dados e algumas oportunidades.\n\nNão precisa contratar nada. Vocês inclusive podem aproveitar essas informações no próprio planejamento depois.\n\nFaria sentido marcarmos uma conversa rápida?",
+  },
+  {
+    key: "planejamento", title: "Planejamento estratégico", color: "#10b981", icon: Target,
+    template: "Oi, {nome}, tudo bem? Aqui é (seu nome), da Nume.\n\nNós temos trabalhado bastante em planejamento de marketing integrando marca, redes sociais, vídeos e mídia paga para que tudo trabalhe na mesma direção.\n\nAntes de falar de qualquer serviço, eu gostaria de entender um pouco o momento da {empresa}.\n\nPodemos preparar uma análise, mostrar o que enxergamos de oportunidade e vocês avaliam se a conversa faz sentido.\n\nSem compromisso.",
+  },
+  {
+    key: "semresultado", title: "Marketing sem resultado claro", color: "#ec4899", icon: TrendingUp,
+    template: "Oi, {nome}. Aqui é (seu nome), da Nume.\n\nUma situação que encontramos bastante hoje são empresas investindo em conteúdo, redes sociais e anúncios, mas sem uma visão muito clara de onde realmente estão surgindo as oportunidades comerciais.\n\nQueria entender se vocês sentem isso de alguma forma na {empresa}.\n\nNosso time pode analisar o cenário e mostrar onde enxergamos oportunidades de melhorar posicionamento, conteúdo e aquisição.\n\nSe fizer sentido depois, continuamos a conversa.",
+  },
+  {
+    key: "leadsqualificados", title: "Aquisição de leads qualificados", color: "#8b5cf6", icon: Users2,
+    template: "Oi, {nome}. Aqui é (seu nome), da Nume Company.\n\nPosso te fazer uma pergunta rápida?\n\nHoje, qual é o principal canal de vocês para gerar novas oportunidades comerciais?\n\nPergunto porque nosso trabalho combina estratégia de marca, conteúdo e tráfego pago justamente para melhorar a aquisição de leads mais qualificados.\n\nAntes de qualquer proposta, conseguimos estudar a {empresa}, levantar dados de demanda e apresentar algumas oportunidades.\n\nSe achar interessante, marcamos uma conversa rápida.",
+  },
+  {
+    key: "decisor", title: "Diretor / proprietário / decisor", color: "#0f172a", icon: Building2,
+    template: "Oi, {nome}. Vou ser bem breve.\n\nMeu nome é (seu nome), da Nume Company.\n\nTemos 18 anos de experiência em marketing e já trabalhamos com marcas como Harley-Davidson, Cielo e BYD, além de outras empresas nacionais e globais.\n\nMas eu não queria usar a ligação para te vender alguma coisa.\n\nMinha proposta é mais simples: nosso time faz uma leitura da presença digital da {empresa}, demanda no Google, comportamento nas redes e possíveis oportunidades de aquisição.\n\nApresentamos isso em uma conversa rápida e vocês ficam com os insights.\n\nSe enxergarem valor, aí podemos conversar sobre próximos passos.",
+  },
+  {
+    key: "curta", title: "Versão curta e direta", color: "#64748b", icon: Rocket,
+    template: "Oi, {nome}. Aqui é (seu nome), da Nume.\n\nPosso te tomar 30 segundos?\n\nEstamos estudando algumas empresas do {segmento} e acredito que conseguimos trazer uma leitura interessante para a {empresa} sobre demanda no Google, comportamento do público nas redes e oportunidades de aquisição.\n\nNosso time prepara essa análise antes de qualquer proposta.\n\nEu te mostro os dados, vocês ficam com os insights e, se fizer sentido, continuamos a conversa.\n\nVale marcarmos 20 minutos?",
+  },
+];
+
 
 // Tela colorida de escolha de script de e-mail - mesmo padrão do ScriptPickerModal
 // de WhatsApp, mas com campo de assunto além do corpo.
@@ -4101,7 +4145,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
 // Página dedicada de Scripts - central pra ver e editar todos os templates de WhatsApp
 // e cases de e-mail num lugar só, fora do fluxo de envio. Edições salvas aqui valem
 // pra todos os envios futuros (mesma persistência dos pickers).
-const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, onSaveEmail, onResetWa, onResetEmail, userWaScripts, userEmailScripts, onSaveUserWa, onDeleteUserWa, onSaveUserEmail, onDeleteUserEmail, hiddenWa, hiddenEmail, onHideWa, onHideEmail, onUnhideAllWa, onUnhideAllEmail }) => {
+const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, onSaveEmail, onResetWa, onResetEmail, userWaScripts, userEmailScripts, onSaveUserWa, onDeleteUserWa, onSaveUserEmail, onDeleteUserEmail, hiddenWa, hiddenEmail, onHideWa, onHideEmail, onUnhideAllWa, onUnhideAllEmail, customCallScripts, onSaveCall, onResetCall, userCallScripts, onSaveUserCall, onDeleteUserCall, hiddenCall, onHideCall, onUnhideAllCall }) => {
   const [tab, setTab] = useState("whatsapp"); // whatsapp | email
   const [editingKey, setEditingKey] = useState(null); // chave de sugestão OU "u_"+id de script do time OU "new"
   const [draft, setDraft] = useState("");
@@ -4116,10 +4160,13 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
   const startEditUserWa = (s) => { cancelEdit(); setEditingKey("u_" + s.id); setDraft(s.template); setDraftTitle(s.title); };
   const startEditEmail = (s) => { cancelEdit(); setEditingKey(s.key); setDraftSubject(customEmailScripts[s.key]?.subject ?? s.subject); setDraftBody(customEmailScripts[s.key]?.body ?? s.body); };
   const startEditUserEmail = (s) => { cancelEdit(); setEditingKey("u_" + s.id); setDraftTitle(s.title); setDraftSubject(s.subject || ""); setDraftBody(s.body); };
+  const startEditCall = (s) => { cancelEdit(); setEditingKey(s.key); setDraft(customCallScripts[s.key] ?? s.template); };
+  const startEditUserCall = (s) => { cancelEdit(); setEditingKey("u_" + s.id); setDraft(s.template); setDraftTitle(s.title); };
   const startCreate = () => { cancelEdit(); setEditingKey("new"); };
 
   const visibleWa = SCRIPT_LIBRARY.filter((s) => !hiddenWa.includes(s.key));
   const visibleEmail = EMAIL_SCRIPT_LIBRARY.filter((s) => !hiddenEmail.includes(s.key));
+  const visibleCall = CALL_SCRIPT_LIBRARY.filter((s) => !hiddenCall.includes(s.key));
 
   const editBtn = (color) => ({ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${color}55`, background: "white", color, fontSize: 11.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 });
   const saveBtn = (grad, ok) => ({ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: ok ? grad : "rgba(148,163,184,0.3)", color: "white", fontSize: 12.5, fontWeight: 800, cursor: ok ? "pointer" : "not-allowed" });
@@ -4138,7 +4185,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
-        {[{ key: "whatsapp", label: "WhatsApp", color: "#25d366" }, { key: "email", label: "E-mail (cases)", color: "#3b82f6" }].map((t) => (
+        {[{ key: "whatsapp", label: "WhatsApp", color: "#25d366" }, { key: "email", label: "E-mail (cases)", color: "#3b82f6" }, { key: "call", label: "Ligações", color: "#8b5cf6" }].map((t) => (
           <button
             key={t.key}
             onClick={() => { setTab(t.key); cancelEdit(); }}
@@ -4159,34 +4206,35 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
         {/* Formulário de criação - vale pra aba ativa */}
         {editingKey === "new" && (
           <Glass style={{ borderRadius: 18, padding: "16px 18px", border: "1.5px solid #6d5ef8" }}>
-            <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6d5ef8", marginBottom: 12 }}>Novo script de {tab === "whatsapp" ? "WhatsApp" : "e-mail"}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6d5ef8", marginBottom: 12 }}>Novo script de {tab === "whatsapp" ? "WhatsApp" : tab === "call" ? "ligação" : "e-mail"}</div>
             <label style={{ ...labelStyle, marginBottom: 4 }}>Título</label>
-            <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder={tab === "whatsapp" ? "Ex: Follow-up pós-evento" : "Ex: Proposta pós-reunião"} autoFocus style={{ ...inputStyle, marginBottom: 12 }} />
+            <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} placeholder={tab === "whatsapp" ? "Ex: Follow-up pós-evento" : tab === "call" ? "Ex: Ligação pós-proposta" : "Ex: Proposta pós-reunião"} autoFocus style={{ ...inputStyle, marginBottom: 12 }} />
             {tab === "email" && (
               <>
                 <label style={{ ...labelStyle, marginBottom: 4 }}>Assunto</label>
                 <input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} placeholder="Assunto do e-mail" style={{ ...inputStyle, marginBottom: 12 }} />
               </>
             )}
-            <label style={{ ...labelStyle, marginBottom: 4 }}>{tab === "whatsapp" ? "Mensagem" : "Corpo do e-mail"}</label>
+            <label style={{ ...labelStyle, marginBottom: 4 }}>{tab === "email" ? "Corpo do e-mail" : tab === "call" ? "Roteiro da ligação" : "Mensagem"}</label>
             <textarea
-              value={tab === "whatsapp" ? draft : draftBody}
-              onChange={(e) => tab === "whatsapp" ? setDraft(e.target.value) : setDraftBody(e.target.value)}
-              rows={tab === "whatsapp" ? 6 : 10}
+              value={tab === "email" ? draftBody : draft}
+              onChange={(e) => tab === "email" ? setDraftBody(e.target.value) : setDraft(e.target.value)}
+              rows={tab === "email" ? 10 : 6}
               placeholder="Use {nome} e {empresa} onde quiser que os dados do lead entrem"
               style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }}
             />
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button
                 onClick={() => {
-                  const body = tab === "whatsapp" ? draft : draftBody;
+                  const body = tab === "email" ? draftBody : draft;
                   if (!body.trim()) return;
                   if (tab === "whatsapp") onSaveUserWa(null, { title: draftTitle.trim() || "Script sem título", template: draft.trim() });
+                  else if (tab === "call") onSaveUserCall(null, { title: draftTitle.trim() || "Script sem título", template: draft.trim() });
                   else onSaveUserEmail(null, { title: draftTitle.trim() || "Script sem título", subject: draftSubject.trim(), body: draftBody.trim() });
                   cancelEdit();
                 }}
-                disabled={!(tab === "whatsapp" ? draft : draftBody).trim()}
-                style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!(tab === "whatsapp" ? draft : draftBody).trim())}
+                disabled={!(tab === "email" ? draftBody : draft).trim()}
+                style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!(tab === "email" ? draftBody : draft).trim())}
               >
                 <Check size={13} /> Criar script
               </button>
@@ -4355,6 +4403,103 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
             {hiddenEmail.length > 0 && (
               <button onClick={onUnhideAllEmail} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>
                 Mostrar {hiddenEmail.length} sugestão{hiddenEmail.length === 1 ? "" : "s"} oculta{hiddenEmail.length === 1 ? "" : "s"}
+              </button>
+            )}
+          </>
+        )}
+
+        {/* ══════ Aba Ligações ══════ */}
+        {tab === "call" && (
+          <>
+            {/* Diretriz do SDR - a lógica que amarra todos os roteiros de ligação */}
+            <Glass style={{ borderRadius: 18, padding: "16px 18px", border: "1px solid rgba(139,92,246,0.25)", background: "rgba(139,92,246,0.04)" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: "#8b5cf6", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Diretriz para o SDR</div>
+              <div style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.55, marginBottom: 10 }}>
+                Não tente explicar todos os serviços da Nume na primeira ligação. A meta da ligação é gerar interesse suficiente para uma <strong>reunião</strong>.
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+                {["Problema ou curiosidade", "Pergunta", "Valor que a Nume traz", "Análise sem compromisso", "Reunião"].map((step, i, arr) => (
+                  <React.Fragment key={step}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#8b5cf6", background: "rgba(139,92,246,0.1)", padding: "4px 10px", borderRadius: 8 }}>{step}</span>
+                    {i < arr.length - 1 && <span style={{ color: "#c4b5fd", fontWeight: 800 }}>→</span>}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.55, fontStyle: "italic" }}>
+                Ex.: "Como vocês estão gerando novos leads hoje?" → ouvir → "Pergunto porque conseguimos cruzar isso com dados de busca e comportamento digital do mercado, e normalmente aparecem oportunidades interessantes." → pausa → "Posso pedir pro nosso time preparar essa leitura e te apresentar numa conversa rápida?"
+              </div>
+            </Glass>
+
+            {userCallScripts.length > 0 && <div style={sectionLabel}>Seus scripts</div>}
+            {userCallScripts.map((s) => {
+              const isEditing = editingKey === "u_" + s.id;
+              return (
+                <Glass key={s.id} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? "1.5px solid #0ea5e9" : "1px solid rgba(14,165,233,0.25)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Phone size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: "#0ea5e9" }}>{s.title}</div>
+                      {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditUserCall(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
+                  </div>
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Título</label>
+                      <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }} />
+                      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draft.trim()) { onSaveUserCall(s.id, { title: draftTitle.trim() || "Script", template: draft.trim() }); flashSaved("u_" + s.id); cancelEdit(); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #0ea5e9, #38bdf8)", !!draft.trim())}><Check size={13} /> Salvar</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        <button onClick={() => { if (window.confirm(`Excluir o script "${s.title}"?`)) { onDeleteUserCall(s.id); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === "u_" + s.id && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo!</div>}
+                </Glass>
+              );
+            })}
+
+            {visibleCall.length > 0 && <div style={sectionLabel}>Sugestões</div>}
+            {visibleCall.map((s) => {
+              const isCustomized = customCallScripts[s.key] !== undefined;
+              const isEditing = editingKey === s.key;
+              const effective = customCallScripts[s.key] ?? s.template;
+              return (
+                <Glass key={s.key} style={{ borderRadius: 18, padding: "16px 18px", border: isEditing ? `1.5px solid ${s.color}` : undefined }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: s.color + "18", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <s.icon size={16} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        {s.title}
+                        {isCustomized && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: s.color + "18", color: s.color }}>editado</span>}
+                      </div>
+                      {!isEditing && <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
+                    </div>
+                    {!isEditing && <button onClick={() => startEditCall(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
+                  </div>
+                  {isEditing && (
+                    <div style={{ marginTop: 12 }}>
+                      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button onClick={() => { if (draft.trim()) { onSaveCall(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #8b5cf6, #a78bfa)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
+                        <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
+                        {isCustomized && <button onClick={() => { onResetCall(s.key); cancelEdit(); }} title="Voltar pro texto original de fábrica" style={dangerBtn}>Restaurar original</button>}
+                        <button onClick={() => { if (window.confirm(`Ocultar a sugestão "${s.title}"? Dá pra restaurar depois.`)) { onHideCall(s.key); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir sugestão</button>
+                      </div>
+                    </div>
+                  )}
+                  {savedKey === s.key && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#1eb356" }}>✓ Salvo como padrão!</div>}
+                </Glass>
+              );
+            })}
+            {hiddenCall.length > 0 && (
+              <button onClick={onUnhideAllCall} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>
+                Mostrar {hiddenCall.length} sugestão{hiddenCall.length === 1 ? "" : "s"} oculta{hiddenCall.length === 1 ? "" : "s"}
               </button>
             )}
           </>
@@ -5926,6 +6071,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [userEmailScripts, setUserEmailScripts] = useState([]); // [{ id, title, subject, body }]
   const [hiddenWaScripts, setHiddenWaScripts] = useState([]); // chaves de sugestões de fábrica ocultadas
   const [hiddenEmailScripts, setHiddenEmailScripts] = useState([]);
+  const [customCallScripts, setCustomCallScripts] = useState({}); // { scriptKey: template } - roteiros de ligação editados
+  const [userCallScripts, setUserCallScripts] = useState([]); // [{ id, title, template }]
+  const [hiddenCallScripts, setHiddenCallScripts] = useState([]);
   // Card que convida o SDR a compartilhar a conquista com o gestor do funil - aparece depois
   // que o pop-up de comemoração é fechado.
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
@@ -6005,7 +6153,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       loadData(REVENUE_GOAL_ENABLED_KEY, false),
       loadData(USER_WA_SCRIPTS_KEY, []), loadData(USER_EMAIL_SCRIPTS_KEY, []),
       loadData(HIDDEN_WA_SCRIPTS_KEY, []), loadData(HIDDEN_EMAIL_SCRIPTS_KEY, []),
-    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom, revGoalEnabled, userWa, userEmail, hiddenWa, hiddenEmail]) => {
+      loadData(CALL_CUSTOM_SCRIPTS_KEY, {}), loadData(USER_CALL_SCRIPTS_KEY, []), loadData(HIDDEN_CALL_SCRIPTS_KEY, []),
+    ]).then(([l, m, s, g, rg, gc, badges, chatHistory, waHistory, weekHist, emailHistory, callHistory, weekBadgeEnabled, weekBadges, weekReward, allGoalsRewardCfg, allGoalsEarned, commissionCfg, waScriptsCustom, emailScriptsCustom, revGoalEnabled, userWa, userEmail, hiddenWa, hiddenEmail, callScriptsCustom, userCall, hiddenCall]) => {
       if (mounted) {
         // Funil novo (sem nenhum lead salvo ainda) - injeta um lead de exemplo marcado
         // e dispara o tour guiado na primeira vez que essa pessoa abre esse funil.
@@ -6052,6 +6201,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         setUserEmailScripts(Array.isArray(userEmail) ? userEmail : []);
         setHiddenWaScripts(Array.isArray(hiddenWa) ? hiddenWa : []);
         setHiddenEmailScripts(Array.isArray(hiddenEmail) ? hiddenEmail : []);
+        setCustomCallScripts(callScriptsCustom && typeof callScriptsCustom === "object" ? callScriptsCustom : {});
+        setUserCallScripts(Array.isArray(userCall) ? userCall : []);
+        setHiddenCallScripts(Array.isArray(hiddenCall) ? hiddenCall : []);
         setLoaded(true);
       }
     });
@@ -6077,12 +6229,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   useEffect(() => { if (loaded) saveData(USER_EMAIL_SCRIPTS_KEY, userEmailScripts); }, [userEmailScripts, loaded]);
   useEffect(() => { if (loaded) saveData(HIDDEN_WA_SCRIPTS_KEY, hiddenWaScripts); }, [hiddenWaScripts, loaded]);
   useEffect(() => { if (loaded) saveData(HIDDEN_EMAIL_SCRIPTS_KEY, hiddenEmailScripts); }, [hiddenEmailScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(CALL_CUSTOM_SCRIPTS_KEY, customCallScripts); }, [customCallScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(USER_CALL_SCRIPTS_KEY, userCallScripts); }, [userCallScripts, loaded]);
+  useEffect(() => { if (loaded) saveData(HIDDEN_CALL_SCRIPTS_KEY, hiddenCallScripts); }, [hiddenCallScripts, loaded]);
 
   // Salva (cria ou atualiza) e exclui scripts criados pelo time - usados nos pickers e na página Scripts
   const saveUserWaScript = (id, data) => setUserWaScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "uws_" + Date.now(), ...data }]);
   const deleteUserWaScript = (id) => setUserWaScripts((prev) => prev.filter((s) => s.id !== id));
   const saveUserEmailScript = (id, data) => setUserEmailScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "ues_" + Date.now(), ...data }]);
   const deleteUserEmailScript = (id) => setUserEmailScripts((prev) => prev.filter((s) => s.id !== id));
+  const saveUserCallScript = (id, data) => setUserCallScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "ucs_" + Date.now(), ...data }]);
+  const deleteUserCallScript = (id) => setUserCallScripts((prev) => prev.filter((s) => s.id !== id));
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
   useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
   useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
@@ -7982,6 +8139,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               onHideEmail={(key) => setHiddenEmailScripts((prev) => [...prev, key])}
               onUnhideAllWa={() => setHiddenWaScripts([])}
               onUnhideAllEmail={() => setHiddenEmailScripts([])}
+              customCallScripts={customCallScripts}
+              onSaveCall={(key, template) => setCustomCallScripts((prev) => ({ ...prev, [key]: template }))}
+              onResetCall={(key) => setCustomCallScripts((prev) => { const next = { ...prev }; delete next[key]; return next; })}
+              userCallScripts={userCallScripts}
+              onSaveUserCall={saveUserCallScript}
+              onDeleteUserCall={deleteUserCallScript}
+              hiddenCall={hiddenCallScripts}
+              onHideCall={(key) => setHiddenCallScripts((prev) => [...prev, key])}
+              onUnhideAllCall={() => setHiddenCallScripts([])}
             />
           )}
 
