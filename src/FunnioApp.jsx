@@ -143,6 +143,13 @@ const classifyActivityNote = (text) => {
 
 const STAGE_OPTIONS = ["Apresentação", "Alinhamento", "Escopo Enviado", "Proposta", "Conquistado", "Perdida"];
 
+// Etiquetas de qualificação - marcadores reutilizáveis pra qualquer ramo. "Já tem fornecedor"
+// cobre o clássico "já tem agência" sem amarrar no nosso negócio: serve pra software,
+// contabilidade, consultoria, qualquer coisa. Fácil adicionar novas etiquetas aqui depois.
+const TAG_OPTIONS = [
+  { key: "fornecedor", label: "Já tem fornecedor", color: "#f97316" },
+];
+
 const STAGE_COLORS = {
   "Apresentação": "#8b5cf6", "Alinhamento": "#3b82f6", "Escopo Enviado": "#06b6d4",
   "Proposta": "#f59e0b", "Conquistado": "#10b981", "Perdida": "#94a3b8",
@@ -1141,6 +1148,16 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
               {phaseMeta.label}
             </span>
           )}
+          {(lead.tags || []).map((tagKey) => {
+            const t = TAG_OPTIONS.find((o) => o.key === tagKey);
+            if (!t) return null;
+            return (
+              <span key={tagKey} className="lc-pill" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 7, background: dark ? "#ffffff" : t.color + "1c", color: t.color, fontWeight: dark ? 400 : 700 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: t.color }} />
+                {t.label}
+              </span>
+            );
+          })}
         </div>
 
         {/* Último contato */}
@@ -3318,6 +3335,28 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             </div>
           </div>
 
+          {/* Etiquetas de qualificação - marcadores reutilizáveis (ex: já tem fornecedor) */}
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ ...labelStyle, marginBottom: 6 }}><SecIcon icon={ClipboardList} color="#f97316" />Etiquetas</label>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {TAG_OPTIONS.map((t) => {
+                const active = (draft.tags || []).includes(t.key);
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      const tags = active ? (draft.tags || []).filter((k) => k !== t.key) : [...(draft.tags || []), t.key];
+                      update({ tags });
+                    }}
+                    style={{ padding: "7px 14px", borderRadius: 9, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    {active ? "✓ " : ""}{t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {draft.stage !== "Perdida" && (() => {
             const HAPPY_PATH = STAGE_OPTIONS.filter((s) => s !== "Perdida");
             const currentIdx = HAPPY_PATH.indexOf(draft.stage);
@@ -5405,6 +5444,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [progress, setProgress] = useState(null); // { done, total } durante processamento em lotes
   const [draftLeads, setDraftLeads] = useState([]);
+  const [importTags, setImportTags] = useState([]); // etiquetas aplicadas a todos os leads deste import
   const [isDragging, setIsDragging] = useState(false);
   const [showImportHelp, setShowImportHelp] = useState(false);
 
@@ -5494,6 +5534,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             whatsapp,
             owner: sdrs.some((s) => s.name === l.owner) ? l.owner : (sdrs[0]?.name || ""),
             stage: STAGE_OPTIONS.includes(l.stage) ? l.stage : "Apresentação",
+            tags: Array.isArray(l.tags) ? l.tags : [],
             feedback: l.feedback || "",
           };
         });
@@ -5754,6 +5795,22 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
 
         {step === "review" && (
           <div style={{ padding: "14px 22px", borderTop: "1px solid #f1f2f5", background: "#fafbfc" }}>
+            {/* Etiquetas aplicadas a todos os leads deste import - ex: lista de quem já tem fornecedor */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.5 }}>Etiquetar todos:</span>
+              {TAG_OPTIONS.map((t) => {
+                const active = importTags.includes(t.key);
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setImportTags((prev) => active ? prev.filter((k) => k !== t.key) : [...prev, t.key])}
+                    style={{ padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    {active ? "✓ " : ""}{t.label}
+                  </button>
+                );
+              })}
+            </div>
             {emptyNameIncludedCount > 0 && (
               <div style={{ fontSize: 11.5, color: "#e2483f", marginBottom: 8, textAlign: "right" }}>
                 {emptyNameIncludedCount} lead{emptyNameIncludedCount === 1 ? "" : "s"} marcado{emptyNameIncludedCount === 1 ? "" : "s"} sem nome de empresa - preencha ou desmarque antes de importar.
@@ -5764,7 +5821,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                 Voltar
               </button>
               <button
-                onClick={() => { onConfirm(draftLeads.filter((l) => l._include && l.company.trim())); onClose(); }}
+                onClick={() => { onConfirm(draftLeads.filter((l) => l._include && l.company.trim()).map((l) => ({ ...l, _tags: importTags }))); onClose(); }}
                 disabled={validIncludedCount === 0}
                 style={{ padding: "11px 22px", borderRadius: 11, border: "none", cursor: validIncludedCount ? "pointer" : "not-allowed", fontSize: 13.5, fontWeight: 800, background: validIncludedCount ? "linear-gradient(135deg, #1fa971, #059669)" : "#eef0f3", color: validIncludedCount ? "white" : "#b4b6bc", display: "flex", alignItems: "center", gap: 8 }}
               >
@@ -6095,6 +6152,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [originFilter, setOriginFilter] = useState("all");
   const [originDropdownOpen, setOriginDropdownOpen] = useState(false);
   const [sectorFilter, setSectorFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all"); // filtra por etiqueta (ex: já tem fornecedor)
   const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]); // [{role:'user'|'assistant', content}]
   const [chatInput, setChatInput] = useState("");
@@ -6466,7 +6524,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
     setLeads((prev) => [newLead, ...prev]);
     setSelected(newLead);
   };
@@ -6481,7 +6539,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "hot", temperature: "hot",
       lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false,
       wonDate: now, dealValue: null, dealType: "unico", contractPeriod: "mensal",
-      workCompleted: false, workCompletedAt: null, commissionOverride: null,
+      workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [],
       origin: null, createdAt: now,
       notes: [{ id: "n_ext_" + Date.now(), date: now, text: "Cliente conquistado adicionado diretamente à lista (negócio fechado fora do Funnio)." }],
     };
@@ -6507,6 +6565,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       stage: d.stage,
       feedback: d.feedback || "",
       status: "Atendido",
+      tags: Array.isArray(d._tags) ? d._tags : [],
       contactName: d.contactName || "",
       role: d.role || "",
       sector: d.sector || "",
@@ -6545,6 +6604,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           extraContacts: d.extraContacts || l.extraContacts,
           email: d.email || l.email, phone: d.phone || l.phone, whatsapp: d.whatsapp || l.whatsapp,
           hasWhatsapp: !!(d.whatsapp || l.whatsapp), hasEmail: !!(d.email || l.email), hasPhone: !!(d.phone || l.phone),
+          tags: Array.from(new Set([...(Array.isArray(l.tags) ? l.tags : []), ...(Array.isArray(d._tags) ? d._tags : [])])),
           notes: [{ id: "n_imp_replace_" + batchStamp + "_" + l.id, date: now, text: `[Importado] Dados substituídos${d.feedback ? `: "${d.feedback}"` : ""}` }, ...(l.notes || [])],
         };
       });
@@ -6981,6 +7041,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       if (phaseFilter !== "all" && (l.phase || "none") !== phaseFilter) return false;
       if (originFilter !== "all" && l.origin !== originFilter) return false;
       if (sectorFilter !== "all" && (l.sector || "") !== sectorFilter) return false;
+      if (tagFilter !== "all" && !(l.tags || []).includes(tagFilter)) return false;
       if (quickStage === "ativo" && l.stage === "Perdida") return false;
       if (superOnly && !l.superAttention) return false;
       if (!q) return true;
@@ -7009,12 +7070,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       return a.company.localeCompare(b.company);
     });
     return arr;
-  }, [leads, search, tempFilter, whatsappOnly, ownerFilter, statusFilter, phaseFilter, originFilter, sectorFilter, quickStage, superOnly]);
+  }, [leads, search, tempFilter, whatsappOnly, ownerFilter, statusFilter, phaseFilter, originFilter, sectorFilter, tagFilter, quickStage, superOnly]);
 
   const desatendidosFiltered = filtered.filter((l) => l.status === "Desatendido");
 
-  const hasActiveFilters = !!search || tempFilter !== "all" || whatsappOnly || ownerFilter !== "all" || statusFilter !== "all" || phaseFilter !== "all" || originFilter !== "all" || sectorFilter !== "all" || !!quickStage || superOnly;
-  const clearFilters = () => { setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setOriginFilter("all"); setSectorFilter("all"); setQuickStage(null); setSuperOnly(false); };
+  const hasActiveFilters = !!search || tempFilter !== "all" || whatsappOnly || ownerFilter !== "all" || statusFilter !== "all" || phaseFilter !== "all" || originFilter !== "all" || sectorFilter !== "all" || tagFilter !== "all" || !!quickStage || superOnly;
+  const clearFilters = () => { setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setOwnerFilter("all"); setStatusFilter("all"); setPhaseFilter("all"); setOriginFilter("all"); setSectorFilter("all"); setTagFilter("all"); setQuickStage(null); setSuperOnly(false); };
 
   const scrollToGrid = () => {
     setTimeout(() => document.getElementById("leads-grid")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -7698,6 +7759,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
                   );
                 })()}
+              </Glass>
+
+              {/* Filtro por etiqueta - ex: só quem já tem fornecedor */}
+              <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Etiqueta</span>
+                <Chip active={tagFilter === "all"} onClick={() => setTagFilter("all")} color="#0f172a">Todas</Chip>
+                {TAG_OPTIONS.map((t) => (
+                  <Chip key={t.key} active={tagFilter === t.key} onClick={() => setTagFilter(tagFilter === t.key ? "all" : t.key)} color={t.color} count={leads.filter((l) => (l.tags || []).includes(t.key)).length}>{t.label}</Chip>
+                ))}
               </Glass>
 
               {filtered.length === 0 ? (
