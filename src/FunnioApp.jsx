@@ -1504,6 +1504,14 @@ const SCRIPT_LIBRARY = [
     key: "consultoria", title: "Bônus: consultoria pura", color: "#16a34a", icon: Target,
     template: "Oi, {nome}! Lembrei da nossa conversa sobre o marketing e queria te oferecer algo: uma consultoria mais avançada com dados de buscas reais do seu público, uma pesquisa SEO e um direcionamento de estratégia de conteúdo.\n\nSem compromisso, você pode usar a favor do seu próximo planejamento - topa marcar essa call?",
   },
+  {
+    key: "fornecedor_dados", title: "Já tem fornecedor · Camada de dados", color: "#f97316", icon: PieChart,
+    template: "Oi, {nome}! Sei que vocês já têm um parceiro cuidando do marketing da {empresa} - e não quero atrapalhar isso.\n\nNosso diferencial é a camada de dados: análise de buscas reais e SEO pra direcionar redes sociais e performance com muito mais precisão.\n\nPosso preparar uma leitura dessas oportunidades pra {empresa}? Vocês podem inclusive aproveitar com o parceiro atual - sem compromisso.",
+  },
+  {
+    key: "fornecedor_segunda", title: "Já tem fornecedor · Segunda opinião", color: "#ea580c", icon: TrendingUp,
+    template: "Oi, {nome}! Uma pergunta rápida: as estratégias de marketing da {empresa} hoje são guiadas por dados de busca reais do público?\n\nMesmo com uma agência boa no dia a dia, uma segunda opinião orientada por SEO e análise de dados costuma revelar oportunidades que passam batido.\n\nTopa que eu prepare essa leitura e te mostre numa conversa rápida? Sem compromisso nenhum.",
+  },
 ];
 
 // Troca {nome}/{Nome} e {empresa}/{Empresa} pelos dados reais do lead. Se não
@@ -1863,6 +1871,16 @@ const EMAIL_SCRIPT_LIBRARY = [
     subject: "4.609 rotas em 60 dias",
     body: "Oi, {nome}.\n\nEm um case de alimentos e bebidas, geramos 4.609 solicitações de rota, 1.815 ligações e mais de 10 mil acessos em 60 dias.\n\nO trabalho integrou branding, social media e tráfego pago para transformar atenção em intenção de compra.\n\nA Nume atua há 18 anos e já trabalhou com marcas como Harley-Davidson, Cielo e BYD, entre outras nacionais e globais.\n\nPosso te mostrar em 15 minutos como aplicaríamos essa lógica na {empresa}?\n\nPedro\nNume Company",
   },
+  {
+    key: "forn1", caseTitle: "Já tem fornecedor", category: "Camada de dados · SEO + precisão", color: "#f97316", icon: PieChart,
+    subject: "Uma leitura de dados pra somar ao que a {empresa} já faz",
+    body: "Oi, {nome}. Tudo bem?\n\nSei que a {empresa} já tem um parceiro cuidando do marketing - e a ideia aqui não é substituir esse trabalho.\n\nNosso diferencial está na camada de dados: análise de SEO e de buscas reais do público pra direcionar redes sociais e performance com muito mais precisão.\n\nNa prática, levantamos o que o mercado de vocês está buscando no Google, como o público se comporta nas redes e onde estão os espaços que a estratégia atual ainda não cobre.\n\nPosso preparar essa leitura pra {empresa}. Vocês ficam com os dados e podem inclusive usar no planejamento com o parceiro atual.\n\nSe fizer sentido, apresento em uma conversa rápida, sem compromisso.\n\nAbraço,\nPedro",
+  },
+  {
+    key: "forn2", caseTitle: "Já tem fornecedor", category: "Segunda opinião · dados de busca", color: "#ea580c", icon: TrendingUp,
+    subject: "As estratégias da {empresa} estão guiadas por dados de busca?",
+    body: "Oi, {nome}. Tudo bem?\n\nUma pergunta que costumo fazer pra empresas que já têm agência: as estratégias de redes e performance estão sendo guiadas por dados de busca reais do público?\n\nÉ aí que a gente entra. Trabalhamos com análise de dados e SEO pra apontar exatamente o que o público da {empresa} procura, e usar isso pra afinar conteúdo, redes sociais e mídia com precisão.\n\nUma segunda opinião orientada por dados costuma revelar oportunidades que o dia a dia da operação não enxerga - sem desmerecer o trabalho de ninguém.\n\nSe topar, preparo uma análise inicial do cenário de vocês e apresento numa conversa rápida. Os insights ficam com vocês, sem compromisso.\n\nAbraço,\nPedro",
+  },
 ];
 
 // Biblioteca de scripts de LIGAÇÃO - roteiros fixos da Nume pra cold call e retomada,
@@ -1900,6 +1918,14 @@ const CALL_SCRIPT_LIBRARY = [
   {
     key: "curta", title: "Versão curta e direta", color: "#64748b", icon: Rocket,
     template: "Oi, {nome}. Aqui é (seu nome), da Nume.\n\nPosso te tomar 30 segundos?\n\nEstamos estudando algumas empresas do {segmento} e acredito que conseguimos trazer uma leitura interessante para a {empresa} sobre demanda no Google, comportamento do público nas redes e oportunidades de aquisição.\n\nNosso time prepara essa análise antes de qualquer proposta.\n\nEu te mostro os dados, vocês ficam com os insights e, se fizer sentido, continuamos a conversa.\n\nVale marcarmos 20 minutos?",
+  },
+  {
+    key: "fornecedor_dados", title: "Já tem fornecedor · Camada de dados", color: "#f97316", icon: PieChart,
+    template: "Oi, {nome}, tudo bem? Aqui é (seu nome), da Nume.\n\nSei que vocês já têm um parceiro cuidando do marketing da {empresa}, então vou direto ao ponto: não estou ligando pra substituir ninguém.\n\nNosso diferencial é a camada de dados. Trabalhamos com análise de buscas reais e SEO pra direcionar as estratégias de redes sociais e performance com muito mais precisão.\n\nA proposta é simples: preparamos uma leitura de dados da {empresa} e vocês podem usar como quiserem, inclusive com o parceiro atual.\n\nFaria sentido eu te mostrar isso numa conversa rápida?",
+  },
+  {
+    key: "fornecedor_segunda", title: "Já tem fornecedor · Segunda opinião", color: "#ea580c", icon: TrendingUp,
+    template: "Oi, {nome}. Aqui é (seu nome), da Nume Company.\n\nPosso te fazer uma pergunta rápida?\n\nHoje, as estratégias de marketing da {empresa} são guiadas por dados de busca reais do público, ou mais pela experiência do time?\n\nPergunto porque nosso forte é exatamente isso: análise de dados e SEO pra dar precisão às decisões de redes sociais e performance.\n\nMesmo com uma agência no dia a dia, uma segunda opinião orientada por dados costuma revelar boas oportunidades.\n\nPosso pedir pro nosso time preparar essa leitura e te apresentar sem compromisso?",
   },
 ];
 
