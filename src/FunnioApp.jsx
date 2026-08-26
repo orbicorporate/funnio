@@ -7297,6 +7297,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   return { id, icon, color, label: label(list.length), company: top.company, phrase: phraseFn(top), extra, aiQuestion: aiQuestionFn(list.length), filterFn, count: list.length };
                 };
                 const tips = [
+                  // 1 · Ações combinadas que já venceram - o mais urgente de todos
+                  buildTip(
+                    "overdue", Bell, "#dc2626",
+                    (n) => `${n} próxima${n === 1 ? "" : "s"} aç${n === 1 ? "ão" : "ões"} atrasada${n === 1 ? "" : "s"}`,
+                    nextActions.overdue.map((x) => x.lead),
+                    (a, b) => new Date(a.nextAction.date) - new Date(b.nextAction.date),
+                    (l) => `tinha "${l.nextAction.description || "uma ação"}" marcada pra ${formatDateShort(l.nextAction.date)}`,
+                    (n) => `Tenho ${n} próximas ações atrasadas. Me ajuda a priorizar e resolver hoje?`,
+                    () => setView("acoes"),
+                  ),
+                  // 2 · Quentes esfriando
                   buildTip(
                     "hot", Flame, "#6d5ef8",
                     (n) => `${n} lead${n === 1 ? "" : "s"} quente${n === 1 ? "" : "s"} esfriando`,
@@ -7306,15 +7317,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     (n) => `Quais desses ${n} leads quentes sem contato eu deveria priorizar hoje?`,
                     () => { setTempFilter("hot"); },
                   ),
-                  buildTip(
-                    "noaction", CalendarIcon, "#f59e0b",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} sem próxima ação definida`,
-                    stats.noNextAction,
-                    null,
-                    () => "está sem nenhum próximo passo agendado",
-                    (n) => `Esses ${n} leads sem próxima ação, o que eu deveria fazer com cada um?`,
-                    () => {},
-                  ),
+                  // 3 · Super leads parados
                   buildTip(
                     "super", Star, "#ec4899",
                     (n) => `${n} super lead${n === 1 ? "" : "s"} sem contato recente`,
@@ -7324,12 +7327,126 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     (n) => `Meus ${n} super leads sem contato recente, por qual eu começo?`,
                     () => { setSuperOnly(true); },
                   ),
+                  // 4 · Ações de hoje
+                  buildTip(
+                    "todayactions", CalendarIcon, "#d97706",
+                    (n) => `${n} aç${n === 1 ? "ão" : "ões"} pra fazer hoje`,
+                    nextActions.todayList.map((x) => x.lead),
+                    null,
+                    (l) => `pede "${l.nextAction.description || "uma ação"}" hoje`,
+                    (n) => `Tenho ${n} ações marcadas pra hoje. Monta um plano rápido pra eu executar?`,
+                    () => setView("acoes"),
+                  ),
+                  // 5 · Lista da semana pendente
+                  buildTip(
+                    "weekpending", Target, "#8fae0e",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} da semana ainda sem abordagem`,
+                    stats.weekList,
+                    null,
+                    () => "está na lista da semana esperando o primeiro toque",
+                    (n) => `Ainda tenho ${n} leads na lista da semana. Qual a melhor ordem de abordagem?`,
+                    () => setView("semana"),
+                  ),
+                  // 6 · Proposta/escopo esfriando
+                  buildTip(
+                    "staleproposal", FileText, "#0ea5e9",
+                    (n) => `${n} proposta${n === 1 ? "" : "s"} sem retorno há 7+ dias`,
+                    leads.filter((l) => (l.stage === "Escopo Enviado" || l.stage === "Proposta") && (daysSince(l.lastContact) ?? 999) >= 7),
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    (l) => { const d = daysSince(l.lastContact); return d === null ? "recebeu proposta e nunca teve follow-up" : `recebeu proposta e está há ${d} dias sem retorno`; },
+                    (n) => `${n} leads com proposta enviada estão sem retorno há mais de uma semana. Como faço o follow-up sem parecer cobrança?`,
+                    () => {},
+                  ),
+                  // 7 · Etiqueta "Já tem fornecedor" parada - hora dos scripts de segunda opinião
+                  buildTip(
+                    "fornecedor", PieChart, "#f97316",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} com fornecedor esperando a 2ª opinião`,
+                    leads.filter((l) => (l.tags || []).includes("fornecedor") && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 7),
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    () => `já tem fornecedor - use os scripts de camada de dados e segunda opinião`,
+                    (n) => `Tenho ${n} leads que já têm fornecedor. Como uso nosso diferencial de dados e SEO pra abordar cada um?`,
+                    () => { setTagFilter("fornecedor"); },
+                  ),
+                  // 8 · Sem próxima ação
+                  buildTip(
+                    "noaction", CalendarIcon, "#f59e0b",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} sem próxima ação definida`,
+                    stats.noNextAction,
+                    null,
+                    () => "está sem nenhum próximo passo agendado",
+                    (n) => `Esses ${n} leads sem próxima ação, o que eu deveria fazer com cada um?`,
+                    () => {},
+                  ),
+                  // 9 · Leads novos nunca tocados
+                  buildTip(
+                    "newnotouch", UserPlus, "#10b981",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} novo${n === 1 ? "" : "s"} sem primeiro contato`,
+                    leads.filter((l) => !l.lastContact && l.stage !== "Conquistado" && l.stage !== "Perdida" && l.createdAt && (Date.now() - new Date(l.createdAt).getTime()) / 86400000 >= 3),
+                    (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+                    (l) => `entrou há ${Math.floor((Date.now() - new Date(l.createdAt).getTime()) / 86400000)} dias e ninguém falou com ele ainda`,
+                    (n) => `${n} leads entraram no funil e nunca receberam o primeiro contato. Qual script usar pra estrear bem?`,
+                    () => {},
+                  ),
+                  // 10 · Negociações antigas pra reativar
+                  buildTip(
+                    "desatendidos", Clock, "#e2483f",
+                    (n) => `${n} negociaç${n === 1 ? "ão" : "ões"} antiga${n === 1 ? "" : "s"} pra reativar`,
+                    leads.filter((l) => l.status === "Desatendido" && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    (l) => { const d = daysSince(l.lastContact); return d === null ? "esfriou sem nenhum contato registrado" : `está parado há ${d} dias`; },
+                    (n) => `Tenho ${n} negociações antigas. Quais valem reativar primeiro e com qual script?`,
+                    () => setView("desatendidos"),
+                  ),
+                  // 11 · Conquistados sem comissão definida
+                  buildTip(
+                    "nocommission", DollarSign, "#b8860b",
+                    (n) => `${n} contrato${n === 1 ? "" : "s"} sem comissão definida`,
+                    leads.filter((l) => l.stage === "Conquistado" && !l.workCompleted && getCommissionDetails(l, commissionConfig).value === 0),
+                    null,
+                    () => "fechou mas está sem comissão configurada",
+                    (n) => `Fechei ${n} contratos que estão sem comissão definida. O que preciso configurar?`,
+                    () => setView("conquistados"),
+                  ),
+                  // 12 · Frios parados há 30+ dias
+                  buildTip(
+                    "coldlong", Snowflake, "#3b82f6",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} frio${n === 1 ? "" : "s"} parado${n === 1 ? "" : "s"} há 30+ dias`,
+                    leads.filter((l) => l.temperature === "cold" && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 30),
+                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                    (l) => `está frio e sem contato há ${daysSince(l.lastContact) ?? "muitos"} dias`,
+                    (n) => `${n} leads frios estão parados há mais de 30 dias. Reativo, marco como perdidos ou deixo quieto?`,
+                    () => { setTempFilter("cold"); },
+                  ),
+                  // 13 · Sem canal de contato cadastrado
+                  buildTip(
+                    "nochannel", Phone, "#64748b",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} sem nenhum canal de contato`,
+                    leads.filter((l) => !l.whatsapp && !l.email && !l.phone && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                    null,
+                    () => "está sem WhatsApp, e-mail e telefone cadastrados",
+                    (n) => `${n} leads estão sem nenhum canal de contato. Como completo esses cadastros rápido?`,
+                    () => {},
+                  ),
+                  // 14 · Sem origem definida (atrapalha os relatórios)
+                  buildTip(
+                    "noorigin", Megaphone, "#8b5cf6",
+                    (n) => `${n} lead${n === 1 ? "" : "s"} sem origem definida`,
+                    leads.filter((l) => !l.origin && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                    null,
+                    () => "está sem origem marcada - isso enfraquece os relatórios de canal",
+                    (n) => `${n} leads estão sem origem definida. Por que isso importa e como resolvo?`,
+                    () => {},
+                  ),
                 ].filter(Boolean);
                 if (tips.length === 0) return null;
                 const tip = tips[dashboardTipIndex % tips.length];
                 return (
                   <div style={{ borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", marginBottom: 14, overflow: "hidden" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px" }}>
+                    <div
+                      onClick={() => { if (tip.filterFn) tip.filterFn(); }}
+                      title="Toque pra abrir/filtrar esses leads"
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px", cursor: "pointer" }}
+                    >
                       <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
                         <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
                       </div>
