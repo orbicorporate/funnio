@@ -1392,6 +1392,14 @@ const REMINDER_QUICK_OPTIONS = [
   { key: "nextweek", label: "Semana que vem", days: 7 },
 ];
 
+// Canais de retorno - como o SDR pretende voltar a falar com o lead. Opcional, mas ajuda
+// a bater o olho no lembrete e já saber se é pra ligar, mandar WhatsApp ou email.
+const RETURN_CHANNELS = [
+  { key: "call", label: "Ligar", icon: Phone, color: "#8b5cf6" },
+  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "#25d366" },
+  { key: "email", label: "Email", icon: Mail, color: "#3b82f6" },
+];
+
 const addDaysISO = (days) => {
   const d = new Date();
   d.setHours(9, 0, 0, 0);
@@ -1403,63 +1411,113 @@ const addDaysISO = (days) => {
 // tocado; ao escolher uma data (via atalho ou calendário), colapsa mostrando o resumo. Quando
 // `required` é true, exibe estado de alerta enquanto não houver data escolhida, e `forceOpenKey`
 // permite que o componente pai force a expansão (ex: numa tentativa de salvar sem lembrete).
-const ReminderCalendarPicker = ({ date, onPick, required = false, forceOpenKey }) => {
+// `channel`/`onPickChannel` são opcionais e deixam o SDR marcar como pretende retornar.
+const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required = false, forceOpenKey }) => {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (forceOpenKey) setOpen(true); }, [forceOpenKey]);
 
   const formatted = date
     ? new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", weekday: "short" }).replace(".", "")
     : null;
+  const channelCfg = RETURN_CHANNELS.find((c) => c.key === channel);
 
   if (!open) {
+    const tone = date
+      ? { fg: "#16a34a", bg: "linear-gradient(135deg, rgba(34,197,94,0.14), rgba(16,185,129,0.05))", iconBg: "rgba(34,197,94,0.16)", ring: "rgba(34,197,94,0.3)" }
+      : required
+      ? { fg: "#b45309", bg: "linear-gradient(135deg, rgba(245,158,11,0.14), rgba(251,191,36,0.05))", iconBg: "rgba(245,158,11,0.18)", ring: "rgba(245,158,11,0.4)" }
+      : { fg: "#64748b", bg: "#f8fafc", iconBg: "rgba(148,163,184,0.16)", ring: "rgba(148,163,184,0.25)" };
     return (
       <button
         type="button"
         onClick={() => setOpen(true)}
         style={{
-          display: "flex", alignItems: "center", gap: 8, width: "100%",
-          padding: "11px 14px", borderRadius: 12, cursor: "pointer",
-          border: date ? "1.5px solid rgba(34,197,94,0.35)" : `1.5px dashed ${required ? "#f59e0b" : "rgba(148,163,184,0.4)"}`,
-          background: date ? "rgba(34,197,94,0.07)" : required ? "rgba(245,158,11,0.06)" : "#f8fafc",
-          textAlign: "left",
+          display: "flex", alignItems: "center", gap: 11, width: "100%",
+          padding: "12px 14px", borderRadius: 16, cursor: "pointer", border: "none",
+          background: tone.bg, boxShadow: `0 0 0 1.5px ${tone.ring} inset`,
+          textAlign: "left", transition: "box-shadow 0.15s ease, background 0.15s ease",
         }}
       >
-        <CalendarIcon size={16} color={date ? "#16a34a" : required ? "#d97706" : "#94a3b8"} />
+        <div style={{ width: 36, height: 36, borderRadius: 12, background: tone.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <CalendarIcon size={16} color={tone.fg} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: date ? "#16a34a" : required ? "#b45309" : "#64748b" }}>
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: tone.fg }}>
             {date ? `Lembrete de retorno: ${formatted}` : (required ? "Toque pra criar o lembrete de retorno (obrigatório)" : "Toque pra criar um lembrete de retorno")}
           </div>
+          {channelCfg && (
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+              <channelCfg.icon size={10.5} color={channelCfg.color} />
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: channelCfg.color }}>{channelCfg.label}</span>
+            </div>
+          )}
         </div>
-        <ChevronRight size={14} color="#94a3b8" style={{ transform: "rotate(90deg)" }} />
+        <ChevronRight size={15} color={tone.fg} style={{ transform: "rotate(90deg)", flexShrink: 0, opacity: 0.7 }} />
       </button>
     );
   }
 
   return (
-    <div style={{ padding: 12, borderRadius: 12, border: "1.5px solid rgba(109,94,248,0.35)", background: "rgba(109,94,248,0.05)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#6d5ef8" }}>Quando você quer ser lembrado de retornar?</div>
+    <div style={{ padding: 16, borderRadius: 18, background: "white", boxShadow: "0 12px 30px -14px rgba(109,94,248,0.4), 0 0 0 1.5px rgba(109,94,248,0.25)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: "#14141a" }}>Quando você quer ser lembrado de retornar?</div>
         {!required && (
-          <button onClick={() => setOpen(false)} style={{ border: "none", background: "transparent", color: "#94a3b8", cursor: "pointer", display: "flex" }}><X size={14} /></button>
+          <button onClick={() => setOpen(false)} style={{ width: 26, height: 26, borderRadius: 8, border: "none", background: "rgba(148,163,184,0.12)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={13} /></button>
         )}
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 14 }}>
         {REMINDER_QUICK_OPTIONS.map((opt) => (
           <button
             key={opt.key}
             onClick={() => { onPick(addDaysISO(opt.days)); setOpen(false); }}
-            style={{ padding: "7px 12px", borderRadius: 8, border: "1px solid rgba(109,94,248,0.3)", background: "white", color: "#6d5ef8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              padding: "10px 8px", borderRadius: 12, border: "1.5px solid rgba(109,94,248,0.22)",
+              background: "linear-gradient(135deg, rgba(109,94,248,0.08), rgba(139,123,250,0.03))",
+              color: "#6d5ef8", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+            }}
           >
             {opt.label}
           </button>
         ))}
       </div>
-      <input
-        type="date"
-        value={date ? date.slice(0, 10) : ""}
-        onChange={(e) => { if (e.target.value) { onPick(new Date(e.target.value).toISOString()); setOpen(false); } }}
-        style={{ width: "100%", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13, boxSizing: "border-box" }}
-      />
+
+      {onPickChannel && (
+        <>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Como retornar (opcional)</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+            {RETURN_CHANNELS.map((c) => {
+              const active = channel === c.key;
+              return (
+                <button
+                  key={c.key}
+                  onClick={() => onPickChannel(active ? null : c.key)}
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    padding: "9px 6px", borderRadius: 11, cursor: "pointer",
+                    border: `1.5px solid ${active ? c.color : "rgba(148,163,184,0.25)"}`,
+                    background: active ? c.color + "16" : "white", color: active ? c.color : "#64748b",
+                    fontSize: 11.5, fontWeight: 700, transition: "all 0.15s ease",
+                  }}
+                >
+                  <c.icon size={13} /> {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <div style={{ position: "relative" }}>
+        <CalendarIcon size={15} color="#94a3b8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <input
+          type="date"
+          value={date ? date.slice(0, 10) : ""}
+          onChange={(e) => { if (e.target.value) { onPick(new Date(e.target.value).toISOString()); setOpen(false); } }}
+          style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13, boxSizing: "border-box", background: "#f8fafc", color: "#14141a" }}
+        />
+      </div>
     </div>
   );
 };
@@ -1469,12 +1527,13 @@ const ReminderCalendarPicker = ({ date, onPick, required = false, forceOpenKey }
 const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
   const [text, setText] = useState("");
   const [reminderDate, setReminderDate] = useState(null);
+  const [reminderChannel, setReminderChannel] = useState(null);
   const [attempt, setAttempt] = useState(0);
   if (!lead) return null;
   const canConfirm = !!text.trim() && !!reminderDate;
   const handleConfirm = () => {
     if (!text.trim() || !reminderDate) { setAttempt((n) => n + 1); return; }
-    onConfirm(text, reminderDate);
+    onConfirm(text, reminderDate, reminderChannel);
   };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
@@ -1511,7 +1570,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
 
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 6 }}>Próxima ação: Retornar</div>
-          <ReminderCalendarPicker date={reminderDate} onPick={setReminderDate} required forceOpenKey={attempt} />
+          <ReminderCalendarPicker date={reminderDate} onPick={setReminderDate} channel={reminderChannel} onPickChannel={setReminderChannel} required forceOpenKey={attempt} />
         </div>
 
         <button
@@ -3781,14 +3840,16 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando (lembrete de push)</span>
               <ReminderCalendarPicker
                 date={draft.nextAction?.date || null}
-                onPick={(date) => update({ nextAction: { date, description: draft.nextAction?.description || "Retornar" } })}
+                onPick={(date) => update({ nextAction: { ...draft.nextAction, date, description: draft.nextAction?.description || "Retornar" } })}
+                channel={draft.nextAction?.channel || null}
+                onPickChannel={(channel) => update({ nextAction: { ...draft.nextAction, date: draft.nextAction?.date || new Date().toISOString(), description: draft.nextAction?.description || "Retornar", channel } })}
                 required={draft.stage !== "Conquistado" && draft.stage !== "Perdida"}
                 forceOpenKey={nextActionAttempt}
               />
             </div>
             <div style={{ minWidth: 0 }}>
               <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
-              <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
+              <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { ...draft.nextAction, date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
             </div>
             <button
               onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft))}`, "_blank")}
@@ -6599,7 +6660,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // guarda o alvo aqui até o SDR confirmar (ou cancelar) no painel de resumo.
   const [weekDoneSummaryTarget, setWeekDoneSummaryTarget] = useState(null); // { leadId, via } | null
   const requestWeekDoneSummary = (lead, via) => { if (lead) setWeekDoneSummaryTarget({ leadId: lead.id, via }); };
-  const confirmWeekDoneSummary = (text, reminderDate) => {
+  const confirmWeekDoneSummary = (text, reminderDate, reminderChannel) => {
     if (!weekDoneSummaryTarget || !text.trim() || !reminderDate) return;
     const { leadId, via } = weekDoneSummaryTarget;
     const now = new Date().toISOString();
@@ -6609,7 +6670,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       weekDone: true,
       weekDoneVia: via,
       weekDoneAt: now,
-      nextAction: { date: reminderDate, description: "Retornar" },
+      nextAction: { date: reminderDate, description: "Retornar", channel: reminderChannel || null },
       notes: [{ id: "n_wksum_" + Date.now(), date: now, text: text.trim() }, ...(l.notes || [])],
     } : l)));
     if (lead) { setToast("Marcado como feito na Lista da Semana! Lembrete de retorno criado."); logWeekHistory(lead, via, text.trim()); }
