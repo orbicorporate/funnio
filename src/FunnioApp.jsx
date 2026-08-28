@@ -1375,6 +1375,7 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
 const WEEK_DONE_QUICK_SUMMARIES = [
   "Tentativa de contato sem retorno",
   "Não atendeu",
+  "Mensagem enviada, aguardando retorno",
   "Conversamos, vai analisar",
   "Pediu pra retornar depois",
   "Estamos marcando reunião",
@@ -1382,11 +1383,99 @@ const WEEK_DONE_QUICK_SUMMARIES = [
   "Vai apresentar internamente",
 ];
 
+// Opções rápidas de prazo pro lembrete de retorno - cobrem os casos mais comuns
+// pra não precisar abrir um calendário completo toda vez.
+const REMINDER_QUICK_OPTIONS = [
+  { key: "tomorrow", label: "Amanhã", days: 1 },
+  { key: "2days", label: "Em 2 dias", days: 2 },
+  { key: "3days", label: "Em 3 dias", days: 3 },
+  { key: "nextweek", label: "Semana que vem", days: 7 },
+];
+
+const addDaysISO = (days) => {
+  const d = new Date();
+  d.setHours(9, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString();
+};
+
+// Calendarinho expansível pra criar um lembrete de próxima ação (push) - fica fechado até ser
+// tocado; ao escolher uma data (via atalho ou calendário), colapsa mostrando o resumo. Quando
+// `required` é true, exibe estado de alerta enquanto não houver data escolhida, e `forceOpenKey`
+// permite que o componente pai force a expansão (ex: numa tentativa de salvar sem lembrete).
+const ReminderCalendarPicker = ({ date, onPick, required = false, forceOpenKey }) => {
+  const [open, setOpen] = useState(false);
+  useEffect(() => { if (forceOpenKey) setOpen(true); }, [forceOpenKey]);
+
+  const formatted = date
+    ? new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", weekday: "short" }).replace(".", "")
+    : null;
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          display: "flex", alignItems: "center", gap: 8, width: "100%",
+          padding: "11px 14px", borderRadius: 12, cursor: "pointer",
+          border: date ? "1.5px solid rgba(34,197,94,0.35)" : `1.5px dashed ${required ? "#f59e0b" : "rgba(148,163,184,0.4)"}`,
+          background: date ? "rgba(34,197,94,0.07)" : required ? "rgba(245,158,11,0.06)" : "#f8fafc",
+          textAlign: "left",
+        }}
+      >
+        <CalendarIcon size={16} color={date ? "#16a34a" : required ? "#d97706" : "#94a3b8"} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: date ? "#16a34a" : required ? "#b45309" : "#64748b" }}>
+            {date ? `Lembrete de retorno: ${formatted}` : (required ? "Toque pra criar o lembrete de retorno (obrigatório)" : "Toque pra criar um lembrete de retorno")}
+          </div>
+        </div>
+        <ChevronRight size={14} color="#94a3b8" style={{ transform: "rotate(90deg)" }} />
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ padding: 12, borderRadius: 12, border: "1.5px solid rgba(109,94,248,0.35)", background: "rgba(109,94,248,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#6d5ef8" }}>Quando você quer ser lembrado de retornar?</div>
+        {!required && (
+          <button onClick={() => setOpen(false)} style={{ border: "none", background: "transparent", color: "#94a3b8", cursor: "pointer", display: "flex" }}><X size={14} /></button>
+        )}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {REMINDER_QUICK_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => { onPick(addDaysISO(opt.days)); setOpen(false); }}
+            style={{ padding: "7px 12px", borderRadius: 8, border: "1px solid rgba(109,94,248,0.3)", background: "white", color: "#6d5ef8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <input
+        type="date"
+        value={date ? date.slice(0, 10) : ""}
+        onChange={(e) => { if (e.target.value) { onPick(new Date(e.target.value).toISOString()); setOpen(false); } }}
+        style={{ width: "100%", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13, boxSizing: "border-box" }}
+      />
+    </div>
+  );
+};
+
 // Painel obrigatório antes de marcar um lead como "feito" na Lista da Semana - garante que
 // todo contato registrado tenha um resumo escrito do que aconteceu, mesmo que seja "sem retorno".
 const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
   const [text, setText] = useState("");
+  const [reminderDate, setReminderDate] = useState(null);
+  const [attempt, setAttempt] = useState(0);
   if (!lead) return null;
+  const canConfirm = !!text.trim() && !!reminderDate;
+  const handleConfirm = () => {
+    if (!text.trim() || !reminderDate) { setAttempt((n) => n + 1); return; }
+    onConfirm(text, reminderDate);
+  };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: "white", borderRadius: "22px 22px 0 0", padding: 20, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
@@ -1420,10 +1509,15 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
           style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13.5, fontFamily: '"Open Sans", Arial, sans-serif', resize: "none", outline: "none", marginBottom: 14, boxSizing: "border-box" }}
         />
 
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 6 }}>Próxima ação: Retornar</div>
+          <ReminderCalendarPicker date={reminderDate} onPick={setReminderDate} required forceOpenKey={attempt} />
+        </div>
+
         <button
-          onClick={() => onConfirm(text)}
-          disabled={!text.trim()}
-          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: text.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#e2e4e9", color: text.trim() ? "white" : "#9a9aa3", fontSize: 14, fontWeight: 700, cursor: text.trim() ? "pointer" : "default" }}
+          onClick={handleConfirm}
+          disabled={!canConfirm}
+          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: canConfirm ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#e2e4e9", color: canConfirm ? "white" : "#9a9aa3", fontSize: 14, fontWeight: 700, cursor: canConfirm ? "pointer" : "default" }}
         >
           Marcar como feito
         </button>
@@ -3201,6 +3295,9 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showExtraContacts, setShowExtraContacts] = useState(false);
   const [sectorCustom, setSectorCustom] = useState(() => !!(lead?.sector && !SECTOR_OPTIONS.includes(lead.sector)));
+  // Toda vez que tenta salvar sem lembrete de próxima ação marcado, força a expansão do
+  // calendarinho pra deixar claro o que falta - só não exige pra leads já conquistados/perdidos.
+  const [nextActionAttempt, setNextActionAttempt] = useState(0);
 
   useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); setShowExtraContacts(!!(lead?.extraContacts && lead.extraContacts.trim())); setSectorCustom(!!(lead?.sector && !SECTOR_OPTIONS.includes(lead.sector))); }, [lead]);
   if (!lead) return null;
@@ -3213,6 +3310,13 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
     setDraft(updated); setNewNote(""); onSave(updated);
   };
   const handleSave = () => {
+    // Sempre exige um lembrete de próxima ação marcado antes de salvar (exceto pra leads
+    // já conquistados ou perdidos, que não entram mais no fluxo de abordagem).
+    const needsReminder = draft.stage !== "Conquistado" && draft.stage !== "Perdida" && !draft.nextAction?.date;
+    if (needsReminder) {
+      setNextActionAttempt((n) => n + 1);
+      return;
+    }
     // Se o estágio mudou, registra automaticamente no histórico do lead -
     // isso alimenta o feed de atividades da tela de Relatórios.
     let toSave = draft;
@@ -3670,15 +3774,18 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
 
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
-              <div style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando</span>
-                <input type="date" value={draft.nextAction?.date ? draft.nextAction.date.slice(0, 10) : ""} onChange={(e) => { const date = e.target.value ? new Date(e.target.value).toISOString() : null; update({ nextAction: date ? { date, description: draft.nextAction?.description || "" } : null }); }} style={{ ...inputStyle, background: "white", minWidth: 0, height: 42, WebkitAppearance: "none", appearance: "none" }} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
-                <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
-              </div>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando (lembrete de push)</span>
+              <ReminderCalendarPicker
+                date={draft.nextAction?.date || null}
+                onPick={(date) => update({ nextAction: { date, description: draft.nextAction?.description || "Retornar" } })}
+                required={draft.stage !== "Conquistado" && draft.stage !== "Perdida"}
+                forceOpenKey={nextActionAttempt}
+              />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
+              <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
             </div>
             <button
               onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft))}`, "_blank")}
@@ -3738,6 +3845,9 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             </div>
           ) : (
             <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
+          )}
+          {nextActionAttempt > 0 && draft.stage !== "Conquistado" && draft.stage !== "Perdida" && !draft.nextAction?.date && (
+            <span style={{ fontSize: 11.5, color: "#d97706", fontWeight: 700, marginRight: 8 }}>Defina o lembrete de retorno acima antes de salvar</span>
           )}
           <button
             onClick={handleSave}
@@ -6486,8 +6596,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // guarda o alvo aqui até o SDR confirmar (ou cancelar) no painel de resumo.
   const [weekDoneSummaryTarget, setWeekDoneSummaryTarget] = useState(null); // { leadId, via } | null
   const requestWeekDoneSummary = (lead, via) => { if (lead) setWeekDoneSummaryTarget({ leadId: lead.id, via }); };
-  const confirmWeekDoneSummary = (text) => {
-    if (!weekDoneSummaryTarget || !text.trim()) return;
+  const confirmWeekDoneSummary = (text, reminderDate) => {
+    if (!weekDoneSummaryTarget || !text.trim() || !reminderDate) return;
     const { leadId, via } = weekDoneSummaryTarget;
     const now = new Date().toISOString();
     const lead = leads.find((l) => l.id === leadId);
@@ -6496,9 +6606,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       weekDone: true,
       weekDoneVia: via,
       weekDoneAt: now,
+      nextAction: { date: reminderDate, description: "Retornar" },
       notes: [{ id: "n_wksum_" + Date.now(), date: now, text: text.trim() }, ...(l.notes || [])],
     } : l)));
-    if (lead) { setToast("Marcado como feito na Lista da Semana!"); logWeekHistory(lead, via, text.trim()); }
+    if (lead) { setToast("Marcado como feito na Lista da Semana! Lembrete de retorno criado."); logWeekHistory(lead, via, text.trim()); }
     setWeekDoneSummaryTarget(null);
   };
   const toggleWeekDone = (id) => {
