@@ -2397,9 +2397,12 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                               // Última atualização do Histórico de Conversas (linha do tempo) do lead -
                               // a entrada mais recente, manual ou automática. Fallback pro resumo da
                               // conclusão só se o lead não tiver nenhum registro na linha do tempo.
-                              const info = lead?.notes?.[0]?.text || h.summary;
+                              // Mostra só o comecinho (resuminho) - o suficiente pra identificar qual
+                              // script/mensagem foi usado no envio, sem preencher o card com o texto todo.
+                              const raw = (lead?.notes?.[0]?.text || h.summary || "").replace(/\s+/g, " ").trim();
+                              const info = raw.length > 60 ? raw.slice(0, 60).trim() + "…" : raw;
                               return info ? (
-                                <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                                <div style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   "{info}"
                                 </div>
                               ) : null;
