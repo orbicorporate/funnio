@@ -7849,6 +7849,37 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </button>
                       </div>
 
+                      {/* Linha do tempo Seg-Sex da semana atual, com o dia de hoje aceso -
+                          deixa claro de bater o olho que a meta é da semana corrente. */}
+                      {(() => {
+                        const today = new Date();
+                        const dayIdx = (today.getDay() + 6) % 7; // 0=Seg ... 6=Dom
+                        const monday = new Date(today); monday.setHours(0, 0, 0, 0); monday.setDate(today.getDate() - dayIdx);
+                        const days = ["Seg", "Ter", "Qua", "Qui", "Sex"].map((label, i) => {
+                          const d = new Date(monday); d.setDate(monday.getDate() + i);
+                          return { label, num: d.getDate(), isToday: i === dayIdx };
+                        });
+                        return (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, position: "relative", padding: "0 4px" }}>
+                            <div style={{ position: "absolute", top: 15, left: 24, right: 24, height: 2, background: "#eef0f3", zIndex: 0 }} />
+                            {days.map((d) => (
+                              <div key={d.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, position: "relative", zIndex: 1, flex: 1 }}>
+                                <div style={{
+                                  width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                                  background: d.isToday ? "linear-gradient(135deg, #c8e85a, #a8dc2e)" : "white",
+                                  border: d.isToday ? "none" : "2px solid #eef0f3",
+                                  boxShadow: d.isToday ? "0 0 0 4px rgba(168,220,46,0.25)" : "none",
+                                  transition: "all 0.2s ease",
+                                }}>
+                                  <span style={{ fontSize: 12.5, fontWeight: 800, color: d.isToday ? "#14141a" : "#c4c4cc" }}>{d.num}</span>
+                                </div>
+                                <span style={{ fontSize: 10, fontWeight: d.isToday ? 800 : 600, color: d.isToday ? "#14141a" : "#9a9aa3" }}>{d.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
                       <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
                         <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "ringGoalGlow 2.4s ease-in-out infinite" : "none" }}>
                           <svg width="90" height="90" viewBox="0 0 90 90">
