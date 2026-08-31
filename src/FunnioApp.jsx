@@ -6629,7 +6629,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     setToast(`${missing.length} pessoa${missing.length === 1 ? "" : "s"} adicionada${missing.length === 1 ? "" : "s"}.`);
   };
 
-  const updateLead = (updated) => setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+  // Faz upsert: atualiza o lead se já existir na lista, ou adiciona se ainda não existir (caso de
+  // um rascunho de "Novo lead" que só deve virar lead de verdade quando o SDR salvar de fato -
+  // ver createLead/createWonLeadExternal).
+  const updateLead = (updated) => setLeads((prev) => (prev.some((l) => l.id === updated.id) ? prev.map((l) => (l.id === updated.id ? updated : l)) : [updated, ...prev]));
   const markContactedToday = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, lastContact: new Date().toISOString() } : l)));
 
   const sendChatMessage = async (text) => {
@@ -6726,7 +6729,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const createLead = () => {
     const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
-    setLeads((prev) => [newLead, ...prev]);
+    // Só abre como rascunho - não entra na lista de leads (nem soma no "Total de leads")
+    // até o SDR de fato salvar o cadastro. Ver updateLead, que faz o upsert no save.
     setSelected(newLead);
   };
 
@@ -6744,7 +6748,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       origin: null, createdAt: now,
       notes: [{ id: "n_ext_" + Date.now(), date: now, text: "Cliente conquistado adicionado diretamente à lista (negócio fechado fora do Funnio)." }],
     };
-    setLeads((prev) => [newLead, ...prev]);
+    // Mesma lógica do createLead: fica como rascunho até o SDR salvar de verdade.
     setSelected(newLead);
   };
 
