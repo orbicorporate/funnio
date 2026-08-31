@@ -6337,6 +6337,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [shareAchievement, setShareAchievement] = useState(null); // { type: "metric"|"week", ... } | null
   const [achievementsFilterSdr, setAchievementsFilterSdr] = useState("all");
   const [weekSdrFilter, setWeekSdrFilter] = useState("all"); // filtro por SDR na lista da semana (hero + tela semana)
+  const [weekSectionFilter, setWeekSectionFilter] = useState("all"); // "all" | "leftover" | "thisWeek" - filtro sobrou vs colocado essa semana
   const [expandedHistoryMetric, setExpandedHistoryMetric] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [tourActive, setTourActive] = useState(false);
@@ -7799,7 +7800,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div data-tour="week-card" style={{ borderRadius: 22, overflow: "hidden", marginBottom: 20, boxShadow: "0 8px 28px -14px rgba(20,20,26,0.18)" }}>
                     {/* Topo: hero lima com imagem real de fundo */}
                     <div
-                      onClick={() => setView("semana")}
+                      onClick={() => { setWeekSectionFilter("all"); setView("semana"); }}
                       style={{
                         padding: "34px 22px", color: "#14141a", cursor: "pointer", position: "relative",
                         backgroundImage: `url(${BG_WEEK_HERO})`, backgroundSize: "cover", backgroundPosition: "center",
@@ -7816,7 +7817,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.75 }}>{weekSdrFilter === "all" ? "Foque nos leads da sua lista" : `Lista de ${weekSdrFilter}`}</div>
                           </div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setView("semana"); }} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); setWeekSectionFilter("all"); setView("semana"); }} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                           Ver lista <ChevronRight size={14} />
                         </button>
                       </div>
@@ -7846,12 +7847,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       {weekFiltered.total > 0 && (
                         <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
                           {weekFiltered.leftover.length > 0 && (
-                            <div style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)" }}>
+                            <div
+                              onClick={() => { setWeekSectionFilter("leftover"); setView("semana"); }}
+                              style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
+                            >
                               <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
                               <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>sobrando da semana passada</div>
                             </div>
                           )}
-                          <div style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)" }}>
+                          <div
+                            onClick={() => { setWeekSectionFilter("thisWeek"); setView("semana"); }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
+                          >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.addedThisWeekTotal}</div>
                             <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>colocados essa semana · {weekFiltered.addedThisWeek.length} restam</div>
                           </div>
@@ -8265,6 +8272,31 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               )}
 
+              {/* Filtro: sobrou de semana passada vs colocado essa semana - mesmo filtro que
+                  os quadradinhos da home abrem direto */}
+              {weekFiltered.leftover.length > 0 && (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                  <button
+                    onClick={() => setWeekSectionFilter("all")}
+                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "all" ? "#14141a" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: weekSectionFilter === "all" ? "#14141a" : "white", color: weekSectionFilter === "all" ? DARK.lime : "#64748b" }}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    onClick={() => setWeekSectionFilter("leftover")}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "leftover" ? "#d97706" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: weekSectionFilter === "leftover" ? "rgba(245,158,11,0.12)" : "white", color: weekSectionFilter === "leftover" ? "#d97706" : "#64748b" }}
+                  >
+                    <Clock size={12} /> Sobrou semana passada <span style={{ fontWeight: 800 }}>{weekFiltered.leftover.length}</span>
+                  </button>
+                  <button
+                    onClick={() => setWeekSectionFilter("thisWeek")}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "thisWeek" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: weekSectionFilter === "thisWeek" ? "rgba(109,94,248,0.1)" : "white", color: weekSectionFilter === "thisWeek" ? "#6d5ef8" : "#64748b" }}
+                  >
+                    <Target size={12} /> Esta semana <span style={{ fontWeight: 800 }}>{weekFiltered.addedThisWeekTotal}</span>
+                  </button>
+                </div>
+              )}
+
               {weekFiltered.list.length === 0 ? (
                 <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                   <CheckCircle2 size={32} style={{ color: "#34d399", marginBottom: 12 }} />
@@ -8274,7 +8306,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               ) : (
                 <>
                   {/* Sobrando de semana(s) anterior(es) - foi marcado antes da semana atual começar e ainda não foi resolvido */}
-                  {weekFiltered.leftover.length > 0 && (
+                  {weekSectionFilter !== "thisWeek" && weekFiltered.leftover.length > 0 && (
                     <div style={{ marginBottom: 22 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
                         <Clock size={15} color="#d97706" />
@@ -8287,23 +8319,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
                   )}
                   {/* Colocados nessa semana - a tag foi posta dentro da semana corrente */}
-                  <div>
-                    {weekFiltered.leftover.length > 0 && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-                        <Target size={15} color="#6d5ef8" />
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Colocados essa semana</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.addedThisWeek.length}</span>
+                  {weekSectionFilter !== "leftover" && (
+                    <div>
+                      {weekFiltered.leftover.length > 0 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+                          <Target size={15} color="#6d5ef8" />
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Colocados essa semana</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.addedThisWeek.length}</span>
+                        </div>
+                      )}
+                      <div className="leads-grid">
+                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
                       </div>
-                    )}
-                    <div className="leads-grid">
-                      {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
                     </div>
-                  </div>
+                  )}
                 </>
               )}
 
-              {/* Concluídos essa semana - agora mostra POR QUAL CANAL cada um foi resolvido */}
-              {weekFiltered.completed.length > 0 && (
+              {/* Concluídos essa semana - agora mostra POR QUAL CANAL cada um foi resolvido (some quando o filtro é "sobrou semana passada", já que concluído não é sobra) */}
+              {weekSectionFilter !== "leftover" && weekFiltered.completed.length > 0 && (
                 <div style={{ marginTop: 24 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
                     <CheckCircle2 size={15} color="#059669" />
