@@ -6435,6 +6435,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           }];
           setTimeout(() => { setTourStep(0); setTourActive(true); }, 700);
         }
+        // Auto-correção: leads que já estavam marcados pra semana ANTES de existir o controle
+        // de data (weekTaggedAt) ficam sem essa informação e acabam contados como "sobra" pra
+        // sempre. Na primeira carga do app, qualquer lead pendente sem essa data ganha a data
+        // de agora - assim ele entra em "colocado essa semana" e o problema não volta a cada
+        // salvamento de outra pessoa com dados desatualizados na tela.
+        leadsToUse = leadsToUse.map((l) => (l.weekTag && !l.weekDone && !l.weekTaggedAt ? { ...l, weekTaggedAt: new Date().toISOString() } : l));
         setLeads(leadsToUse); setMeetings(m); setSdrs(s && s.length ? s : seedSDRs);
         setWeeklyGoal(typeof g === "number" && g > 0 ? g : DEFAULT_WEEKLY_GOAL);
         setRevenueGoal(typeof rg === "number" && rg > 0 ? rg : DEFAULT_REVENUE_GOAL);
