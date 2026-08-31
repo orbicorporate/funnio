@@ -398,6 +398,7 @@ const seedLeads = RAW.map(([company, owner, stage, feedback, status], i) => ({
   nextAction: null,
   weekDone: false,
   weekTag: null, // null | "hoje" | "semana" - tag manual que monta a lista da semana
+  weekTaggedAt: null, // data ISO de quando a tag foi colocada - usada pra separar o que é "sobra" de semana anterior do que foi adicionado nessa semana
   weekDoneAt: null, // data ISO de quando foi marcado como feito - usada pra alertar sobre reabordagem em até 7 dias
   superAttention: false, // "Super lead" - lead grande, precisa de cuidado especial
   createdAt: null, // leads históricos (importados na criação do app) não contam pra meta de "leads adicionados no período"
@@ -6718,17 +6719,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const setWeekTag = (id, tag) => {
     const lead = leads.find((l) => l.id === id);
     if (tag && lead && !confirmIfRecentlyApproached(lead)) return;
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone, weekTaggedAt: tag ? new Date().toISOString() : null } : l)));
   };
   const toggleWeekFlag = (id) => {
     const lead = leads.find((l) => l.id === id);
     const turningOn = !(lead?.weekTag && !lead?.weekDone);
     if (turningOn && lead && !confirmIfRecentlyApproached(lead)) return;
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false, weekTaggedAt: l.weekTag && !l.weekDone ? null : new Date().toISOString() } : l)));
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
     // Só abre como rascunho - não entra na lista de leads (nem soma no "Total de leads")
     // até o SDR de fato salvar o cadastro. Ver updateLead, que faz o upsert no save.
     setSelected(newLead);
@@ -6742,7 +6743,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       id: "l_" + Date.now(), company: "Novo Cliente", owner: sdrs[0]?.name || "", stage: "Conquistado", feedback: "", status: "Atendido",
       contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "",
       hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "hot", temperature: "hot",
-      lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekDoneAt: null, superAttention: false,
+      lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false,
       wonDate: now, dealValue: null, dealType: "unico", contractPeriod: "mensal",
       workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [],
       origin: null, createdAt: now,
@@ -6787,6 +6788,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       nextAction: null,
       weekDone: false,
       weekTag: null,
+      weekTaggedAt: null,
       weekDoneAt: null,
       superAttention: false,
       wonDate: d.stage === "Conquistado" ? now : null,
@@ -7045,6 +7047,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const inCurrentWeek = (iso) => { if (!iso) return false; const d = new Date(iso); return d >= weekStart && d < weekEnd; };
     // Lista da semana agora é montada pela tag manual (weekTag), não mais pelo status
     const weekList = leads.filter((l) => l.weekTag && !l.weekDone);
+    // Separa quem ainda está pendente da lista mas foi marcado ANTES dessa semana (sobra de
+    // semana passada que nunca foi resolvida) de quem foi adicionado de fato nessa semana -
+    // assim dá pra ver os dois números separados em vez de uma lista só misturada.
+    const weekListLeftover = weekList.filter((l) => !inCurrentWeek(l.weekTaggedAt));
+    const weekListAddedThisWeek = weekList.filter((l) => inCurrentWeek(l.weekTaggedAt));
     // "Concluído" só conta pra semana atual se a marcação (weekDoneAt) aconteceu dentro da
     // semana corrente - senão um lead finalizado semana passada e nunca destagueado ficava
     // inflando o progresso da semana atual pra sempre.
@@ -7052,6 +7059,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const weekCompleted = weekCompletedAll.filter((l) => inCurrentWeek(l.weekDoneAt));
     const weekCompletedStale = weekCompletedAll.filter((l) => !inCurrentWeek(l.weekDoneAt));
     const weekDoneCount = weekCompleted.length;
+    // Total colocado nessa semana (pendente + já concluído, desde que a tag tenha sido posta
+    // dentro da semana corrente) - é o "colocados tantos" que aparece no resumo.
+    const weekAddedThisWeekTotal = leads.filter((l) => l.weekTag && inCurrentWeek(l.weekTaggedAt)).length;
     const weekTotalTagged = leads.filter((l) => l.weekTag).length;
     const superLeads = leads.filter((l) => l.superAttention);
     const upcomingMeetings = meetings.filter((m) => new Date(m.date) >= new Date(new Date().setHours(0, 0, 0, 0)));
@@ -7063,7 +7073,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const noNextAction = leads.filter((l) => l.stage !== "Conquistado" && l.stage !== "Perdida" && !l.nextAction);
     // Super leads (marcados como grandes/prioritários) sem contato recente
     const superNoContact = leads.filter((l) => l.superAttention && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) === null || daysSince(l.lastContact) > 3));
-    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekCompletedStale, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact, weekStart, weekEnd };
+    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekListLeftover, weekListAddedThisWeek, weekCompleted, weekCompletedStale, weekDoneCount, weekAddedThisWeekTotal, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact, weekStart, weekEnd };
   }, [leads, meetings]);
 
   // Lista da semana filtrada por SDR - quando um SDR é selecionado nos chips do hero
@@ -7071,8 +7081,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const weekFiltered = useMemo(() => {
     const byOwner = (l) => weekSdrFilter === "all" || (l.owner || "") === weekSdrFilter;
     const list = stats.weekList.filter(byOwner);
+    const leftover = stats.weekListLeftover.filter(byOwner);
+    const addedThisWeek = stats.weekListAddedThisWeek.filter(byOwner);
     const completed = stats.weekCompleted.filter(byOwner);
-    return { list, completed, done: completed.length, total: list.length + completed.length };
+    const addedThisWeekTotal = addedThisWeek.length + completed.length;
+    return { list, leftover, addedThisWeek, addedThisWeekTotal, completed, done: completed.length, total: list.length + completed.length };
   }, [stats, weekSdrFilter]);
 
   // Receita do mês e do ano - o mês soma o MRR ativo (fees mensais em andamento) mais os
@@ -7828,6 +7841,22 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           ))}
                         </div>
                       )}
+                      {/* Quadradinhos separando o que sobrou de semana passada do que foi
+                          colocado nessa semana - pra nunca ficar em dúvida de qual é qual. */}
+                      {weekFiltered.total > 0 && (
+                        <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
+                          {weekFiltered.leftover.length > 0 && (
+                            <div style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)" }}>
+                              <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
+                              <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>sobrando da semana passada</div>
+                            </div>
+                          )}
+                          <div style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)" }}>
+                            <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.addedThisWeekTotal}</div>
+                            <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>colocados essa semana · {weekFiltered.addedThisWeek.length} restam</div>
+                          </div>
+                        </div>
+                      )}
                       {stats.weekTotalTagged === 0 && <div style={{ fontSize: 12, fontWeight: 600, marginTop: 10 }}>Nenhum lead marcado ainda - abra um lead e adicione a tag "Hoje" ou "Esta semana".</div>}
                     </div>
 
@@ -8243,9 +8272,34 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 13, color: "#94a3b8" }}>{weekSdrFilter === "all" ? 'Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"' : "Troque o filtro acima pra ver a lista de outro SDR ou de todos"}</div>
                 </Glass>
               ) : (
-                <div className="leads-grid">
-                  {weekFiltered.list.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
-                </div>
+                <>
+                  {/* Sobrando de semana(s) anterior(es) - foi marcado antes da semana atual começar e ainda não foi resolvido */}
+                  {weekFiltered.leftover.length > 0 && (
+                    <div style={{ marginBottom: 22 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+                        <Clock size={15} color="#d97706" />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Sobrando de semana(s) anterior(es)</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#d97706", background: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.leftover.length}</span>
+                      </div>
+                      <div className="leads-grid">
+                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
+                      </div>
+                    </div>
+                  )}
+                  {/* Colocados nessa semana - a tag foi posta dentro da semana corrente */}
+                  <div>
+                    {weekFiltered.leftover.length > 0 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+                        <Target size={15} color="#6d5ef8" />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Colocados essa semana</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.addedThisWeek.length}</span>
+                      </div>
+                    )}
+                    <div className="leads-grid">
+                      {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
+                    </div>
+                  </div>
+                </>
               )}
 
               {/* Concluídos essa semana - agora mostra POR QUAL CANAL cada um foi resolvido */}
