@@ -9,7 +9,7 @@ import {
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
   Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
-  Repeat, Lock, DollarSign,
+  Repeat, Lock, DollarSign, Info,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -7036,18 +7036,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const ativos = leads.filter((l) => l.stage !== "Conquistado" && l.stage !== "Perdida").length;
     const withWhatsapp = leads.filter((l) => l.whatsapp || l.hasWhatsapp).length;
     const receita = leads.filter((l) => l.stage === "Conquistado").reduce((s, l) => s + getDealValue(l), 0);
-    // Lista da semana agora é montada pela tag manual (weekTag), não mais pelo status
-    const weekList = leads.filter((l) => l.weekTag && !l.weekDone);
-    const weekCompleted = leads.filter((l) => l.weekTag && l.weekDone);
-    const weekDoneCount = leads.filter((l) => l.weekTag && l.weekDone).length;
-    const weekTotalTagged = leads.filter((l) => l.weekTag).length;
-    const superLeads = leads.filter((l) => l.superAttention);
-    const upcomingMeetings = meetings.filter((m) => new Date(m.date) >= new Date(new Date().setHours(0, 0, 0, 0)));
-    // Cálculo automático da semana corrente (segunda a domingo) para o box "Ações desta semana"
+    // Cálculo da semana corrente (segunda a domingo) - usado tanto pra "Ações desta semana"
+    // quanto pra separar o que foi concluído NESSA semana do que ficou de semanas passadas.
     const now = new Date();
     const dayIdx = (now.getDay() + 6) % 7; // 0 = segunda
     const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(now.getDate() - dayIdx);
     const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
+    const inCurrentWeek = (iso) => { if (!iso) return false; const d = new Date(iso); return d >= weekStart && d < weekEnd; };
+    // Lista da semana agora é montada pela tag manual (weekTag), não mais pelo status
+    const weekList = leads.filter((l) => l.weekTag && !l.weekDone);
+    // "Concluído" só conta pra semana atual se a marcação (weekDoneAt) aconteceu dentro da
+    // semana corrente - senão um lead finalizado semana passada e nunca destagueado ficava
+    // inflando o progresso da semana atual pra sempre.
+    const weekCompletedAll = leads.filter((l) => l.weekTag && l.weekDone);
+    const weekCompleted = weekCompletedAll.filter((l) => inCurrentWeek(l.weekDoneAt));
+    const weekCompletedStale = weekCompletedAll.filter((l) => !inCurrentWeek(l.weekDoneAt));
+    const weekDoneCount = weekCompleted.length;
+    const weekTotalTagged = leads.filter((l) => l.weekTag).length;
+    const superLeads = leads.filter((l) => l.superAttention);
+    const upcomingMeetings = meetings.filter((m) => new Date(m.date) >= new Date(new Date().setHours(0, 0, 0, 0)));
     const meetingsThisWeek = meetings.filter((m) => { const d = new Date(m.date); return d >= weekStart && d < weekEnd; }).length;
     const contactedThisWeek = leads.filter((l) => l.lastContact && new Date(l.lastContact) >= weekStart && new Date(l.lastContact) < weekEnd).length;
     // Leads quentes sem contato recente - usado pra puxar atenção pro assistente de IA no dashboard
@@ -7056,7 +7063,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const noNextAction = leads.filter((l) => l.stage !== "Conquistado" && l.stage !== "Perdida" && !l.nextAction);
     // Super leads (marcados como grandes/prioritários) sem contato recente
     const superNoContact = leads.filter((l) => l.superAttention && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) === null || daysSince(l.lastContact) > 3));
-    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact };
+    return { total, desatendidos, vendidas, ativos, withWhatsapp, receita, weekList, weekCompleted, weekCompletedStale, weekDoneCount, weekTotalTagged, superLeads, upcomingMeetings, meetingsThisWeek, contactedThisWeek, hotNoContact, noNextAction, superNoContact, weekStart, weekEnd };
   }, [leads, meetings]);
 
   // Lista da semana filtrada por SDR - quando um SDR é selecionado nos chips do hero
@@ -7826,7 +7833,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
                     {/* Baixo: progresso + estatísticas + alerta, fundo branco */}
                     <div style={{ background: "white", padding: "22px 24px" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
                         <span style={{ fontSize: 15, fontWeight: 800, color: "#14141a" }}>Seu progresso semanal</span>
                         <button
                           onClick={() => { if (isOwner) setEditingGoal(true); }}
@@ -7847,6 +7854,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </span>
                           )}
                         </button>
+                      </div>
+                      {/* Deixa explícito qual semana esses números representam - evita dúvida se o
+                          progresso mostrado é da semana atual ou ficou "grudado" de uma semana anterior. */}
+                      <div style={{ fontSize: 11.5, color: "#9a9aa3", fontWeight: 600, marginBottom: 14 }}>
+                        Semana de {stats.weekStart.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a {new Date(stats.weekEnd.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} - só conta o que foi concluído nesse período
                       </div>
 
                       {/* Linha do tempo Seg-Sex da semana atual, com o dia de hoje aceso -
@@ -7933,6 +7945,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           ))}
                         </div>
                       </div>
+
+                      {stats.weekCompletedStale.length > 0 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(148,163,184,0.1)", marginBottom: 18 }}>
+                          <Info size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
+                          <span style={{ fontSize: 11.5, color: "#6b6b75", fontWeight: 600 }}>
+                            {stats.weekCompletedStale.length} lead{stats.weekCompletedStale.length === 1 ? "" : "s"} concluído{stats.weekCompletedStale.length === 1 ? "" : "s"} em semana{stats.weekCompletedStale.length === 1 ? "" : "s"} anterior{stats.weekCompletedStale.length === 1 ? "" : "es"} - não conta mais nesse progresso
+                          </span>
+                        </div>
+                      )}
 
                       {!goalMet ? (
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 16, background: "rgba(226,72,63,0.07)", flexWrap: "wrap" }}>
