@@ -6416,6 +6416,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const [agendaDate, setAgendaDate] = useState(new Date());
   const [monthExpanded, setMonthExpanded] = useState(false);
+  const [agendaTypeFilter, setAgendaTypeFilter] = useState(null); // null = todos | "reuniao" | "followup" | "proposta" | "apresentacao" - filtro ao clicar nos quadradinhos de contagem
 
   // Sincroniza as cores dos SDRs (usadas por OwnerAvatar/cards) com a lista editável
   RESPONSIBLE_COLORS = Object.fromEntries(sdrs.map((s) => [s.name, s.color]));
@@ -8440,32 +8441,48 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, marginBottom: 20 }}>
                 {[
-                  { label: "Reuniões", count: meetingCounts.reuniao, color: "#6366f1", icon: Users2 },
-                  { label: "Follow-ups", count: meetingCounts.followup, color: "#10b981", icon: Phone },
-                  { label: "Propostas", count: meetingCounts.proposta, color: "#f59e0b", icon: FileText },
-                  { label: "Apresentações", count: meetingCounts.apresentacao, color: "#8b5cf6", icon: Video },
-                  { label: "Total hoje", count: dayMeetings.length, color: "#0f172a", icon: ClipboardList },
-                ].map((s) => (
-                  <Glass key={s.label} style={{ borderRadius: 14, padding: "12px 14px", textAlign: "center" }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 9, background: s.color + "15", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}><s.icon size={14} /></div>
-                    <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 20, fontWeight: 500, color: "#0f172a" }}>{s.count}</div>
-                    <div style={{ fontSize: 10.5, color: "#94a3b8", fontWeight: 600 }}>{s.label}</div>
-                  </Glass>
-                ))}
+                  { key: "reuniao", label: "Reuniões", count: meetingCounts.reuniao, color: "#6366f1", icon: Users2 },
+                  { key: "followup", label: "Follow-ups", count: meetingCounts.followup, color: "#10b981", icon: Phone },
+                  { key: "proposta", label: "Propostas", count: meetingCounts.proposta, color: "#f59e0b", icon: FileText },
+                  { key: "apresentacao", label: "Apresentações", count: meetingCounts.apresentacao, color: "#8b5cf6", icon: Video },
+                  { key: null, label: "Total hoje", count: dayMeetings.length, color: "#0f172a", icon: ClipboardList },
+                ].map((s) => {
+                  const active = agendaTypeFilter === s.key;
+                  return (
+                    <Glass
+                      key={s.label}
+                      onClick={() => setAgendaTypeFilter((prev) => (prev === s.key ? null : s.key))}
+                      style={{ borderRadius: 14, padding: "12px 14px", textAlign: "center", cursor: "pointer", border: active ? `1.5px solid ${s.color}` : "1.5px solid transparent", background: active ? s.color + "0f" : undefined }}
+                    >
+                      <div style={{ width: 30, height: 30, borderRadius: 9, background: s.color + "15", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}><s.icon size={14} /></div>
+                      <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 20, fontWeight: 500, color: "#0f172a" }}>{s.count}</div>
+                      <div style={{ fontSize: 10.5, color: "#94a3b8", fontWeight: 600 }}>{s.label}</div>
+                    </Glass>
+                  );
+                })}
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                 <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textTransform: "capitalize" }}>{isSameDay(agendaDate, today) ? "Hoje" : agendaDate.toLocaleDateString("pt-BR", { weekday: "long" })} • {agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</span>
+                {agendaTypeFilter && (
+                  <button onClick={() => setAgendaTypeFilter(null)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+                    <X size={11} /> {MEETING_TYPES[agendaTypeFilter]?.label || agendaTypeFilter}
+                  </button>
+                )}
               </div>
 
-              {dayMeetings.length === 0 ? (
-                <Glass style={{ borderRadius: 18, padding: "40px 20px", textAlign: "center" }}>
-                  <CalendarIcon size={28} style={{ color: "#c4b5fd", marginBottom: 10 }} />
-                  <div style={{ fontSize: 14, color: "#94a3b8" }}>Nenhuma reunião marcada para este dia</div>
-                </Glass>
-              ) : (
-                dayMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)
-              )}
+              {(() => {
+                const visibleMeetings = agendaTypeFilter ? dayMeetings.filter((m) => m.type === agendaTypeFilter) : dayMeetings;
+                if (visibleMeetings.length === 0) {
+                  return (
+                    <Glass style={{ borderRadius: 18, padding: "40px 20px", textAlign: "center" }}>
+                      <CalendarIcon size={28} style={{ color: "#c4b5fd", marginBottom: 10 }} />
+                      <div style={{ fontSize: 14, color: "#94a3b8" }}>{agendaTypeFilter ? "Nenhuma reunião desse tipo para este dia" : "Nenhuma reunião marcada para este dia"}</div>
+                    </Glass>
+                  );
+                }
+                return visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />);
+              })()}
             </>
           )}
 
