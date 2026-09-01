@@ -193,6 +193,19 @@ export default function Root() {
     await loadMembers();
   };
 
+  // Promove um membro a gestor (ou rebaixa um gestor a membro comum) - só quem já é
+  // gestor pode fazer isso. Depois de mudar, recarrega a lista de workspaces também,
+  // pra que se a pessoa promovida for a própria sessão atual, o isOwner já reflita.
+  const handleSetMemberRole = async (targetUserId, newRole) => {
+    setMembersError("");
+    const { error } = await supabase.rpc("crm_set_member_role", { ws_id: activeWorkspace.id, target_user_id: targetUserId, new_role: newRole });
+    if (error) { setMembersError(error.message); return; }
+    await loadMembers();
+    const list = await loadWorkspaces();
+    const found = list.find((w) => w.id === activeWorkspace.id);
+    if (found) setActiveWorkspace(found);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("funnio_active_ws");
@@ -268,6 +281,7 @@ export default function Root() {
           myUserId={session.user.id}
           error={membersError}
           onRemove={handleRemoveMember}
+          onSetRole={handleSetMemberRole}
           onClose={() => setShowMembers(false)}
           onInvite={handleCreateInvite}
           inviteCode={inviteCode}
@@ -432,7 +446,7 @@ function WorkspaceMenu({ workspaceName, show, setShow, onSwitch, onLogout, onMem
 
 // Painel único de gerenciamento: convidar (código + link + WhatsApp), ver todo mundo
 // que já está no funil, e remover alguém (só o dono vê o botão de remover).
-function MembersPanel({ members, isOwner, myUserId, error, onRemove, onClose, onInvite, inviteCode, clearInvite, copied, setCopied }) {
+function MembersPanel({ members, isOwner, myUserId, error, onRemove, onSetRole, onClose, onInvite, inviteCode, clearInvite, copied, setCopied }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const inviteLink = inviteCode ? `${window.location.origin}/?convite=${inviteCode}` : "";
   const whatsappText = inviteCode
@@ -495,11 +509,22 @@ function MembersPanel({ members, isOwner, myUserId, error, onRemove, onClose, on
                   <div style={{ color: "#767670", fontSize: 11 }}>{m.role === "owner" ? "Dono do funil" : "Membro"}</div>
                 </div>
               </div>
-              {isOwner && m.user_id !== myUserId && (
-                <button onClick={() => onRemove(m.user_id)} style={{ border: "none", background: "rgba(239,68,68,0.12)", color: "#f87171", fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}>
-                  Remover
-                </button>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {isOwner && (
+                  <button
+                    onClick={() => onSetRole(m.user_id, m.role === "owner" ? "member" : "owner")}
+                    title={m.role === "owner" ? "Tirar cargo de gestor" : "Tornar gestor do funil"}
+                    style={{ border: "none", background: m.role === "owner" ? "rgba(148,163,184,0.15)" : "rgba(163,230,53,0.15)", color: m.role === "owner" ? "#9a9aa3" : "#a3e635", fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}
+                  >
+                    {m.role === "owner" ? "Tirar gestor" : "Tornar gestor"}
+                  </button>
+                )}
+                {isOwner && m.user_id !== myUserId && (
+                  <button onClick={() => onRemove(m.user_id)} style={{ border: "none", background: "rgba(239,68,68,0.12)", color: "#f87171", fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 8, cursor: "pointer" }}>
+                    Remover
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}
