@@ -8462,26 +8462,28 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 })}
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textTransform: "capitalize" }}>{isSameDay(agendaDate, today) ? "Hoje" : agendaDate.toLocaleDateString("pt-BR", { weekday: "long" })} • {agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</span>
-                {agendaTypeFilter && (
-                  <button onClick={() => setAgendaTypeFilter(null)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
-                    <X size={11} /> {MEETING_TYPES[agendaTypeFilter]?.label || agendaTypeFilter}
-                  </button>
-                )}
-              </div>
-
               {(() => {
                 const visibleMeetings = agendaTypeFilter ? dayMeetings.filter((m) => m.type === agendaTypeFilter) : dayMeetings;
-                if (visibleMeetings.length === 0) {
-                  return (
-                    <Glass style={{ borderRadius: 18, padding: "40px 20px", textAlign: "center" }}>
-                      <CalendarIcon size={28} style={{ color: "#c4b5fd", marginBottom: 10 }} />
-                      <div style={{ fontSize: 14, color: "#94a3b8" }}>{agendaTypeFilter ? "Nenhuma reunião desse tipo para este dia" : "Nenhuma reunião marcada para este dia"}</div>
-                    </Glass>
-                  );
-                }
-                return visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />);
+                if (visibleMeetings.length === 0) return null; // sem reunião nesse dia - não ocupa espaço com caixa vazia, já tem "Próximas reuniões" logo abaixo
+                const isToday = isSameDay(agendaDate, today);
+                return (
+                  <div style={{ marginBottom: 8, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(99,102,241,0.25)" : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {isToday && (
+                          <span style={{ fontSize: 10, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(99,102,241,0.6)" }}>★ HOJE</span>
+                        )}
+                        <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textTransform: "capitalize" }}>{isToday ? agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : `${agendaDate.toLocaleDateString("pt-BR", { weekday: "long" })} • ${agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}`}</span>
+                      </div>
+                      {agendaTypeFilter && (
+                        <button onClick={() => setAgendaTypeFilter(null)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+                          <X size={11} /> {MEETING_TYPES[agendaTypeFilter]?.label || agendaTypeFilter}
+                        </button>
+                      )}
+                    </div>
+                    {visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
+                  </div>
+                );
               })()}
 
               {/* Próximas reuniões - lista tudo que vem pela frente, além do dia selecionado
@@ -8502,14 +8504,22 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 return (
                   <div style={{ marginTop: 28 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>Próximas reuniões</div>
-                    {groups.map((g) => (
-                      <div key={g.key} style={{ marginBottom: 18 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#8b5cf6", marginBottom: 8, textTransform: "capitalize" }}>
-                          {isSameDay(g.date, today) ? "Hoje" : g.date.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+                    {groups.map((g) => {
+                      const isToday = isSameDay(g.date, today);
+                      return (
+                        <div key={g.key} style={{ marginBottom: 18, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(99,102,241,0.25)" : "none" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                            {isToday && (
+                              <span style={{ fontSize: 10, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(99,102,241,0.6)" }}>★ HOJE</span>
+                            )}
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#8b5cf6", textTransform: "capitalize" }}>
+                              {isToday ? g.date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : g.date.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+                            </span>
+                          </div>
+                          {g.items.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
                         </div>
-                        {g.items.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })()}
