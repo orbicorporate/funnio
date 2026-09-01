@@ -7852,15 +7852,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           colocado nessa semana - pra nunca ficar em dúvida de qual é qual. */}
                       {weekFiltered.total > 0 && (
                         <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
-                          {weekFiltered.leftover.length > 0 && (
-                            <div
-                              onClick={() => { setWeekSectionFilter("leftover"); setView("semana"); }}
-                              style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
-                            >
-                              <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
-                              <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>sobrando da semana passada</div>
-                            </div>
-                          )}
+                          <div
+                            onClick={() => { setWeekSectionFilter("leftover"); setView("semana"); }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
+                          >
+                            <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
+                            <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>sobrando da semana passada</div>
+                          </div>
                           <div
                             onClick={() => { setWeekSectionFilter("thisWeek"); setView("semana"); }}
                             style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
@@ -8280,7 +8278,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               {/* Filtro: sobrou de semana passada vs colocado essa semana - mesmo filtro que
                   os quadradinhos da home abrem direto */}
-              {weekFiltered.leftover.length > 0 && (
+              {weekFiltered.total > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
                   <button
                     onClick={() => setWeekSectionFilter("all")}
