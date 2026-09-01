@@ -8483,6 +8483,36 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 }
                 return visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />);
               })()}
+
+              {/* Próximas reuniões - lista tudo que vem pela frente, além do dia selecionado
+                  acima, pra não precisar ficar navegando dia a dia pra ver o que tá marcado. */}
+              {(() => {
+                const startOfToday = new Date(today); startOfToday.setHours(0, 0, 0, 0);
+                let upcoming = meetings.filter((m) => new Date(m.date) >= startOfToday && !isSameDay(m.date, agendaDate));
+                if (agendaTypeFilter) upcoming = upcoming.filter((m) => m.type === agendaTypeFilter);
+                upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+                if (upcoming.length === 0) return null;
+                const groups = [];
+                upcoming.forEach((m) => {
+                  const key = new Date(m.date).toDateString();
+                  let g = groups.find((g) => g.key === key);
+                  if (!g) { g = { key, date: new Date(m.date), items: [] }; groups.push(g); }
+                  g.items.push(m);
+                });
+                return (
+                  <div style={{ marginTop: 28 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>Próximas reuniões</div>
+                    {groups.map((g) => (
+                      <div key={g.key} style={{ marginBottom: 18 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#8b5cf6", marginBottom: 8, textTransform: "capitalize" }}>
+                          {isSameDay(g.date, today) ? "Hoje" : g.date.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+                        </div>
+                        {g.items.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </>
           )}
 
