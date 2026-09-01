@@ -7864,7 +7864,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer" }}
                           >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.addedThisWeekTotal}</div>
-                            <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>colocados essa semana · {weekFiltered.addedThisWeek.length} restam</div>
+                            <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.75, marginTop: 3 }}>colocados essa semana</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.6, marginTop: 1 }}>{weekFiltered.completed.length} feito{weekFiltered.completed.length === 1 ? "" : "s"} · {weekFiltered.addedThisWeek.length} pendente{weekFiltered.addedThisWeek.length === 1 ? "" : "s"}</div>
                           </div>
                         </div>
                       )}
