@@ -4834,7 +4834,7 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
   </div>
 );
 
-const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose, authMembers = [], onSync }) => {
+const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose, authMembers = [], onSync, isOwner = true, currentUserName = null }) => {
   const [name, setName] = useState("");
   // SDR que o usuário pediu pra remover e que tem leads/reuniões, aguardando escolha de pra quem reatribuir
   const [pendingRemoval, setPendingRemoval] = useState(null);
@@ -4876,11 +4876,11 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
           </div>
           <div style={{ fontSize: 11.5, color: "#9a9aa3", marginTop: 4 }}>
-            Nomes usados pra atribuir leads. O selo verde mostra quem também tem login de verdade no funil.
+            {isOwner ? "Nomes usados pra atribuir leads. O selo verde mostra quem também tem login de verdade no funil." : "Sua foto de perfil no funil."}
           </div>
         </div>
         <div style={{ padding: "18px 22px" }}>
-          {authMembers.length > 0 && (
+          {isOwner && authMembers.length > 0 && (
             <button
               onClick={onSync}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "8px 12px", borderRadius: 10, border: "1px dashed rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.06)", color: "#6366f1", fontSize: 12, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}
@@ -4889,7 +4889,7 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
             </button>
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-            {sdrs.map((s) => {
+            {(isOwner ? sdrs : sdrs.filter((s) => s.name === currentUserName)).map((s) => {
               const hasLogin = authMembers.some((m) => m.display_name.toLowerCase() === s.name.toLowerCase());
               return (
               <div key={s.name}>
@@ -4915,16 +4915,18 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                     </div>
                     {!hasLogin && <div style={{ fontSize: 10.5, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
                   </div>
-                  <button
-                    onClick={() => handleRemoveClick(s.name)}
-                    disabled={sdrs.length <= 1}
-                    title={sdrs.length <= 1 ? "Precisa ter ao menos 1 SDR" : "Remover"}
-                    style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: sdrs.length <= 1 ? "transparent" : "rgba(239,68,68,0.1)", color: sdrs.length <= 1 ? "#cbd5e1" : "#dc2626", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={() => handleRemoveClick(s.name)}
+                      disabled={sdrs.length <= 1}
+                      title={sdrs.length <= 1 ? "Precisa ter ao menos 1 SDR" : "Remover"}
+                      style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: sdrs.length <= 1 ? "transparent" : "rgba(239,68,68,0.1)", color: sdrs.length <= 1 ? "#cbd5e1" : "#dc2626", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </div>
-                {pendingRemoval === s.name && (
+                {isOwner && pendingRemoval === s.name && (
                   <div style={{ marginTop: 6, padding: "10px 12px", borderRadius: 10, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
                     <div style={{ fontSize: 12, color: "#7f1d1d", marginBottom: 8 }}>
                       {s.name} tem {countFor(s.name)} lead(s)/reunião(ões). Reatribuir para:
@@ -4942,22 +4944,24 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
               );
             })}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && name.trim()) { onAdd(name); setName(""); } }}
-              placeholder="Nome do novo SDR"
-              style={{ flex: 1, padding: "9px 12px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", fontSize: 13, color: "#0f172a", outline: "none" }}
-            />
-            <button
-              onClick={() => { if (name.trim()) { onAdd(name); setName(""); } }}
-              disabled={!name.trim()}
-              style={{ padding: "0 16px", borderRadius: 10, border: "none", background: name.trim() ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: name.trim() ? "pointer" : "not-allowed" }}
-            >
-              <Plus size={15} />
-            </button>
-          </div>
+          {isOwner && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && name.trim()) { onAdd(name); setName(""); } }}
+                placeholder="Nome do novo SDR"
+                style={{ flex: 1, padding: "9px 12px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", fontSize: 13, color: "#0f172a", outline: "none" }}
+              />
+              <button
+                onClick={() => { if (name.trim()) { onAdd(name); setName(""); } }}
+                disabled={!name.trim()}
+                style={{ padding: "0 16px", borderRadius: 10, border: "none", background: name.trim() ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: name.trim() ? "pointer" : "not-allowed" }}
+              >
+                <Plus size={15} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -6327,8 +6331,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // (e mostrar o convite pra compartilhar com o gestor só pra quem realmente bateu a meta).
   const currentUserName = authMembers.find((m) => m.user_id === currentUserId)?.display_name || null;
   const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
-  const [leads, setLeads] = useState([]);
-  const [meetings, setMeetings] = useState([]);
+  const [allLeads, setLeads] = useState([]);
+  const [allMeetings, setMeetings] = useState([]);
+  // Hierarquia: gestor do funil (isOwner) vê tudo; cada SDR só vê os próprios leads e
+  // reuniões. Isso alimenta TODA a tela (dashboard, lista, semana, agenda, relatórios,
+  // receita, comissão) porque tudo abaixo lê a partir de "leads"/"meetings" - só as
+  // funções de mutação (setLeads/setMeetings) seguem operando sobre a lista completa.
+  const leads = useMemo(() => (isOwner ? allLeads : allLeads.filter((l) => (l.owner || "") === currentUserName)), [allLeads, isOwner, currentUserName]);
+  const meetings = useMemo(() => (isOwner ? allMeetings : allMeetings.filter((m) => (m.ourAttendee || "") === currentUserName)), [allMeetings, isOwner, currentUserName]);
   const [sdrs, setSdrs] = useState(seedSDRs);
   const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   const [editingGoal, setEditingGoal] = useState(false);
@@ -6338,7 +6348,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [reportPeriod, setReportPeriod] = useState("all"); // all | 7 | 30 | 90
   const [wonPeriod, setWonPeriod] = useState("all"); // all | 30 | 90 | 365
   const [goalsConfig, setGoalsConfig] = useState(DEFAULT_GOALS_CONFIG);
-  const [earnedBadges, setEarnedBadges] = useState([]); // [{id, sdrName, metric, tier, periodKey, earnedAt}]
+  const [allEarnedBadges, setEarnedBadges] = useState([]); // [{id, sdrName, metric, tier, periodKey, earnedAt}]
+  // Hierarquia: gestor vê as conquistas de todo mundo, cada SDR só vê as próprias.
+  const earnedBadges = useMemo(() => (isOwner ? allEarnedBadges : allEarnedBadges.filter((b) => b.sdrName === currentUserName)), [allEarnedBadges, isOwner, currentUserName]);
   const [badgeQueue, setBadgeQueue] = useState([]); // fila de pop-ups de badge pra mostrar um de cada vez
   const [weekApproachBadgeEnabled, setWeekApproachBadgeEnabled] = useState(false); // meta simples/única - liga/desliga
   const [weekApproachBadges, setWeekApproachBadges] = useState([]); // [{id, periodKey, earnedAt, count, target}]
@@ -6398,17 +6410,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
   const [scriptPickerLead, setScriptPickerLead] = useState(null);
   const [scriptPickerMode, setScriptPickerMode] = useState("list"); // "list" = adiciona à fila de envio | "dispatch" = abre direto (contato rápido)
-  const [waSendHistory, setWaSendHistory] = useState([]);
+  const [allWaSendHistory, setWaSendHistory] = useState([]);
+  const waSendHistory = useMemo(() => (isOwner ? allWaSendHistory : allWaSendHistory.filter((h) => h.by === currentUserId)), [allWaSendHistory, isOwner, currentUserId]);
   const [emailSendList, setEmailSendList] = useState([]); // { leadId, subject, body }[]
   const [emailScriptPickerLead, setEmailScriptPickerLead] = useState(null);
-  const [emailSendHistory, setEmailSendHistory] = useState([]);
+  const [allEmailSendHistory, setEmailSendHistory] = useState([]);
+  const emailSendHistory = useMemo(() => (isOwner ? allEmailSendHistory : allEmailSendHistory.filter((h) => h.by === currentUserId)), [allEmailSendHistory, isOwner, currentUserId]);
   const [showEmailSendScreen, setShowEmailSendScreen] = useState(false);
   const [callSendList, setCallSendList] = useState([]); // leadId[] - fila simples, sem script
-  const [callSendHistory, setCallSendHistory] = useState([]);
+  const [allCallSendHistory, setCallSendHistory] = useState([]);
+  const callSendHistory = useMemo(() => (isOwner ? allCallSendHistory : allCallSendHistory.filter((h) => h.by === currentUserId)), [allCallSendHistory, isOwner, currentUserId]);
   const [showCallSendScreen, setShowCallSendScreen] = useState(false);
   const [channelPickerLead, setChannelPickerLead] = useState(null);
   const [showListsPicker, setShowListsPicker] = useState(false);
-  const [weekHistory, setWeekHistory] = useState([]);
+  const [allWeekHistory, setWeekHistory] = useState([]);
+  const weekHistory = useMemo(() => (isOwner ? allWeekHistory : allWeekHistory.filter((h) => h.owner === currentUserName)), [allWeekHistory, isOwner, currentUserName]);
   const [showWeekHistory, setShowWeekHistory] = useState(false);
   const [showWaSendScreen, setShowWaSendScreen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -6501,14 +6517,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     });
     return () => { mounted = false; };
   }, []);
-  useEffect(() => { if (loaded) saveData(LEADS_KEY, leads); }, [leads, loaded]);
-  useEffect(() => { if (loaded) saveData(MEETINGS_KEY, meetings); }, [meetings, loaded]);
+  useEffect(() => { if (loaded) saveData(LEADS_KEY, allLeads); }, [allLeads, loaded]);
+  useEffect(() => { if (loaded) saveData(MEETINGS_KEY, allMeetings); }, [allMeetings, loaded]);
   useEffect(() => { if (loaded) saveData(SDRS_KEY, sdrs); }, [sdrs, loaded]);
   useEffect(() => { if (loaded) saveData(WEEKLY_GOAL_KEY, weeklyGoal); }, [weeklyGoal, loaded]);
   useEffect(() => { if (loaded) saveData(REVENUE_GOAL_KEY, revenueGoal); }, [revenueGoal, loaded]);
   useEffect(() => { if (loaded) saveData(REVENUE_GOAL_ENABLED_KEY, revenueGoalEnabled); }, [revenueGoalEnabled, loaded]);
   useEffect(() => { if (loaded) saveData(GOALS_CONFIG_KEY, goalsConfig); }, [goalsConfig, loaded]);
-  useEffect(() => { if (loaded) saveData(BADGES_KEY, earnedBadges); }, [earnedBadges, loaded]);
+  useEffect(() => { if (loaded) saveData(BADGES_KEY, allEarnedBadges); }, [allEarnedBadges, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGE_ENABLED_KEY, weekApproachBadgeEnabled); }, [weekApproachBadgeEnabled, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_BADGES_KEY, weekApproachBadges); }, [weekApproachBadges, loaded]);
   useEffect(() => { if (loaded) saveData(WEEK_APPROACH_REWARD_KEY, weekApproachReward); }, [weekApproachReward, loaded]);
@@ -6533,10 +6549,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const saveUserCallScript = (id, data) => setUserCallScripts((prev) => id ? prev.map((s) => (s.id === id ? { ...s, ...data } : s)) : [...prev, { id: "ucs_" + Date.now(), ...data }]);
   const deleteUserCallScript = (id) => setUserCallScripts((prev) => prev.filter((s) => s.id !== id));
   useEffect(() => { if (loaded) saveData(chatHistoryKey, chatMessages); }, [chatMessages, loaded]);
-  useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, waSendHistory); }, [waSendHistory, loaded]);
-  useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, emailSendHistory); }, [emailSendHistory, loaded]);
-  useEffect(() => { if (loaded) saveData(CALL_SEND_HISTORY_KEY, callSendHistory); }, [callSendHistory, loaded]);
-  useEffect(() => { if (loaded) saveData(WEEK_HISTORY_KEY, weekHistory); }, [weekHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(WA_SEND_HISTORY_KEY, allWaSendHistory); }, [allWaSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(EMAIL_SEND_HISTORY_KEY, allEmailSendHistory); }, [allEmailSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(CALL_SEND_HISTORY_KEY, allCallSendHistory); }, [allCallSendHistory, loaded]);
+  useEffect(() => { if (loaded) saveData(WEEK_HISTORY_KEY, allWeekHistory); }, [allWeekHistory, loaded]);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(""), 2400); return () => clearTimeout(t); } }, [toast]);
 
   // Registra no histórico persistente (dura semanas/meses, não só a semana atual)
@@ -6762,7 +6778,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: currentUserName || sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
     // Só abre como rascunho - não entra na lista de leads (nem soma no "Total de leads")
     // até o SDR de fato salvar o cadastro. Ver updateLead, que faz o upsert no save.
     setSelected(newLead);
@@ -6773,7 +6789,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const createWonLeadExternal = () => {
     const now = new Date().toISOString();
     const newLead = {
-      id: "l_" + Date.now(), company: "Novo Cliente", owner: sdrs[0]?.name || "", stage: "Conquistado", feedback: "", status: "Atendido",
+      id: "l_" + Date.now(), company: "Novo Cliente", owner: currentUserName || sdrs[0]?.name || "", stage: "Conquistado", feedback: "", status: "Atendido",
       contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "",
       hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "hot", temperature: "hot",
       lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false,
@@ -7048,7 +7064,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const saveMeeting = (m) => setMeetings((prev) => prev.map((x) => (x.id === m.id ? m : x)));
   const deleteMeeting = (id) => { setMeetings((prev) => prev.filter((m) => m.id !== id)); setSelectedMeeting(null); };
   const createMeeting = () => {
-    const firstSdr = sdrs[0]?.name || "";
+    const firstSdr = currentUserName || sdrs[0]?.name || "";
     const nm = { id: "m_" + Date.now(), date: iso(agendaDate, 9, 0), duration: 30, type: "reuniao", company: leads[0]?.company || "", owner: firstSdr, materials: "", ourAttendee: firstSdr, theirAttendee: "", locationType: "online", link: "", address: "" };
     setMeetings((prev) => [...prev, nm]);
     setSelectedMeeting(nm);
@@ -7455,10 +7471,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     <Bell size={18} />
                     {(stats.desatendidos.length + stats.hotNoContact.length + stats.weekList.length) > 0 && <span style={{ position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: DARK.lime, border: "2px solid " + DARK.card }} />}
                   </button>
-                  <button onClick={() => setShowSdrManager(true)} title="Gerenciar SDRs" style={{ width: 44, height: 44, borderRadius: "50%", background: sdrs[0]?.avatarUrl ? "transparent" : "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15, padding: 0, overflow: "hidden" }}>
-                    {sdrs[0]?.avatarUrl
-                      ? <img src={sdrs[0].avatarUrl} alt={sdrs[0].name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : (sdrs[0]?.name || "U").charAt(0)}
+                  <button onClick={() => setShowSdrManager(true)} title={isOwner ? "Gerenciar SDRs" : "Seu perfil"} style={{ width: 44, height: 44, borderRadius: "50%", background: (sdrs.find((s) => s.name === currentUserName) || sdrs[0])?.avatarUrl ? "transparent" : "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15, padding: 0, overflow: "hidden" }}>
+                    {(() => {
+                      const me = sdrs.find((s) => s.name === currentUserName) || sdrs[0];
+                      return me?.avatarUrl
+                        ? <img src={me.avatarUrl} alt={me.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : (me?.name || "U").charAt(0);
+                    })()}
                   </button>
                 </div>
               </div>
@@ -7853,8 +7872,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           Ver lista <ChevronRight size={14} />
                         </button>
                       </div>
-                      {/* Chips de SDR: tocar num deles filtra a lista da semana só pra ele */}
-                      {sdrs.length > 1 && (
+                      {/* Chips de SDR: tocar num deles filtra a lista da semana só pra ele - só o gestor vê, já que cada SDR só enxerga a própria lista mesmo */}
+                      {isOwner && sdrs.length > 1 && (
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => setWeekSdrFilter("all")}
@@ -8097,19 +8116,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 border: "1.5px solid #a8dc2e",
                 boxShadow: "0 8px 20px -12px rgba(127, 197, 21, 0.35)",
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
-                  <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
-                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    <Chip active={ownerFilter === "all"} onClick={() => setOwnerFilter("all")} color="#14141a">Todos</Chip>
-                    {sdrs.map((s) => (
-                      <Chip key={s.name} active={ownerFilter === s.name} onClick={() => setOwnerFilter(s.name)} color={s.color}>{s.name}</Chip>
-                    ))}
-                  </div>
-                  <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 9, border: "1.5px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 11.5, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
-                    <Plus size={12} /> SDR
-                  </button>
-                </div>
-                <div style={{ width: 1, height: 22, background: "rgba(148,163,184,0.25)" }} />
+                {isOwner && (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
+                      <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        <Chip active={ownerFilter === "all"} onClick={() => setOwnerFilter("all")} color="#14141a">Todos</Chip>
+                        {sdrs.map((s) => (
+                          <Chip key={s.name} active={ownerFilter === s.name} onClick={() => setOwnerFilter(s.name)} color={s.color}>{s.name}</Chip>
+                        ))}
+                      </div>
+                      <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 9, border: "1.5px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 11.5, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
+                        <Plus size={12} /> SDR
+                      </button>
+                    </div>
+                    <div style={{ width: 1, height: 22, background: "rgba(148,163,184,0.25)" }} />
+                  </>
+                )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
                   <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Status</span>
                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
@@ -8275,8 +8298,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </button>
               </div>
 
-              {/* Chips de SDR: mesma seleção do hero da home - a lista abaixo vira só do SDR escolhido */}
-              {sdrs.length > 1 && (
+              {/* Chips de SDR: mesma seleção do hero da home - só o gestor vê, SDR comum já enxerga só a própria lista */}
+              {isOwner && sdrs.length > 1 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
                   <button
                     onClick={() => setWeekSdrFilter("all")}
@@ -9208,11 +9231,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               </div>
 
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
-                <Chip active={achievementsFilterSdr === "all"} onClick={() => setAchievementsFilterSdr("all")} color="#14141a">Todos</Chip>
-                {sdrs.map((s) => (
-                  <Chip key={s.name} active={achievementsFilterSdr === s.name} onClick={() => setAchievementsFilterSdr(s.name)} color={s.color}>{s.name}</Chip>
-                ))}
+                {isOwner && (
+                  <>
+                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
+                    <Chip active={achievementsFilterSdr === "all"} onClick={() => setAchievementsFilterSdr("all")} color="#14141a">Todos</Chip>
+                    {sdrs.map((s) => (
+                      <Chip key={s.name} active={achievementsFilterSdr === s.name} onClick={() => setAchievementsFilterSdr(s.name)} color={s.color}>{s.name}</Chip>
+                    ))}
+                  </>
+                )}
                 <button onClick={() => setView("metas")} style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#6d5ef8", color: "white", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 16px -6px rgba(109,94,248,0.6)" }}>
                   <Settings2 size={13} /> Configurar metas
                 </button>
@@ -9584,36 +9611,38 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 })}
               </Glass>
 
-              <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 90 }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a", marginBottom: 12 }}>Performance por SDR</div>
-                {sdrs.map((s) => {
-                  const own = leads.filter((l) => l.owner === s.name);
-                  const won = own.filter((l) => l.stage === "Conquistado").length;
-                  const revenue = own.filter((l) => l.stage === "Conquistado").reduce((sum, l) => sum + getDealValue(l), 0);
-                  return (
-                    <div
-                      key={s.name}
-                      onClick={() => { setOwnerFilter(s.name); setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setStatusFilter("all"); setPhaseFilter("all"); setSuperOnly(false); setQuickStage(null); setView("dashboard"); scrollToGrid(); }}
-                      title={`Ver leads de ${s.name}`}
-                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid #f1f2f5", cursor: "pointer" }}
-                    >
-                      <OwnerAvatar name={s.name} size={32} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>{s.name}</div>
-                        <div style={{ fontSize: 11, color: "#9a9aa3" }}>{own.length} leads · {won} conquistados</div>
+              {isOwner && (
+                <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 90 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a", marginBottom: 12 }}>Performance por SDR</div>
+                  {sdrs.map((s) => {
+                    const own = leads.filter((l) => l.owner === s.name);
+                    const won = own.filter((l) => l.stage === "Conquistado").length;
+                    const revenue = own.filter((l) => l.stage === "Conquistado").reduce((sum, l) => sum + getDealValue(l), 0);
+                    return (
+                      <div
+                        key={s.name}
+                        onClick={() => { setOwnerFilter(s.name); setSearch(""); setTempFilter("all"); setWhatsappOnly(false); setStatusFilter("all"); setPhaseFilter("all"); setSuperOnly(false); setQuickStage(null); setView("dashboard"); scrollToGrid(); }}
+                        title={`Ver leads de ${s.name}`}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid #f1f2f5", cursor: "pointer" }}
+                      >
+                        <OwnerAvatar name={s.name} size={32} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>{s.name}</div>
+                          <div style={{ fontSize: 11, color: "#9a9aa3" }}>{own.length} leads · {won} conquistados</div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: "#1fa971" }}>{formatBRL(revenue)}</div>
+                        <ChevronRight size={15} color="#c4c4cc" />
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#1fa971" }}>{formatBRL(revenue)}</div>
-                      <ChevronRight size={15} color="#c4c4cc" />
-                    </div>
-                  );
-                })}
-                <button
-                  onClick={() => setShowSdrManager(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 9, border: "1px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                >
-                  <Pencil size={12} /> Gerenciar SDRs
-                </button>
-              </Glass>
+                    );
+                  })}
+                  <button
+                    onClick={() => setShowSdrManager(true)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 9, border: "1px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    <Pencil size={12} /> Gerenciar SDRs
+                  </button>
+                </Glass>
+              )}
             </>
           )}
         </div>
@@ -9756,6 +9785,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             onAdd={addSdr} onRemove={removeSdr} onUpdateAvatar={updateSdrAvatar}
             onClose={() => setShowSdrManager(false)}
             authMembers={authMembers} onSync={syncSdrsWithAuthMembers}
+            isOwner={isOwner} currentUserName={currentUserName}
           />
         )}
         {showImportModal && <ImportModal sdrs={sdrs} existingLeads={leads} onClose={() => setShowImportModal(false)} onConfirm={confirmImport} />}
