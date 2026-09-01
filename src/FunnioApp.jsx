@@ -8439,13 +8439,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {monthExpanded && <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(148,163,184,0.15)" }}><MonthGrid selectedDate={agendaDate} onSelect={(d) => { setAgendaDate(d); }} meetings={meetings} /></div>}
               </Glass>
 
+              <div style={{ fontSize: 11.5, color: "#8b5cf6", fontWeight: 700, marginBottom: 8, textTransform: "capitalize" }}>
+                Resumo de {isSameDay(agendaDate, today) ? "hoje" : agendaDate.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, marginBottom: 20 }}>
                 {[
                   { key: "reuniao", label: "Reuniões", count: meetingCounts.reuniao, color: "#6366f1", icon: Users2 },
                   { key: "followup", label: "Follow-ups", count: meetingCounts.followup, color: "#10b981", icon: Phone },
                   { key: "proposta", label: "Propostas", count: meetingCounts.proposta, color: "#f59e0b", icon: FileText },
                   { key: "apresentacao", label: "Apresentações", count: meetingCounts.apresentacao, color: "#8b5cf6", icon: Video },
-                  { key: null, label: "Total hoje", count: dayMeetings.length, color: "#0f172a", icon: ClipboardList },
+                  { key: null, label: isSameDay(agendaDate, today) ? "Total hoje" : "Total do dia", count: dayMeetings.length, color: "#0f172a", icon: ClipboardList },
                 ].map((s) => {
                   const active = agendaTypeFilter === s.key;
                   return (
