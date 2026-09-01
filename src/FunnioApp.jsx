@@ -6096,6 +6096,7 @@ const MeetingListItem = ({ meeting, onOpen }) => {
 const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
   const [draft, setDraft] = useState(meeting);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   useEffect(() => { setDraft(meeting); setConfirmDelete(false); }, [meeting]);
   if (!draft) return null;
   const update = (patch) => setDraft((d) => ({ ...d, ...patch }));
@@ -6174,11 +6175,35 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             </div>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Empresa (lead)</label>
-            <select value={draft.company} onChange={(e) => update({ company: e.target.value })} style={selectStyle}>
-              {leads.map((l) => <option key={l.id} value={l.company}>{l.company}</option>)}
-            </select>
+          <div style={{ marginBottom: 16, position: "relative" }}>
+            <LabelWithHint hint="Busque por um lead já cadastrado ou digite livremente o nome de uma empresa que ainda não é lead">Empresa (lead)</LabelWithHint>
+            <input
+              value={draft.company}
+              onChange={(e) => { update({ company: e.target.value }); setCompanyDropdownOpen(true); }}
+              onFocus={() => setCompanyDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setCompanyDropdownOpen(false), 150)}
+              placeholder="Buscar lead ou digitar o nome da empresa"
+              style={selectStyle}
+            />
+            {companyDropdownOpen && (() => {
+              const q = (draft.company || "").toLowerCase().trim();
+              const matches = leads.filter((l) => !q || l.company.toLowerCase().includes(q)).slice(0, 30);
+              if (matches.length === 0) return null;
+              return (
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: 4, maxHeight: 220, overflowY: "auto", background: "white", border: "1px solid rgba(148,163,184,0.25)", borderRadius: 12, boxShadow: "0 12px 30px -10px rgba(15,23,42,0.25)", zIndex: 20 }}>
+                  {matches.map((l) => (
+                    <div
+                      key={l.id}
+                      onMouseDown={() => { update({ company: l.company }); setCompanyDropdownOpen(false); }}
+                      style={{ padding: "9px 12px", fontSize: 13, fontWeight: 600, color: "#0f172a", cursor: "pointer", borderBottom: "1px solid rgba(148,163,184,0.1)" }}
+                    >
+                      {l.company}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4 }}>Não achou o lead? Pode digitar o nome da empresa livremente.</div>
           </div>
 
           <div style={{ marginBottom: 16 }}>
