@@ -4834,7 +4834,7 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
   </div>
 );
 
-const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose, authMembers = [], onSync, isOwner = true, currentUserName = null }) => {
+const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, onClose, authMembers = [], onSync, onLinkAuth, isOwner = true, currentUserName = null }) => {
   const [name, setName] = useState("");
   // SDR que o usuário pediu pra remover e que tem leads/reuniões, aguardando escolha de pra quem reatribuir
   const [pendingRemoval, setPendingRemoval] = useState(null);
@@ -4890,7 +4890,10 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
             {(isOwner ? sdrs : sdrs.filter((s) => s.name === currentUserName)).map((s) => {
-              const hasLogin = authMembers.some((m) => m.display_name.toLowerCase() === s.name.toLowerCase());
+              const linkedMember = authMembers.find((m) => m.user_id === s.authUserId);
+              const hasLogin = !!linkedMember || authMembers.some((m) => m.display_name.toLowerCase() === s.name.toLowerCase());
+              // Membros com login que ainda não estão vinculados a nenhum SDR (pra oferecer no seletor)
+              const unlinkedMembers = authMembers.filter((m) => !sdrs.some((x) => x.authUserId === m.user_id));
               return (
               <div key={s.name}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 11, background: "rgba(241,245,249,0.6)" }}>
@@ -4908,12 +4911,29 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                       <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
                       {hasLogin && (
-                        <span title="Tem login de verdade no funil" style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.1)", padding: "1px 6px", borderRadius: 20 }}>
+                        <span title={linkedMember ? `Vinculado a ${linkedMember.display_name}` : "Tem login de verdade no funil"} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.1)", padding: "1px 6px", borderRadius: 20 }}>
                           <CheckCircle2 size={9} /> login
                         </span>
                       )}
                     </div>
                     {!hasLogin && <div style={{ fontSize: 12, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
+                    {isOwner && linkedMember && (
+                      <button onClick={() => onLinkAuth(s.name, null)} style={{ border: "none", background: "transparent", padding: 0, fontSize: 11, color: "#94a3b8", cursor: "pointer", textDecoration: "underline" }}>
+                        desvincular de {linkedMember.display_name}
+                      </button>
+                    )}
+                    {isOwner && !linkedMember && unlinkedMembers.length > 0 && (
+                      <select
+                        defaultValue=""
+                        onChange={(e) => { if (e.target.value) onLinkAuth(s.name, e.target.value); e.target.value = ""; }}
+                        style={{ marginTop: 3, fontSize: 11, padding: "3px 6px", borderRadius: 7, border: "1px solid rgba(99,102,241,0.35)", color: "#6366f1", background: "white" }}
+                      >
+                        <option value="">Vincular a um login...</option>
+                        {unlinkedMembers.map((m) => (
+                          <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   {isOwner && (
                     <button
@@ -6327,10 +6347,16 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
 // ════════════════════════════════════════════════════════════════════════
 
 export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserId, workspaceName, onSwitchWorkspace, isOwner = false } = {}) {
+  const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
+  const [sdrs, setSdrs] = useState(seedSDRs);
   // Nome do SDR correspondente ao usuário logado - usado pra saber se uma badge é dele
   // (e mostrar o convite pra compartilhar com o gestor só pra quem realmente bateu a meta).
-  const currentUserName = authMembers.find((m) => m.user_id === currentUserId)?.display_name || null;
-  const [view, setView] = useState("dashboard"); // dashboard | desatendidos | semana | agenda
+  // O nome usado nos leads (ex: "Gio") pode ser diferente do nome de cadastro do login
+  // (ex: "Giovani"), então a comparação correta é pelo vínculo explícito authUserId salvo
+  // no SDR - só cai pra comparação de nome (menos confiável) se ninguém tiver vinculado ainda.
+  const currentUserName = sdrs.find((s) => s.authUserId === currentUserId)?.name
+    || authMembers.find((m) => m.user_id === currentUserId)?.display_name
+    || null;
   const [allLeads, setLeads] = useState([]);
   const [allMeetings, setMeetings] = useState([]);
   // Hierarquia: gestor do funil (isOwner) vê tudo; cada SDR só vê os próprios leads e
@@ -6339,7 +6365,6 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // funções de mutação (setLeads/setMeetings) seguem operando sobre a lista completa.
   const leads = useMemo(() => (isOwner ? allLeads : allLeads.filter((l) => (l.owner || "") === currentUserName)), [allLeads, isOwner, currentUserName]);
   const meetings = useMemo(() => (isOwner ? allMeetings : allMeetings.filter((m) => (m.ourAttendee || "") === currentUserName)), [allMeetings, isOwner, currentUserName]);
-  const [sdrs, setSdrs] = useState(seedSDRs);
   const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   const [editingGoal, setEditingGoal] = useState(false);
   const [revenueGoal, setRevenueGoal] = useState(DEFAULT_REVENUE_GOAL);
@@ -6665,6 +6690,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     } catch {
       setToast("Não consegui enviar a foto. Tente de novo.");
     }
+  };
+
+  // Vincula um SDR (ex: "Gio") ao login de verdade dele (ex: giovani@numecompany.com), pra
+  // saber quem é quem sem depender do nome bater igual - resolve casos como "Gio" x "Giovani".
+  const linkSdrAuthUser = (sdrName, userId) => {
+    setSdrs((prev) => prev.map((s) => {
+      if (s.authUserId === userId && s.name !== sdrName) return { ...s, authUserId: undefined }; // tira de quem tinha antes
+      if (s.name === sdrName) return { ...s, authUserId: userId || undefined };
+      return s;
+    }));
+    setToast(userId ? "Login vinculado!" : "Vínculo removido.");
   };
 
   // Adiciona de uma vez qualquer pessoa que já tem login no funil mas ainda não
@@ -9784,7 +9820,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             sdrs={sdrs} leads={leads} meetings={meetings}
             onAdd={addSdr} onRemove={removeSdr} onUpdateAvatar={updateSdrAvatar}
             onClose={() => setShowSdrManager(false)}
-            authMembers={authMembers} onSync={syncSdrsWithAuthMembers}
+            authMembers={authMembers} onSync={syncSdrsWithAuthMembers} onLinkAuth={linkSdrAuthUser}
             isOwner={isOwner} currentUserName={currentUserName}
           />
         )}
