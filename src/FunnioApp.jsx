@@ -5739,8 +5739,46 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
 
       const withDefaults = allExtracted
         .filter((l) => l && l.company && String(l.company).trim())
+        .map((l) => ({ ...l, company: String(l.company).trim() }));
+
+      // Junta na hora do import linhas da MESMA empresa (contatos diferentes) num único lead -
+      // antes cada contato virava uma negociação separada, inflando duplicatas. Escolhe o
+      // contato mais completo como principal e guarda os outros em "Outros contatos".
+      const mergedExtracted = (() => {
+        const groups = new Map(); // nome normalizado -> linhas na ordem em que apareceram
+        withDefaults.forEach((row) => {
+          const key = normalizeCompanyName(row.company);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(row);
+        });
+        const result = [];
+        groups.forEach((rows) => {
+          if (rows.length === 1) { result.push(rows[0]); return; }
+          const completeness = (r) => ["contactName", "role", "phone", "email", "whatsapp", "feedback"].filter((k) => r[k] && String(r[k]).trim()).length;
+          const sorted = [...rows].sort((a, b) => completeness(b) - completeness(a));
+          const primary = { ...sorted[0] };
+          const extraBits = [];
+          if (primary.extraContacts && String(primary.extraContacts).trim()) extraBits.push(String(primary.extraContacts).trim());
+          sorted.slice(1).forEach((o) => {
+            if (!primary.phone && o.phone) primary.phone = o.phone;
+            if (!primary.whatsapp && o.whatsapp) primary.whatsapp = o.whatsapp;
+            if (!primary.email && o.email) primary.email = o.email;
+            if (!primary.feedback && o.feedback) primary.feedback = o.feedback;
+            const who = [o.contactName, o.role].filter(Boolean).join(" - ");
+            const contactInfo = [who, o.phone, o.email].filter(Boolean).join(" · ");
+            if (contactInfo) extraBits.push(contactInfo);
+            if (o.extraContacts && String(o.extraContacts).trim()) extraBits.push(String(o.extraContacts).trim());
+            if (Array.isArray(o.tags) && o.tags.length) primary.tags = [...new Set([...(primary.tags || []), ...o.tags])];
+          });
+          primary.extraContacts = extraBits.filter(Boolean).join("; ");
+          result.push(primary);
+        });
+        return result;
+      })();
+
+      const withDefaultsAndDupCheck = mergedExtracted
         .map((l, i) => {
-          const companyTrim = String(l.company).trim();
+          const companyTrim = l.company;
           const { phone, whatsapp } = reclassifyPhoneFields({ phone: l.phone || "", whatsapp: l.whatsapp || "" });
           const existingMatch = existingLeadsByName.get(normalizeCompanyName(companyTrim));
           return {
@@ -5764,7 +5802,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
           };
         });
 
-      if (withDefaults.length === 0) {
+      if (withDefaultsAndDupCheck.length === 0) {
         safeSet(() => {
           setErrorMsg("Não encontrei nenhum lead reconhecível nos dados enviados. Verifique se o arquivo/texto tem nomes de empresas ou contatos identificáveis." + truncatedWarning);
           setStep("input");
@@ -5772,7 +5810,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
         return;
       }
       safeSet(() => {
-        setDraftLeads(withDefaults);
+        setDraftLeads(withDefaultsAndDupCheck);
         setErrorMsg(truncatedWarning ? truncatedWarning.trim() : "");
         setStep("review");
       });
