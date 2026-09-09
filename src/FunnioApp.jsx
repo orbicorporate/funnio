@@ -1413,6 +1413,62 @@ const addDaysISO = (days) => {
 // `required` é true, exibe estado de alerta enquanto não houver data escolhida, e `forceOpenKey`
 // permite que o componente pai force a expansão (ex: numa tentativa de salvar sem lembrete).
 // `channel`/`onPickChannel` são opcionais e deixam o SDR marcar como pretende retornar.
+// Calendário compacto pro lembrete de retorno - troca o input nativo (que renderiza esquisito
+// e inconsistente entre navegadores/celulares) por um seletor de data com a cara do app.
+const MiniCalendar = ({ value, onSelect }) => {
+  const initial = value ? new Date(value) : new Date();
+  const [viewMonth, setViewMonth] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
+  const selectedISO = value ? value.slice(0, 10) : null;
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+  const startWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const monthLabel = viewMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))} style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ChevronLeft size={13} color="#64748b" /></button>
+        <span style={{ fontSize: 13, fontWeight: 800, color: "#14141a", textTransform: "capitalize" }}>{monthLabel}</span>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))} style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ChevronRight size={13} color="#64748b" /></button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+        {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
+          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#94a3b8" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const dateObj = new Date(year, month, d);
+          const iso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`;
+          const isSelected = iso === selectedISO;
+          const isToday = iso === todayISO;
+          return (
+            <button
+              key={i} type="button"
+              onClick={() => onSelect(new Date(year, month, d, 12).toISOString())}
+              style={{
+                aspectRatio: "1", borderRadius: 9, cursor: "pointer",
+                border: isToday && !isSelected ? "1.5px solid #6d5ef8" : "1px solid transparent",
+                background: isSelected ? "#6d5ef8" : "transparent",
+                color: isSelected ? "white" : "#14141a",
+                fontSize: 12.5, fontWeight: isSelected ? 800 : 600,
+              }}
+            >
+              {d}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required = false, forceOpenKey }) => {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (forceOpenKey) setOpen(true); }, [forceOpenKey]);
@@ -1510,13 +1566,10 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
         </>
       )}
 
-      <div style={{ position: "relative" }}>
-        <CalendarIcon size={15} color="#94a3b8" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-        <input
-          type="date"
-          value={date ? date.slice(0, 10) : ""}
-          onChange={(e) => { if (e.target.value) { onPick(new Date(e.target.value).toISOString()); setOpen(false); } }}
-          style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, border: "1.5px solid rgba(148,163,184,0.3)", fontSize: 13, boxSizing: "border-box", background: "#f8fafc", color: "#14141a" }}
+      <div>
+        <MiniCalendar
+          value={date}
+          onSelect={(iso) => { onPick(iso); setOpen(false); }}
         />
       </div>
     </div>
