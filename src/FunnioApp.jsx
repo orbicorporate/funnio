@@ -1430,18 +1430,18 @@ const MiniCalendar = ({ value, onSelect }) => {
   const monthLabel = viewMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))} style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ChevronLeft size={13} color="#64748b" /></button>
-        <span style={{ fontSize: 13, fontWeight: 800, color: "#14141a", textTransform: "capitalize" }}>{monthLabel}</span>
-        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))} style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ChevronRight size={13} color="#64748b" /></button>
+    <div style={{ padding: 14, borderRadius: 16, background: "linear-gradient(180deg, #fafaff, #f4f4fb)", boxShadow: "0 0 0 1.5px rgba(109,94,248,0.12) inset" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))} style={{ width: 28, height: 28, borderRadius: 9, border: "none", background: "white", boxShadow: "0 2px 6px -2px rgba(15,23,42,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.1s ease" }}><ChevronLeft size={14} color="#6d5ef8" /></button>
+        <span style={{ fontSize: 13.5, fontWeight: 800, color: "#14141a", textTransform: "capitalize", letterSpacing: 0.1 }}>{monthLabel}</span>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))} style={{ width: 28, height: 28, borderRadius: 9, border: "none", background: "white", boxShadow: "0 2px 6px -2px rgba(15,23,42,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.1s ease" }}><ChevronRight size={14} color="#6d5ef8" /></button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 6 }}>
         {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
-          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#94a3b8" }}>{d}</div>
+          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 800, color: "#a3a3b8", textTransform: "uppercase" }}>{d}</div>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
         {cells.map((d, i) => {
           if (!d) return <div key={i} />;
           const dateObj = new Date(year, month, d);
@@ -1453,11 +1453,13 @@ const MiniCalendar = ({ value, onSelect }) => {
               key={i} type="button"
               onClick={() => onSelect(new Date(year, month, d, 12).toISOString())}
               style={{
-                aspectRatio: "1", borderRadius: 9, cursor: "pointer",
+                aspectRatio: "1", borderRadius: 10, cursor: "pointer",
                 border: isToday && !isSelected ? "1.5px solid #6d5ef8" : "1px solid transparent",
-                background: isSelected ? "#6d5ef8" : "transparent",
+                background: isSelected ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent",
+                boxShadow: isSelected ? "0 4px 12px -4px rgba(109,94,248,0.6)" : "none",
                 color: isSelected ? "white" : "#14141a",
                 fontSize: 12.5, fontWeight: isSelected ? 800 : 600,
+                transition: "transform 0.1s ease, box-shadow 0.15s ease",
               }}
             >
               {d}
