@@ -1689,8 +1689,14 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
   // WhatsApp) por uma página própria do Funnio com a capa da agência - a página redireciona
   // sozinha pra reunião de verdade assim que a pessoa toca.
   const rawLink = isPresencial ? (meeting.address || null) : (meeting.link || null);
+  // Link de Meet costuma ter formato meet.google.com/xxx-xxxx-xxx - manda só o código curto
+  // em vez da URL inteira codificada. Qualquer outro tipo de link (Zoom, Teams etc.) usa o
+  // parâmetro "u" com a URL completa, já que não dá pra encurtar sem um serviço externo.
+  const meetCodeMatch = !isPresencial && meeting.link ? meeting.link.match(/meet\.google\.com\/([a-z0-9-]+)/i) : null;
   const meetingLink = !isPresencial && meeting.link
-    ? `https://funnio.vercel.app/reuniao.html?to=${encodeURIComponent(meeting.link)}`
+    ? (meetCodeMatch
+        ? `https://funnio.vercel.app/r.html?m=${meetCodeMatch[1]}`
+        : `https://funnio.vercel.app/r.html?u=${encodeURIComponent(meeting.link)}`)
     : rawLink;
   const { linkedin, website, instagram } = extractSocialLinks(lead);
   const hasLinks = !!(meetingLink || linkedin || website || instagram);
