@@ -1721,12 +1721,19 @@ const buildLeadShareMessage = (lead, meetings = []) => {
       : new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   }
   const contato = lead.whatsapp || lead.phone || lead.email || null;
+  // Link com capa própria "Contato de lead" pro preview do WhatsApp - ao tocar, abre a
+  // conversa de WhatsApp com o lead (se tiver número) ou o Funnio, sem tela extra visível.
+  const waDigits = (lead.whatsapp || "").replace(/\D/g, "");
+  const destination = waDigits ? `https://wa.me/${waDigits}` : "https://funnio.vercel.app";
+  const shareLink = `https://funnio.vercel.app/lead.html?to=${encodeURIComponent(destination)}`;
   const lines = [
     `*Lead: ${lead.company}*`,
     "",
     lead.contactName ? `✓ Pessoa: ${lead.contactName}` : null,
     contato ? `✓ Contato: ${contato}` : null,
     lead.nextAction?.description ? `✓ Próxima ação: ${lead.nextAction.description}${whenText ? ` — *${whenText.toUpperCase()}*` : ""}` : null,
+    "",
+    `✓ Abrir: ${shareLink}`,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
