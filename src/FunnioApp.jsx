@@ -1657,6 +1657,19 @@ const buildWaListDefaultMessage = (lead) => {
 // abre sem número fixo, quem envia escolhe o colega na hora, igual ao convite de membros.
 // Bullets em texto puro (•) em vez de emojis "exóticos" - em alguns celulares emojis como
 // 📌/✅/✉️ não renderizam e viram um losango com "?" (foi o que aconteceu no print do Gio).
+// Extrai LinkedIn/site/Instagram de um lead - primeiro tenta os campos dedicados, e se
+// estiverem vazios, procura links dentro de "Outros contatos"/"feedback" (muito lead
+// importado de planilha/LinkedIn já vem com esses links soltos no texto, não em campo próprio).
+const extractSocialLinks = (lead) => {
+  if (!lead) return { linkedin: null, website: null, instagram: null };
+  const text = [lead.extraContacts, lead.feedback].filter(Boolean).join("\n");
+  const urls = text.match(/https?:\/\/[^\s,;]+/g) || [];
+  const linkedin = lead.linkedin || urls.find((u) => u.includes("linkedin.com")) || null;
+  const instagram = lead.instagram || urls.find((u) => u.includes("instagram.com")) || null;
+  const website = lead.website || urls.find((u) => !u.includes("linkedin.com") && !u.includes("instagram.com") && !u.includes("facebook.com") && !u.includes("wa.me") && !u.includes("api.whatsapp")) || null;
+  return { linkedin, website, instagram };
+};
+
 // Mensagem pra compartilhar uma REUNIÃO com outro SDR pelo WhatsApp - mesmo formato
 // (bullets, título em negrito) usado pra compartilhar lead.
 const buildMeetingShareMessage = (meeting, lead = null) => {
@@ -1665,7 +1678,8 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
     : null;
   const typeLabel = MEETING_TYPES[meeting.type]?.label || "Reunião";
   const meetingLink = meeting.locationType === "presencial" ? (meeting.address || null) : (meeting.link || null);
-  const hasLinks = !!(meetingLink || lead?.linkedin || lead?.website || lead?.instagram);
+  const { linkedin, website, instagram } = extractSocialLinks(lead);
+  const hasLinks = !!(meetingLink || linkedin || website || instagram);
   const lines = [
     `*${typeLabel} marcada*`,
     "",
@@ -1676,9 +1690,9 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
     meeting.materials ? `✓ O que levar: ${meeting.materials}` : null,
     hasLinks ? "" : null,
     meetingLink ? `✓ ${meeting.locationType === "presencial" ? "Endereço" : "Link"}: ${meetingLink}` : null,
-    lead?.linkedin ? `✓ LinkedIn: ${lead.linkedin}` : null,
-    lead?.website ? `✓ Site: ${lead.website}` : null,
-    lead?.instagram ? `✓ Instagram: ${lead.instagram}` : null,
+    linkedin ? `✓ LinkedIn: ${linkedin}` : null,
+    website ? `✓ Site: ${website}` : null,
+    instagram ? `✓ Instagram: ${instagram}` : null,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
