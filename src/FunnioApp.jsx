@@ -1689,7 +1689,7 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
     meeting.ourAttendee ? `✓ Responsável: ${meeting.ourAttendee}` : null,
     meeting.materials ? `✓ O que levar: ${meeting.materials}` : null,
     hasLinks ? "" : null,
-    meetingLink ? `✓ ${meeting.locationType === "presencial" ? "Endereço" : "Link"}: ${meetingLink}` : null,
+    meetingLink ? `✓ *${meeting.locationType === "presencial" ? "Endereço" : "Link da Call"}:* ${meetingLink}` : null,
     linkedin ? `✓ LinkedIn: ${linkedin}` : null,
     website ? `✓ Site: ${website}` : null,
     instagram ? `✓ Instagram: ${instagram}` : null,
