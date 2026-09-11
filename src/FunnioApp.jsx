@@ -6446,14 +6446,6 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               </div>
             </div>
           </div>
-
-          <button
-            onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`, "_blank"); }}
-            title="Envia os dados dessa reunião pra outro SDR pelo WhatsApp"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 16, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
-          >
-            <Share2 size={15} /> Compartilhar com outro SDR
-          </button>
         </div>
 
         <div style={{ padding: "16px 26px", borderTop: "1px solid rgba(148,163,184,0.15)", background: "rgba(248,250,252,0.6)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -6466,7 +6458,16 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           ) : (
             <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir</button>
           )}
-          <button onClick={() => { onSave(draft); onClose(); }} style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}>Salvar reunião</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`, "_blank"); }}
+              title="Compartilhar essa reunião com outro SDR"
+              style={{ width: 42, height: 42, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
+            >
+              <Share2 size={17} />
+            </button>
+            <button onClick={() => { onSave(draft); onClose(); }} style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}>Salvar reunião</button>
+          </div>
         </div>
       </div>
     </div>
