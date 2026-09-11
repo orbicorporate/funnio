@@ -9,7 +9,7 @@ import {
   Sparkles, Check, Menu, Star, Home as HomeIcon, PieChart, Target, Pencil,
   Upload, Loader2, ClipboardPaste, FileUp, Trash, Trophy, Medal, Flag, Settings2,
   Copy, Rocket, Linkedin, Globe, Megaphone, Building2, UserPlus, MoreHorizontal, ArrowUpRight, Send,
-  Repeat, Lock, DollarSign, Info,
+  Repeat, Lock, DollarSign, Info, LayoutGrid, List as ListIcon,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════════════
@@ -1024,7 +1024,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
   );
 };
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone }) => {
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone, meetings = [] }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1230,6 +1230,13 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           <CircleContactBtn icon={MessageCircle} color="#25d366" dark={dark} hasData={!!lead.whatsapp} onClick={() => (lead.whatsapp ? onQuickContact("whatsapp", lead) : onOpen(lead))} />
           <CircleContactBtn icon={Phone} color="#6d5ef8" dark={dark} hasData={!!lead.phone} onClick={() => (lead.phone ? onQuickContact("phone", lead) : onOpen(lead))} />
           <CircleContactBtn icon={Mail} color="#6d5ef8" dark={dark} hasData={!!lead.email} onClick={() => (lead.email ? onQuickContact("email", lead) : onOpen(lead))} />
+          <button
+            onClick={() => { window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`; }}
+            title="Compartilhar esse lead com outro SDR"
+            style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
+          >
+            <Share2 size={14} />
+          </button>
         </div>
       </div>
 
@@ -6620,6 +6627,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [tempFilter, setTempFilter] = useState("all");
   const [whatsappOnly, setWhatsappOnly] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState("all");
+  const [leadsViewMode, setLeadsViewMode] = useState("grid"); // "grid" (2 por fileira) | "list" (1 por fileira)
   const [statusFilter, setStatusFilter] = useState("all");
   const [phaseFilter, setPhaseFilter] = useState("all");
   const [quickStage, setQuickStage] = useState(null); // null | "ativo" - filtro rápido no dashboard
@@ -7662,6 +7670,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         .leads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (min-width: 720px) { .leads-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; } }
+        .leads-grid-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
 
         /* Card de lead compacto - 2 colunas no mobile, tamanho normal a partir de 720px */
         .lc-pad { padding: 12px 12px; }
@@ -8485,6 +8494,25 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 ))}
               </Glass>
 
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+                <div style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(148,163,184,0.12)" }}>
+                  <button
+                    onClick={() => setLeadsViewMode("grid")}
+                    title="Visualização dupla"
+                    style={{ width: 32, height: 28, borderRadius: 8, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "grid" ? "white" : "transparent", color: leadsViewMode === "grid" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "grid" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
+                  >
+                    <LayoutGrid size={14} />
+                  </button>
+                  <button
+                    onClick={() => setLeadsViewMode("list")}
+                    title="Visualização em lista"
+                    style={{ width: 32, height: 28, borderRadius: 8, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "list" ? "white" : "transparent", color: leadsViewMode === "list" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "list" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
+                  >
+                    <ListIcon size={14} />
+                  </button>
+                </div>
+              </div>
+
               {filtered.length === 0 ? (
                 <Glass style={{ borderRadius: 18, padding: "60px 20px", textAlign: "center" }}>
                   <Users size={32} style={{ color: "#cbd5e1", marginBottom: 12 }} />
@@ -8492,8 +8520,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 13, color: "#94a3b8" }}>{leads.length === 0 ? "Comece adicionando seu primeiro lead" : "Tente ajustar os filtros"}</div>
                 </Glass>
               ) : (
-                <div id="leads-grid" className="leads-grid">
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} />)}
+                <div id="leads-grid" className={leadsViewMode === "list" ? "leads-grid-list" : "leads-grid"}>
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} meetings={meetings} />)}
                 </div>
               )}
 
@@ -8619,7 +8647,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <span style={{ fontSize: 12.5, fontWeight: 700, color: "#d97706", background: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.leftover.length}</span>
                       </div>
                       <div className="leads-grid">
-                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
+                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} />)}
                       </div>
                     </div>
                   )}
@@ -8634,7 +8662,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
                       )}
                       <div className="leads-grid">
-                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} />)}
+                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} />)}
                       </div>
                     </div>
                   )}
