@@ -3841,8 +3841,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                   value={draft.extraContacts || ""}
                   onChange={(e) => update({ extraContacts: e.target.value })}
                   placeholder={"Ex:\nMaria Silva (Financeiro) - (11) 98888-7777\nfinanceiro@empresa.com"}
-                  rows={4}
-                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, background: "white", marginBottom: 0 }}
+                  rows={7}
+                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.7, fontSize: 15.5, minHeight: 150, background: "white", marginBottom: 0 }}
                 />
               </div>
             )}
@@ -5262,12 +5262,15 @@ Cada item do array deve ter exatamente estes campos:
   "phone": string ou "" (UM telefone fixo - se a linha tiver mais de um telefone/contato, use o principal aqui e jogue o resto em "extraContacts"),
   "email": string ou "" (UM e-mail - se houver mais de um, use o principal aqui e jogue o resto em "extraContacts"),
   "whatsapp": string ou "" (se identificar que é whatsapp, senão vazio),
+  "linkedin": string ou "" (link do LinkedIn da pessoa OU da empresa, se houver),
+  "website": string ou "" (site institucional da empresa, se houver),
+  "instagram": string ou "" (link ou @ do Instagram da empresa, se houver),
   "owner": string ou "" (responsável/SDR, tente casar com um destes se possível: ${sdrList}; senão deixe vazio),
   "stage": string (escolha o mais parecido entre: ${stageList}; se não identificar, use "Apresentação"),
   "feedback": string ou "" (qualquer observação, status, contexto extra da linha que não se encaixe nos outros campos),
-  "extraContacts": string ou "" (TUDO que não coube nos campos acima: segundo/terceiro telefone, outro e-mail, outro nome de contato/decisor com seu cargo, ramal, WhatsApp alternativo etc. Formate como linhas curtas, ex: "Maria Silva (Financeiro) - (11) 98888-7777\\nfinanceiro@empresa.com". Deixe "" se a linha só tiver um contato completo.)
+  "extraContacts": string ou "" (TUDO que não coube nos campos acima: segundo/terceiro telefone, outro e-mail, outro nome de contato/decisor com seu cargo, ramal, WhatsApp alternativo etc. NÃO repita aqui o que já foi pro linkedin/website/instagram. Formate como linhas curtas, ex: "Maria Silva (Financeiro) - (11) 98888-7777\\nfinanceiro@empresa.com". Deixe "" se a linha só tiver um contato completo.)
 }
-Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Para telefones brasileiros, use o padrão de dígitos pra decidir onde colocar o número: DDD + 9 dígitos (11 no total, ex: 11987654321) é CELULAR - coloque em "whatsapp". DDD + 8 dígitos (10 no total, ex: 1133334444) é FIXO - coloque em "phone". Se a linha já disser explicitamente "whatsapp" ou "celular"/"fixo", respeite essa informação. Se uma linha trouxer vários telefones, vários e-mails ou mais de um nome de decisor, escolha o contato principal (o primeiro, ou o que parecer mais decisor/completo) pros campos normais e coloque o restante em "extraContacts" - nunca descarte informação, só reorganize. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
+Regras: ignore linhas de cabeçalho/vazias/divisórias de seção. Para telefones brasileiros, use o padrão de dígitos pra decidir onde colocar o número: DDD + 9 dígitos (11 no total, ex: 11987654321) é CELULAR - coloque em "whatsapp". DDD + 8 dígitos (10 no total, ex: 1133334444) é FIXO - coloque em "phone". Se a linha já disser explicitamente "whatsapp" ou "celular"/"fixo", respeite essa informação. Links de linkedin.com sempre vão pro campo "linkedin" (nunca pro extraContacts); links de instagram.com sempre pro campo "instagram"; qualquer outro site/URL da empresa vai pro campo "website". Se a linha trouxer vários telefones, vários e-mails ou mais de um nome de decisor, escolha o contato principal (o primeiro, ou o que parecer mais decisor/completo) pros campos normais e coloque o restante em "extraContacts" - nunca descarte informação, só reorganize. Nunca invente dados que não existem - deixe "" se não tiver certeza. Se não houver NENHUM lead identificável no texto, devolva um array vazio []. Responda SOMENTE o array JSON, começando com [ e terminando com ].`;
 
   const text = await callClaudeAPI({
     system: systemPrompt,
@@ -5894,6 +5897,9 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             if (!primary.whatsapp && o.whatsapp) primary.whatsapp = o.whatsapp;
             if (!primary.email && o.email) primary.email = o.email;
             if (!primary.feedback && o.feedback) primary.feedback = o.feedback;
+            if (!primary.linkedin && o.linkedin) primary.linkedin = o.linkedin;
+            if (!primary.website && o.website) primary.website = o.website;
+            if (!primary.instagram && o.instagram) primary.instagram = o.instagram;
             const who = [o.contactName, o.role].filter(Boolean).join(" - ");
             const contactInfo = [who, o.phone, o.email].filter(Boolean).join(" · ");
             if (contactInfo) extraBits.push(contactInfo);
@@ -5922,6 +5928,9 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             role: l.role || "",
             sector: l.sector || "",
             extraContacts: l.extraContacts || "",
+            linkedin: l.linkedin || "",
+            website: l.website || "",
+            instagram: l.instagram || "",
             phone,
             email: l.email || "",
             whatsapp,
@@ -7046,6 +7055,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
       role: d.role || "",
       sector: d.sector || "",
       extraContacts: d.extraContacts || "",
+      linkedin: d.linkedin || "",
+      website: d.website || "",
+      instagram: d.instagram || "",
       email: d.email || "",
       phone: d.phone || "",
       whatsapp: d.whatsapp || "",
@@ -7079,6 +7091,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           company: d.company, owner: d.owner || l.owner, stage: d.stage,
           contactName: d.contactName || l.contactName, role: d.role || l.role, sector: d.sector || l.sector,
           extraContacts: d.extraContacts || l.extraContacts,
+          linkedin: d.linkedin || l.linkedin, website: d.website || l.website, instagram: d.instagram || l.instagram,
           email: d.email || l.email, phone: d.phone || l.phone, whatsapp: d.whatsapp || l.whatsapp,
           hasWhatsapp: !!(d.whatsapp || l.whatsapp), hasEmail: !!(d.email || l.email), hasPhone: !!(d.phone || l.phone),
           tags: Array.from(new Set([...(Array.isArray(l.tags) ? l.tags : []), ...(Array.isArray(d._tags) ? d._tags : [])])),
