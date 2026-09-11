@@ -1659,11 +1659,13 @@ const buildWaListDefaultMessage = (lead) => {
 // 📌/✅/✉️ não renderizam e viram um losango com "?" (foi o que aconteceu no print do Gio).
 // Mensagem pra compartilhar uma REUNIÃO com outro SDR pelo WhatsApp - mesmo formato
 // (bullets, título em negrito) usado pra compartilhar lead.
-const buildMeetingShareMessage = (meeting) => {
+const buildMeetingShareMessage = (meeting, lead = null) => {
   const whenText = meeting.date
     ? new Date(meeting.date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", " às")
     : null;
   const typeLabel = MEETING_TYPES[meeting.type]?.label || "Reunião";
+  const meetingLink = meeting.locationType === "presencial" ? (meeting.address || null) : (meeting.link || null);
+  const hasLinks = !!(meetingLink || lead?.linkedin || lead?.website || lead?.instagram);
   const lines = [
     `*${typeLabel} marcada*`,
     "",
@@ -1672,6 +1674,11 @@ const buildMeetingShareMessage = (meeting) => {
     meeting.theirAttendee ? `✓ Contato: ${meeting.theirAttendee}` : null,
     meeting.ourAttendee ? `✓ Responsável: ${meeting.ourAttendee}` : null,
     meeting.materials ? `✓ O que levar: ${meeting.materials}` : null,
+    hasLinks ? "" : null,
+    meetingLink ? `✓ ${meeting.locationType === "presencial" ? "Endereço" : "Link"}: ${meetingLink}` : null,
+    lead?.linkedin ? `✓ LinkedIn: ${lead.linkedin}` : null,
+    lead?.website ? `✓ Site: ${lead.website}` : null,
+    lead?.instagram ? `✓ Instagram: ${lead.instagram}` : null,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
@@ -3887,6 +3894,27 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <div style={{ display: "flex", gap: 6 }}>
                 <input value={draft.whatsapp || ""} onChange={(e) => update({ whatsapp: e.target.value, hasWhatsapp: e.target.value ? true : draft.hasWhatsapp })} placeholder="+55 11 9... (com DDD e código do país)" style={{ ...inputStyle, flex: 1 }} />
                 <CopyButton value={draft.whatsapp} />
+              </div>
+            </div>
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 4, fontSize: 12.5 }}>LinkedIn</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input value={draft.linkedin || ""} onChange={(e) => update({ linkedin: e.target.value })} placeholder="linkedin.com/in/..." style={{ ...inputStyle, flex: 1 }} />
+                <CopyButton value={draft.linkedin} />
+              </div>
+            </div>
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 4, fontSize: 12.5 }}>Site</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input value={draft.website || ""} onChange={(e) => update({ website: e.target.value })} placeholder="www.empresa.com.br" style={{ ...inputStyle, flex: 1 }} />
+                <CopyButton value={draft.website} />
+              </div>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ ...labelStyle, marginBottom: 4, fontSize: 12.5 }}>Instagram</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input value={draft.instagram || ""} onChange={(e) => update({ instagram: e.target.value })} placeholder="@empresa" style={{ ...inputStyle, flex: 1 }} />
+                <CopyButton value={draft.instagram} />
               </div>
             </div>
           </div>
@@ -6187,7 +6215,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
   );
 };
 
-const MeetingListItem = ({ meeting, onOpen }) => {
+const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
   const cfg = MEETING_TYPES[meeting.type];
   const Icon = cfg.icon;
   const time = new Date(meeting.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -6238,7 +6266,7 @@ const MeetingListItem = ({ meeting, onOpen }) => {
           <actionMeta.icon size={13} /> {actionMeta.label}
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting))}`, "_blank"); }}
+          onClick={(e) => { e.stopPropagation(); const matchedLead = leads.find((l) => l.company && meeting.company && normalizeCompanyName(l.company) === normalizeCompanyName(meeting.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting, matchedLead))}`, "_blank"); }}
           title="Compartilhar essa reunião com outro SDR"
           style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
         >
@@ -6387,7 +6415,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           </div>
 
           <button
-            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft))}`, "_blank")}
+            onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`, "_blank"); }}
             title="Envia os dados dessa reunião pra outro SDR pelo WhatsApp"
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 16, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
           >
@@ -6957,7 +6985,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   };
 
   const createLead = () => {
-    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: currentUserName || sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
+    const newLead = { id: "l_" + Date.now(), company: "Nova Empresa", owner: currentUserName || sdrs[0]?.name || "", stage: "Apresentação", feedback: "", status: "Atendido", contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", linkedin: "", website: "", instagram: "", hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "none", temperature: "warm", lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false, wonDate: null, dealValue: null, dealType: "unico", contractPeriod: "mensal", workCompleted: false, workCompletedAt: null, commissionOverride: null, tags: [], origin: null, createdAt: new Date().toISOString(), notes: [] };
     // Só abre como rascunho - não entra na lista de leads (nem soma no "Total de leads")
     // até o SDR de fato salvar o cadastro. Ver updateLead, que faz o upsert no save.
     setSelected(newLead);
@@ -6969,7 +6997,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const now = new Date().toISOString();
     const newLead = {
       id: "l_" + Date.now(), company: "Novo Cliente", owner: currentUserName || sdrs[0]?.name || "", stage: "Conquistado", feedback: "", status: "Atendido",
-      contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "",
+      contactName: "", email: "", phone: "", whatsapp: "", role: "", sector: "", extraContacts: "", linkedin: "", website: "", instagram: "",
       hasWhatsapp: false, hasEmail: false, hasPhone: false, phase: "hot", temperature: "hot",
       lastContact: null, nextAction: null, weekDone: false, weekTag: null, weekTaggedAt: null, weekDoneAt: null, superAttention: false,
       wonDate: now, dealValue: null, dealType: "unico", contractPeriod: "mensal",
@@ -8686,7 +8714,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </button>
                       )}
                     </div>
-                    {visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
+                    {visibleMeetings.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} leads={leads} />)}
                   </div>
                 );
               })()}
@@ -8721,7 +8749,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               {isToday ? g.date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : g.date.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
                             </span>
                           </div>
-                          {g.items.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} />)}
+                          {g.items.map((m) => <MeetingListItem key={m.id} meeting={m} onOpen={setSelectedMeeting} leads={leads} />)}
                         </div>
                       );
                     })}
