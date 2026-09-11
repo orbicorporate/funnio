@@ -1655,18 +1655,31 @@ const buildWaListDefaultMessage = (lead) => {
 
 // Mensagem pra compartilhar um lead (e a próxima ação dele) com outro SDR pelo WhatsApp -
 // abre sem número fixo, quem envia escolhe o colega na hora, igual ao convite de membros.
-const buildLeadShareMessage = (lead) => {
-  const parts = [
-    `📌 Lead: ${lead.company}`,
-    lead.contactName ? `👤 Contato: ${lead.contactName}` : null,
-    lead.nextAction?.description ? `✅ Próxima ação: ${lead.nextAction.description}${lead.nextAction?.date ? ` (${new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })})` : ""}` : null,
-    (lead.whatsapp || lead.phone) ? `📞 ${lead.whatsapp || lead.phone}` : null,
-    lead.email ? `✉️ ${lead.email}` : null,
-    lead.feedback ? `📝 Status: ${lead.feedback}` : null,
+// Bullets em texto puro (•) em vez de emojis "exóticos" - em alguns celulares emojis como
+// 📌/✅/✉️ não renderizam e viram um losango com "?" (foi o que aconteceu no print do Gio).
+const buildLeadShareMessage = (lead, meetings = []) => {
+  // Se a "próxima ação" bater com uma reunião de verdade marcada na agenda (mesma empresa,
+  // mesmo dia), usa o horário real dela - a data do lembrete sozinha não carrega horário.
+  let whenText = null;
+  if (lead.nextAction?.date) {
+    const actionDay = new Date(lead.nextAction.date).toDateString();
+    const matchingMeeting = meetings.find((m) => m.company && lead.company && normalizeCompanyName(m.company) === normalizeCompanyName(lead.company) && new Date(m.date).toDateString() === actionDay);
+    whenText = matchingMeeting
+      ? new Date(matchingMeeting.date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", " às")
+      : new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  }
+  const lines = [
+    `*${lead.company}*`,
     "",
-    "via Funnio",
+    lead.contactName ? `• Contato: ${lead.contactName}` : null,
+    lead.nextAction?.description ? `• Próxima ação: ${lead.nextAction.description}${whenText ? ` — ${whenText}` : ""}` : null,
+    (lead.whatsapp || lead.phone) ? `• Telefone: ${lead.whatsapp || lead.phone}` : null,
+    lead.email ? `• E-mail: ${lead.email}` : null,
+    lead.feedback ? `• Status: ${lead.feedback}` : null,
+    "",
+    "_via Funnio_",
   ].filter((x) => x !== null);
-  return parts.join("\n");
+  return lines.join("\n");
 };
 
 // Biblioteca de scripts de reativação - agrupados por situação do lead, sem
@@ -3407,7 +3420,7 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
 // LEAD DETAIL MODAL
 // ════════════════════════════════════════════════════════════════════════
 
-const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onSetWeekTag, onToggleSuper }) => {
+const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onSetWeekTag, onToggleSuper, meetings = [] }) => {
   const [draft, setDraft] = useState(lead);
   const [newNote, setNewNote] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -3908,7 +3921,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { ...draft.nextAction, date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
             </div>
             <button
-              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft))}`, "_blank")}
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft, meetings))}`, "_blank")}
               title="Envia o resumo desse lead e da próxima ação pra outro SDR pelo WhatsApp"
               style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
             >
@@ -8874,7 +8887,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                           </div>
                           <button
-                            onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead))}`, "_blank"); }}
+                            onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`, "_blank"); }}
                             title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
                             style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                           >
@@ -9776,7 +9789,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           )}
         </div>
 
-        {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} />}
+        {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} meetings={meetings} />}
         {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
         {weekDoneSummaryTarget && (
           <WeekDoneSummaryModal
