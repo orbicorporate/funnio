@@ -1677,7 +1677,14 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
     ? new Date(meeting.date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", " às")
     : null;
   const typeLabel = MEETING_TYPES[meeting.type]?.label || "Reunião";
-  const meetingLink = meeting.locationType === "presencial" ? (meeting.address || null) : (meeting.link || null);
+  const isPresencial = meeting.locationType === "presencial";
+  // Pra reunião online, troca o link cru (que geraria a prévia genérica do Meet/Zoom no
+  // WhatsApp) por uma página própria do Funnio com a capa da agência - a página redireciona
+  // sozinha pra reunião de verdade assim que a pessoa toca.
+  const rawLink = isPresencial ? (meeting.address || null) : (meeting.link || null);
+  const meetingLink = !isPresencial && meeting.link
+    ? `https://funnio.vercel.app/reuniao.html?to=${encodeURIComponent(meeting.link)}`
+    : rawLink;
   const { linkedin, website, instagram } = extractSocialLinks(lead);
   const hasLinks = !!(meetingLink || linkedin || website || instagram);
   const lines = [
@@ -1689,7 +1696,7 @@ const buildMeetingShareMessage = (meeting, lead = null) => {
     meeting.ourAttendee ? `✓ Responsável: ${meeting.ourAttendee}` : null,
     meeting.materials ? `✓ O que levar: ${meeting.materials}` : null,
     hasLinks ? "" : null,
-    meetingLink ? `✓ *${meeting.locationType === "presencial" ? "Endereço" : "Link da Call"}:* ${meetingLink}` : null,
+    meetingLink ? `✓ *${isPresencial ? "Endereço" : "Link da Call"}:* ${meetingLink}` : null,
     meetingLink && (linkedin || website || instagram) ? "" : null,
     linkedin ? `✓ LinkedIn: ${linkedin}` : null,
     linkedin && (website || instagram) ? "" : null,
