@@ -6239,6 +6239,13 @@ const MeetingListItem = ({ meeting, onOpen }) => {
         >
           <actionMeta.icon size={13} /> {actionMeta.label}
         </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting))}`, "_blank"); }}
+          title="Compartilhar essa reunião com outro SDR"
+          style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
+        >
+          <Share2 size={14} />
+        </button>
       </Glass>
     </div>
   );
@@ -8667,11 +8674,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 if (visibleMeetings.length === 0) return null; // sem reunião nesse dia - não ocupa espaço com caixa vazia, já tem "Próximas reuniões" logo abaixo
                 const isToday = isSameDay(agendaDate, today);
                 return (
-                  <div style={{ marginBottom: 8, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(99,102,241,0.25)" : "none" }}>
+                  <div style={{ marginBottom: 8, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(34,197,94,0.08), rgba(22,163,74,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(34,197,94,0.25)" : "none" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         {isToday && (
-                          <span style={{ fontSize: 11.5, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(99,102,241,0.6)" }}>★ HOJE</span>
+                          <span style={{ fontSize: 11.5, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#22c55e,#16a34a)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(34,197,94,0.6)" }}>★ HOJE</span>
                         )}
                         <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textTransform: "capitalize" }}>{isToday ? agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : `${agendaDate.toLocaleDateString("pt-BR", { weekday: "long" })} • ${agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}`}</span>
                       </div>
@@ -8707,10 +8714,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     {groups.map((g) => {
                       const isToday = isSameDay(g.date, today);
                       return (
-                        <div key={g.key} style={{ marginBottom: 18, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(99,102,241,0.25)" : "none" }}>
+                        <div key={g.key} style={{ marginBottom: 18, padding: isToday ? 16 : 0, borderRadius: 20, background: isToday ? "linear-gradient(135deg, rgba(34,197,94,0.08), rgba(22,163,74,0.05))" : "transparent", border: isToday ? "1.5px solid rgba(34,197,94,0.25)" : "none" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                             {isToday && (
-                              <span style={{ fontSize: 11.5, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(99,102,241,0.6)" }}>★ HOJE</span>
+                              <span style={{ fontSize: 11.5, fontWeight: 800, color: "white", background: "linear-gradient(135deg,#22c55e,#16a34a)", padding: "4px 10px", borderRadius: 20, letterSpacing: 0.4, boxShadow: "0 4px 14px -4px rgba(34,197,94,0.6)" }}>★ HOJE</span>
                             )}
                             <span style={{ fontSize: 13.5, fontWeight: 700, color: "#8b5cf6", textTransform: "capitalize" }}>
                               {isToday ? g.date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : g.date.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
