@@ -1657,6 +1657,27 @@ const buildWaListDefaultMessage = (lead) => {
 // abre sem número fixo, quem envia escolhe o colega na hora, igual ao convite de membros.
 // Bullets em texto puro (•) em vez de emojis "exóticos" - em alguns celulares emojis como
 // 📌/✅/✉️ não renderizam e viram um losango com "?" (foi o que aconteceu no print do Gio).
+// Mensagem pra compartilhar uma REUNIÃO com outro SDR pelo WhatsApp - mesmo formato
+// (bullets, título em negrito) usado pra compartilhar lead.
+const buildMeetingShareMessage = (meeting) => {
+  const whenText = meeting.date
+    ? new Date(meeting.date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", " às")
+    : null;
+  const typeLabel = MEETING_TYPES[meeting.type]?.label || "Reunião";
+  const lines = [
+    `*${typeLabel} marcada*`,
+    "",
+    whenText ? `• Data: ${whenText}` : null,
+    `• Empresa: ${meeting.company}`,
+    meeting.theirAttendee ? `• Contato: ${meeting.theirAttendee}` : null,
+    meeting.ourAttendee ? `• Responsável: ${meeting.ourAttendee}` : null,
+    meeting.materials ? `• O que levar: ${meeting.materials}` : null,
+    "",
+    "Via Funnio",
+  ].filter((x) => x !== null);
+  return lines.join("\n");
+};
+
 const buildLeadShareMessage = (lead, meetings = []) => {
   // Se a "próxima ação" bater com uma reunião de verdade marcada na agenda (mesma empresa,
   // mesmo dia), usa o horário real dela - a data do lembrete sozinha não carrega horário.
@@ -3924,9 +3945,9 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             <button
               onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft, meetings))}`, "_blank")}
               title="Envia o resumo desse lead e da próxima ação pra outro SDR pelo WhatsApp"
-              style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 12, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
             >
-              <Share2 size={13} /> Compartilhar com outro SDR
+              <Share2 size={15} /> Compartilhar com outro SDR
             </button>
           </div>
 
@@ -6357,6 +6378,14 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               </div>
             </div>
           </div>
+
+          <button
+            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft))}`, "_blank")}
+            title="Envia os dados dessa reunião pra outro SDR pelo WhatsApp"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 16, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
+          >
+            <Share2 size={15} /> Compartilhar com outro SDR
+          </button>
         </div>
 
         <div style={{ padding: "16px 26px", borderTop: "1px solid rgba(148,163,184,0.15)", background: "rgba(248,250,252,0.6)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
