@@ -1667,11 +1667,11 @@ const buildMeetingShareMessage = (meeting) => {
   const lines = [
     `*${typeLabel} marcada*`,
     "",
-    whenText ? `• Data: ${whenText}` : null,
-    `• Empresa: ${meeting.company}`,
-    meeting.theirAttendee ? `• Contato: ${meeting.theirAttendee}` : null,
-    meeting.ourAttendee ? `• Responsável: ${meeting.ourAttendee}` : null,
-    meeting.materials ? `• O que levar: ${meeting.materials}` : null,
+    whenText ? `✓ Data: *${whenText.toUpperCase()}*` : null,
+    `✓ Empresa: *${meeting.company}*`,
+    meeting.theirAttendee ? `✓ Contato: ${meeting.theirAttendee}` : null,
+    meeting.ourAttendee ? `✓ Responsável: ${meeting.ourAttendee}` : null,
+    meeting.materials ? `✓ O que levar: ${meeting.materials}` : null,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
@@ -1694,10 +1694,10 @@ const buildLeadShareMessage = (lead, meetings = []) => {
   const lines = [
     `*${title} marcada*`,
     "",
-    whenText ? `• Data: ${whenText}` : null,
-    `• Empresa: ${lead.company}`,
-    lead.contactName ? `• Nome: ${lead.contactName}` : null,
-    contato ? `• Contato: ${contato}` : null,
+    whenText ? `✓ Data: *${whenText.toUpperCase()}*` : null,
+    `✓ Empresa: *${lead.company}*`,
+    lead.contactName ? `✓ Nome: ${lead.contactName}` : null,
+    contato ? `✓ Contato: ${contato}` : null,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
