@@ -1689,15 +1689,13 @@ const buildLeadShareMessage = (lead, meetings = []) => {
       ? new Date(matchingMeeting.date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", " às")
       : new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   }
-  const title = lead.nextAction?.description ? lead.nextAction.description : "Retornar";
   const contato = lead.whatsapp || lead.phone || lead.email || null;
   const lines = [
-    `*${title} marcada*`,
+    `*Lead: ${lead.company}*`,
     "",
-    whenText ? `✓ Data: *${whenText.toUpperCase()}*` : null,
-    `✓ Empresa: *${lead.company}*`,
-    lead.contactName ? `✓ Nome: ${lead.contactName}` : null,
+    lead.contactName ? `✓ Pessoa: ${lead.contactName}` : null,
     contato ? `✓ Contato: ${contato}` : null,
+    lead.nextAction?.description ? `✓ Próxima ação: ${lead.nextAction.description}${whenText ? ` — *${whenText.toUpperCase()}*` : ""}` : null,
     "",
     "Via Funnio",
   ].filter((x) => x !== null);
