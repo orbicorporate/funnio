@@ -742,7 +742,7 @@ const dispatchContact = (type, lead, onLogged) => {
   if (type === "whatsapp" && lead.whatsapp) url = buildWhatsAppUrl(lead);
   else if (type === "email" && lead.email) url = buildMailUrl(lead);
   else if (type === "phone" && lead.phone) url = `tel:${cleanPhone(lead.phone)}`;
-  if (url) { window.open(url, "_blank"); onLogged && onLogged(lead.id, type); }
+  if (url) { window.location.href = url; onLogged && onLogged(lead.id, type); }
 };
 
 const isSameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
@@ -2639,7 +2639,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
   const sendDirect = (lead) => {
     const num = cleanPhone(lead.whatsapp);
     const msg = lead.waMessage ?? buildWaListDefaultMessage(lead);
-    window.open(msg ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}` : `https://wa.me/${num}`, "_blank");
+    window.location.href = msg ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}` : `https://wa.me/${num}`;
     onLogSent(lead.id, msg);
     triggerCoin();
   };
@@ -2664,7 +2664,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
 
   const handleSend = () => {
     const num = cleanPhone(currentLead.whatsapp);
-    window.open(message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`, "_blank");
+    window.location.href = message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`;
     onLogSent(currentLead.id, message);
     setSentCount((c) => c + 1);
     triggerCoin();
@@ -4000,7 +4000,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { ...draft.nextAction, date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
             </div>
             <button
-              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft, meetings))}`, "_blank")}
+              onClick={() => window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft, meetings))}`}
               title="Envia o resumo desse lead e da próxima ação pra outro SDR pelo WhatsApp"
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 12, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
             >
@@ -6306,7 +6306,7 @@ const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
           <actionMeta.icon size={13} /> {actionMeta.label}
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); const matchedLead = leads.find((l) => l.company && meeting.company && normalizeCompanyName(l.company) === normalizeCompanyName(meeting.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting, matchedLead))}`, "_blank"); }}
+          onClick={(e) => { e.stopPropagation(); const matchedLead = leads.find((l) => l.company && meeting.company && normalizeCompanyName(l.company) === normalizeCompanyName(meeting.company)); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting, matchedLead))}`; }}
           title="Compartilhar essa reunião com outro SDR"
           style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
         >
@@ -6467,7 +6467,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
-              onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.open(`https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`, "_blank"); }}
+              onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`; }}
               title="Compartilhar essa reunião com outro SDR"
               style={{ width: 42, height: 42, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
             >
@@ -7201,7 +7201,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const dispatchWhatsAppWithMessage = (lead, message) => {
     const num = cleanPhone(lead.whatsapp);
     if (!num) return;
-    window.open(message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`, "_blank");
+    window.location.href = message ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : `https://wa.me/${num}`;
     const now = new Date().toISOString();
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
@@ -7213,7 +7213,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
   const dispatchEmailWithMessage = (lead, subject, body) => {
     if (!lead.email) return;
-    window.open(body ? `mailto:${lead.email}?subject=${encodeURIComponent(subject || "")}&body=${encodeURIComponent(body)}` : `mailto:${lead.email}`, "_blank");
+    window.location.href = body ? `mailto:${lead.email}?subject=${encodeURIComponent(subject || "")}&body=${encodeURIComponent(body)}` : `mailto:${lead.email}`;
     const now = new Date().toISOString();
     setLeads((prev) => prev.map((l) => l.id === lead.id ? {
       ...l,
@@ -8997,7 +8997,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                           </div>
                           <button
-                            onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`, "_blank"); }}
+                            onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`; }}
                             title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
                             style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                           >
