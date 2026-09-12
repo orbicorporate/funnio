@@ -8165,14 +8165,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
                           <div
                             onClick={() => { setWeekSectionFilter("leftover"); setView("semana"); }}
-                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer", color: "#e9ecdd" }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.3)", cursor: "pointer", color: "#e9ecdd" }}
                           >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
                             <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.85, marginTop: 3 }}>sobrando da semana passada</div>
                           </div>
                           <div
                             onClick={() => { setWeekSectionFilter("thisWeek"); setView("semana"); }}
-                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.1)", cursor: "pointer", color: "#e9ecdd" }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.3)", cursor: "pointer", color: "#e9ecdd" }}
                           >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.addedThisWeekTotal}</div>
                             <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.85, marginTop: 3 }}>colocados essa semana</div>
