@@ -8274,7 +8274,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <div>
                             <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 20, fontWeight: 800, color: goalMet ? "#059669" : "#8fae0e" }}>{stats.weekDoneCount}</span>
                             <span style={{ fontSize: 14, fontWeight: 700, color: "#c4c4cc" }}> / {weeklyGoal}</span>
-                            <span style={{ fontSize: 13.5, color: "#9a9aa3", fontWeight: 600, marginLeft: 5 }}>leads</span>
+                            <span style={{ fontSize: 13.5, color: "#9a9aa3", fontWeight: 600, marginLeft: 5 }}>leads abordados</span>
                           </div>
                         </div>
                       </div>
