@@ -1024,7 +1024,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
   );
 };
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone, meetings = [] }) => {
+const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone, meetings = [], allLeads = [] }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1168,12 +1168,31 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           const contactColor = dark ? "#c7c7cf" : (stale ? "#e2483f" : "#9a9aa3");
           const dateStr = lead.lastContact ? formatDateShort(lead.lastContact) : null;
           const relLabel = days === null ? null : days === 0 ? "hoje" : days === 1 ? "ontem" : `${days}d atrás`;
+          // Se esse registro não tem contato próprio, procura em OUTRAS negociações da mesma
+          // empresa - evita reabordar sem perceber que já rolou papo recente noutra negociação.
+          let crossInfo = null;
+          if (!lead.lastContact && allLeads.length) {
+            const norm = normalizeCompanyName(lead.company);
+            let mostRecent = null;
+            allLeads.forEach((l) => {
+              if (l.id === lead.id || normalizeCompanyName(l.company) !== norm || !l.lastContact) return;
+              if (!mostRecent || new Date(l.lastContact) > new Date(mostRecent)) mostRecent = l.lastContact;
+            });
+            if (mostRecent) {
+              const cDays = daysSince(mostRecent);
+              crossInfo = { dateStr: formatDateShort(mostRecent), relLabel: cDays === 0 ? "hoje" : cDays === 1 ? "ontem" : `${cDays}d atrás`, recent: cDays !== null && cDays <= 7 };
+            }
+          }
           return (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginBottom: 8, flexWrap: "wrap", rowGap: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: stale ? 700 : 500, color: contactColor }}>
                 <Clock size={10} style={{ flexShrink: 0 }} />
                 {dateStr ? (
                   <span>Último contato: <strong>{dateStr}</strong> ({relLabel})</span>
+                ) : crossInfo ? (
+                  <span style={{ color: crossInfo.recent ? "#d97706" : contactColor, fontWeight: crossInfo.recent ? 700 : 500 }}>
+                    Contato em outra negociação: <strong>{crossInfo.dateStr}</strong> ({crossInfo.relLabel})
+                  </span>
                 ) : (
                   <span>Sem data do último contato</span>
                 )}
@@ -7095,18 +7114,29 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const updateCommissionTier = (bucketKey, tierId, patch) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: prev[bucketKey].tiers.map((t) => (t.id === tierId ? { ...t, ...patch } : t)) } }));
   const addCommissionTier = (bucketKey) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: [...prev[bucketKey].tiers, DEFAULT_COMMISSION_TIER()] } }));
   const removeCommissionTier = (bucketKey, tierId) => setCommissionConfig((prev) => ({ ...prev, [bucketKey]: { ...prev[bucketKey], tiers: prev[bucketKey].tiers.filter((t) => t.id !== tierId) } }));
-  // Verifica se o lead foi abordado (marcado como feito) nos últimos 7 dias - usado pra
-  // avisar antes de adicionar ele de novo na Lista da Semana, evitando reabordagem repetida.
-  const daysSinceApproached = (lead) => {
-    if (!lead?.weekDoneAt) return null;
-    const days = Math.floor((Date.now() - new Date(lead.weekDoneAt).getTime()) / 86400000);
-    return days <= 7 ? days : null;
+  // Verifica se ALGUM lead com o mesmo nome de empresa (não só esse registro específico) foi
+  // contatado ou marcado como feito nos últimos 7 dias - cobre o caso de negociações duplicadas
+  // pra mesma empresa, que são a causa real do problema reportado (abordar de novo sem saber
+  // que já rolou contato recente numa outra negociação da mesma empresa).
+  const findRecentContactAcrossLeads = (lead) => {
+    const norm = normalizeCompanyName(lead.company);
+    let mostRecent = null;
+    leads.forEach((l) => {
+      if (normalizeCompanyName(l.company) !== norm) return;
+      [l.lastContact, l.weekDoneAt].filter(Boolean).forEach((d) => {
+        if (!mostRecent || new Date(d) > new Date(mostRecent)) mostRecent = d;
+      });
+    });
+    if (!mostRecent) return null;
+    const days = Math.floor((Date.now() - new Date(mostRecent).getTime()) / 86400000);
+    return { date: mostRecent, days };
   };
   const confirmIfRecentlyApproached = (lead) => {
-    const days = daysSinceApproached(lead);
-    if (days === null) return true;
-    const when = days === 0 ? "hoje" : days === 1 ? "há 1 dia" : `há ${days} dias`;
-    return window.confirm(`${lead.company} já foi abordado ${when}. Quer marcar pra essa semana mesmo assim?`);
+    const info = findRecentContactAcrossLeads(lead);
+    if (!info || info.days > 7) return true;
+    const when = info.days <= 0 ? "hoje" : info.days === 1 ? "há 1 dia" : `há ${info.days} dias`;
+    const dateStr = new Date(info.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+    return window.confirm(`Atenção: já falaram com ${lead.company} ${when} (${dateStr}) - pode ser em outra negociação dessa mesma empresa.\n\nTem certeza que quer marcar esse lead pra essa semana de novo?`);
   };
   const setWeekTag = (id, tag) => {
     const lead = leads.find((l) => l.id === id);
@@ -8609,7 +8639,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className={leadsViewMode === "list" ? "leads-grid-list" : "leads-grid"}>
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} meetings={meetings} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} meetings={meetings} allLeads={leads} />)}
                 </div>
               )}
 
@@ -8735,7 +8765,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <span style={{ fontSize: 12.5, fontWeight: 700, color: "#d97706", background: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.leftover.length}</span>
                       </div>
                       <div className="leads-grid">
-                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} />)}
+                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
                       </div>
                     </div>
                   )}
@@ -8750,7 +8780,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
                       )}
                       <div className="leads-grid">
-                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} />)}
+                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
                       </div>
                     </div>
                   )}
