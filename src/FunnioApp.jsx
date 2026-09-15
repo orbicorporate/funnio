@@ -1478,6 +1478,53 @@ const MiniCalendar = ({ value, onSelect }) => {
   );
 };
 
+// Seletor de horário compacto (hora e minuto em colunas) - troca o input nativo de horário,
+// que tem o mesmo problema visual "de sistema antigo" que o calendário nativo tinha.
+const MiniTimePicker = ({ value, onSelect }) => {
+  const [h, m] = (value || "09:00").split(":");
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+  const minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+  const hourRef = useRef(null);
+  const minRef = useRef(null);
+  useEffect(() => {
+    hourRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "center" });
+    minRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "center" });
+  }, []);
+  return (
+    <div style={{ padding: 14, borderRadius: 16, background: "linear-gradient(180deg, #fafaff, #f4f4fb)", boxShadow: "0 0 0 1.5px rgba(109,94,248,0.12) inset" }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#a3a3b8", textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Hora</div>
+          <div ref={hourRef} style={{ maxHeight: 168, overflowY: "auto", borderRadius: 10, background: "white", boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)" }}>
+            {hours.map((hh) => (
+              <button
+                key={hh} type="button" data-active={hh === h} onClick={() => onSelect(`${hh}:${m}`)}
+                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: hh === h ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent", color: hh === h ? "white" : "#14141a", fontWeight: hh === h ? 800 : 600, fontSize: 13.5, borderRadius: 8 }}
+              >
+                {hh}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#a3a3b8", textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Min</div>
+          <div ref={minRef} style={{ maxHeight: 168, overflowY: "auto", borderRadius: 10, background: "white", boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)" }}>
+            {minutes.map((mm) => (
+              <button
+                key={mm} type="button" data-active={mm === m} onClick={() => onSelect(`${h}:${mm}`)}
+                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: mm === m ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent", color: mm === m ? "white" : "#14141a", fontWeight: mm === m ? 800 : 600, fontSize: 13.5, borderRadius: 8 }}
+              >
+                {mm}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required = false, forceOpenKey }) => {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (forceOpenKey) setOpen(true); }, [forceOpenKey]);
@@ -6334,6 +6381,8 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
   const [draft, setDraft] = useState(meeting);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
   useEffect(() => { setDraft(meeting); setConfirmDelete(false); }, [meeting]);
   if (!draft) return null;
   const update = (patch) => setDraft((d) => ({ ...d, ...patch }));
@@ -6361,13 +6410,46 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
 
         <div style={{ padding: "20px 26px", maxHeight: "60vh", overflowY: "auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-            <div>
+            <div style={{ position: "relative" }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Data</span>
-              <input type="date" value={draft.date.slice(0, 10)} onChange={(e) => { const time = draft.date.slice(11, 16); update({ date: new Date(`${e.target.value}T${time}`).toISOString() }); }} style={inputStyle} />
+              <button
+                type="button" onClick={() => { setDateOpen((v) => !v); setTimeOpen(false); }}
+                style={{ ...inputStyle, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "white", textAlign: "left" }}
+              >
+                <CalendarIcon size={14} color="#6d5ef8" />
+                {new Date(draft.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+              </button>
+              {dateOpen && (
+                <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 6, zIndex: 30, width: 250 }}>
+                  <MiniCalendar
+                    value={draft.date}
+                    onSelect={(iso) => {
+                      const time = draft.date.slice(11, 16);
+                      const picked = new Date(iso);
+                      update({ date: new Date(`${picked.getFullYear()}-${String(picked.getMonth() + 1).padStart(2, "0")}-${String(picked.getDate()).padStart(2, "0")}T${time}`).toISOString() });
+                      setDateOpen(false);
+                    }}
+                  />
+                </div>
+              )}
             </div>
-            <div>
+            <div style={{ position: "relative" }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Horário</span>
-              <input type="time" value={draft.date.slice(11, 16)} onChange={(e) => { const day = draft.date.slice(0, 10); update({ date: new Date(`${day}T${e.target.value}`).toISOString() }); }} style={inputStyle} />
+              <button
+                type="button" onClick={() => { setTimeOpen((v) => !v); setDateOpen(false); }}
+                style={{ ...inputStyle, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "white", textAlign: "left" }}
+              >
+                <Clock size={14} color="#6d5ef8" />
+                {draft.date.slice(11, 16)}
+              </button>
+              {timeOpen && (
+                <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 30, width: 170 }}>
+                  <MiniTimePicker
+                    value={draft.date.slice(11, 16)}
+                    onSelect={(t) => { const day = draft.date.slice(0, 10); update({ date: new Date(`${day}T${t}`).toISOString() }); }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
