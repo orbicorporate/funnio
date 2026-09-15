@@ -9172,21 +9172,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <button
                               onClick={() => completeNextAction(lead.id)}
                               title="Realizar ação (marca como feita e limpa o lembrete)"
-                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(31,169,113,0.4)", background: "rgba(31,169,113,0.08)", color: "#1fa971", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: "#1fa971", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px -3px rgba(31,169,113,0.6)" }}
                             >
                               <CheckCircle2 size={14} />
                             </button>
                             <button
                               onClick={() => window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`}
                               title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
-                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px -3px rgba(37,211,102,0.6)" }}
                             >
                               <Share2 size={13} />
                             </button>
                             <button
                               onClick={() => dismissNextAction(lead.id)}
                               title="Excluir aviso (some da lista sem marcar como feita)"
-                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(220,38,38,0.06)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: "#dc2626", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px -3px rgba(220,38,38,0.55)" }}
                             >
                               <Trash2 size={13} />
                             </button>
