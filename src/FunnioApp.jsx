@@ -1024,7 +1024,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
   );
 };
 
-const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone, meetings = [], allLeads = [] }) => {
+const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeekFlag, onToggleSuper, onMarkContacted, inWaList, inEmailList, inCallList, onOpenChannelPicker, onMarkWeekDone, meetings = [], allLeads = [] }) => {
   const cfg = TEMP_CONFIG[lead.temperature];
   const statusMeta = STATUS_PILL[lead.status] || STATUS_PILL.Atendido;
   const phaseMeta = PHASE_PILL[lead.phase] || PHASE_PILL.none;
@@ -1210,9 +1210,12 @@ const LeadCard = ({ lead, onOpen, onQuickContact, onToggleWeekFlag, onToggleSupe
           );
         })()}
 
-        {/* Próximo passo */}
+        {/* Próximo passo - pula direto pra essa seção dentro do painel, em vez de abrir sempre no topo */}
         {lead.nextAction?.description && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, paddingTop: 8, paddingBottom: 8, borderTop: `1px solid ${borderDivider}` }}>
+          <div
+            onClick={(e) => { e.stopPropagation(); (onOpenNextAction || onOpen)(lead); }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, paddingTop: 8, paddingBottom: 8, borderTop: `1px solid ${borderDivider}`, cursor: "pointer" }}
+          >
             <div style={{ minWidth: 0 }}>
               <div className="lc-label" style={{ color: txtLabel, fontWeight: 600, marginBottom: 2 }}>Próximo passo</div>
               <div className="lc-next" style={{ color: txtNext, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.nextAction.description}</div>
@@ -3556,7 +3559,7 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
 // LEAD DETAIL MODAL
 // ════════════════════════════════════════════════════════════════════════
 
-const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onSetWeekTag, onToggleSuper, meetings = [] }) => {
+const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onSetWeekTag, onToggleSuper, meetings = [], focusSection = null }) => {
   const [draft, setDraft] = useState(lead);
   const [newNote, setNewNote] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -3565,8 +3568,16 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   // Toda vez que tenta salvar sem lembrete de próxima ação marcado, força a expansão do
   // calendarinho pra deixar claro o que falta - só não exige pra leads já conquistados/perdidos.
   const [nextActionAttempt, setNextActionAttempt] = useState(0);
+  const nextActionSectionRef = useRef(null);
 
   useEffect(() => { setDraft(lead); setNewNote(""); setConfirmDelete(false); setShowExtraContacts(!!(lead?.extraContacts && lead.extraContacts.trim())); setSectorCustom(!!(lead?.sector && !SECTOR_OPTIONS.includes(lead.sector))); }, [lead]);
+  // Veio de um clique em "Próximo passo" no card - pula direto pra essa seção em vez de
+  // abrir o painel do lead sempre no topo.
+  useEffect(() => {
+    if (focusSection === "nextAction" && nextActionSectionRef.current) {
+      setTimeout(() => nextActionSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    }
+  }, [focusSection, lead?.id]);
   if (!lead) return null;
 
   const update = (patch) => setDraft((d) => ({ ...d, ...patch }));
@@ -4060,7 +4071,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             </div>
           </div>
 
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 18 }} ref={nextActionSectionRef}>
             <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
             <div style={{ marginBottom: 10 }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando (lembrete de push)</span>
@@ -6757,6 +6768,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [selected, setSelected] = useState(null);
+  const [selectedFocusSection, setSelectedFocusSection] = useState(null);
+  const openLead = (lead) => { setSelected(lead); setSelectedFocusSection(null); };
+  const openLeadAtNextAction = (lead) => { setSelected(lead); setSelectedFocusSection("nextAction"); };
   const [quickContactLead, setQuickContactLead] = useState(null);
   const [waSendList, setWaSendList] = useState([]); // { leadId, message }[]
   const [scriptPickerLead, setScriptPickerLead] = useState(null);
@@ -8639,7 +8653,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </Glass>
               ) : (
                 <div id="leads-grid" className={leadsViewMode === "list" ? "leads-grid-list" : "leads-grid"}>
-                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} meetings={meetings} allLeads={leads} />)}
+                  {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={openLead} onOpenNextAction={openLeadAtNextAction} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} meetings={meetings} allLeads={leads} />)}
                 </div>
               )}
 
@@ -8672,7 +8686,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, color: "#475569" }}>Nenhuma negociação antiga por aqui 🎉</div>
                 </Glass>
               ) : (
-                desatendidosFiltered.map((lead) => <DesatendidoCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekDone={toggleWeekDone} onToggleSuper={toggleSuperAttention} />)
+                desatendidosFiltered.map((lead) => <DesatendidoCard key={lead.id} lead={lead} onOpen={openLead} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekDone={toggleWeekDone} onToggleSuper={toggleSuperAttention} />)
               )}
             </>
           )}
@@ -8765,7 +8779,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <span style={{ fontSize: 12.5, fontWeight: 700, color: "#d97706", background: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: 7 }}>{weekFiltered.leftover.length}</span>
                       </div>
                       <div className="leads-grid">
-                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
+                        {weekFiltered.leftover.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={openLead} onOpenNextAction={openLeadAtNextAction} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
                       </div>
                     </div>
                   )}
@@ -8780,7 +8794,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         </div>
                       )}
                       <div className="leads-grid">
-                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={setSelected} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
+                        {weekFiltered.addedThisWeek.map((lead) => <LeadCard key={lead.id} lead={lead} onOpen={openLead} onOpenNextAction={openLeadAtNextAction} onQuickContact={(type, lead) => setQuickContactLead(lead)} onToggleWeekFlag={toggleWeekFlag} onToggleSuper={toggleSuperAttention} onMarkContacted={markContactedToday} inWaList={waSendList.some((x) => x.leadId === lead.id)} inEmailList={emailSendList.some((x) => x.leadId === lead.id)} inCallList={callSendList.includes(lead.id)} onOpenChannelPicker={setChannelPickerLead} onMarkWeekDone={() => toggleWeekDone(lead.id)} meetings={meetings} allLeads={leads} />)}
                       </div>
                     </div>
                   )}
@@ -10044,7 +10058,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           )}
         </div>
 
-        {selected && <LeadDetail lead={selected} onClose={() => setSelected(null)} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} meetings={meetings} />}
+        {selected && <LeadDetail lead={selected} onClose={() => { setSelected(null); setSelectedFocusSection(null); }} onSave={updateLead} onDelete={deleteLead} onQuickContact={handleQuickContact} sdrs={sdrs} onSetWeekTag={setWeekTag} onToggleSuper={toggleSuperAttention} meetings={meetings} focusSection={selectedFocusSection} />}
         {quickContactLead && <QuickContactModal lead={quickContactLead} onClose={() => setQuickContactLead(null)} onDispatch={handleQuickContact} />}
         {weekDoneSummaryTarget && (
           <WeekDoneSummaryModal
