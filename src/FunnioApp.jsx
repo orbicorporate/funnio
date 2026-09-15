@@ -7060,6 +7060,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   // ver createLead/createWonLeadExternal).
   const updateLead = (updated) => setLeads((prev) => (prev.some((l) => l.id === updated.id) ? prev.map((l) => (l.id === updated.id ? updated : l)) : [updated, ...prev]));
   const markContactedToday = (id) => setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, lastContact: new Date().toISOString() } : l)));
+  // Usadas na tela "Próximas ações": marca a ação como feita (registra e limpa o lembrete)
+  // ou só descarta o aviso sem registrar nada - pra quem só quer tirar da lista.
+  const completeNextAction = (id) => {
+    setLeads((prev) => prev.map((l) => {
+      if (l.id !== id) return l;
+      const note = { id: "n_" + Date.now(), date: new Date().toISOString(), text: `Ação realizada: ${l.nextAction?.description || "sem descrição"}` };
+      return { ...l, nextAction: null, lastContact: new Date().toISOString(), notes: [note, ...(l.notes || [])] };
+    }));
+  };
+  const dismissNextAction = (id) => {
+    if (!window.confirm("Excluir esse aviso sem marcar como feito?")) return;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, nextAction: null } : l)));
+  };
 
   const sendChatMessage = async (text) => {
     const trimmed = text.trim();
@@ -9141,8 +9154,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {sec.items.map(({ lead, diff }) => (
-                        <Glass key={lead.id} onClick={() => setSelected(lead)} style={{ borderRadius: 16, padding: "13px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, borderLeft: `3px solid ${sec.color}` }}>
-                          <div style={{ textAlign: "center", flexShrink: 0, minWidth: 46 }}>
+                        <Glass key={lead.id} onClick={() => openLeadAtNextAction(lead)} style={{ borderRadius: 16, padding: "13px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${sec.color}` }}>
+                          <div style={{ textAlign: "center", flexShrink: 0, minWidth: 40 }}>
                             <div style={{ fontSize: 15, fontWeight: 800, color: sec.color, lineHeight: 1 }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit" })}</div>
                             <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase" }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</div>
                           </div>
@@ -9155,13 +9168,29 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               <span style={{ fontSize: 11.5, fontWeight: 700, color: sec.color, background: sec.bg, padding: "1px 7px", borderRadius: 6 }}>{diffLabel(diff)}</span>
                             </div>
                           </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`; }}
-                            title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
-                            style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-                          >
-                            <Share2 size={14} />
-                          </button>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => completeNextAction(lead.id)}
+                              title="Realizar ação (marca como feita e limpa o lembrete)"
+                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(31,169,113,0.4)", background: "rgba(31,169,113,0.08)", color: "#1fa971", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                              <CheckCircle2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`}
+                              title="Compartilhar esse lead e a ação com outro SDR pelo WhatsApp"
+                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.06)", color: "#1eb356", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                              <Share2 size={13} />
+                            </button>
+                            <button
+                              onClick={() => dismissNextAction(lead.id)}
+                              title="Excluir aviso (some da lista sem marcar como feita)"
+                              style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(220,38,38,0.06)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                           <ChevronRight size={15} color="#c4c4cc" style={{ flexShrink: 0 }} />
                         </Glass>
                       ))}
