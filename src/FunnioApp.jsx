@@ -3614,8 +3614,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
 
   return (
     <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 660, background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.9)", boxShadow: "0 30px 90px -20px rgba(76, 29, 149, 0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-        <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)", position: "relative", overflow: "hidden" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 660, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.9)", boxShadow: "0 30px 90px -20px rgba(76, 29, 149, 0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+        <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)", position: "relative", overflow: "hidden", flexShrink: 0 }}>
           {/* Brilho de fundo que muda de cor com a temperatura do lead - dá vida ao topo do painel */}
           <div style={{
             position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%",
@@ -3699,7 +3699,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
         </div>
 
-        <div style={{ padding: "20px 28px", maxHeight: "55vh", overflowY: "auto", background: "linear-gradient(180deg, rgba(109,94,248,0.025), transparent 200px)" }}>
+        <div style={{ padding: "20px 28px", flex: 1, minHeight: 0, overflowY: "auto", background: "linear-gradient(180deg, rgba(109,94,248,0.025), transparent 200px)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
             <div>
               <label style={labelStyle}><SecIcon icon={Flame} color="#f0431f" />Temperatura</label>
@@ -4137,7 +4137,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
         </div>
 
-        <div style={{ padding: "16px 28px", borderTop: "1px solid rgba(148, 163, 184, 0.15)", background: "rgba(248, 250, 252, 0.5)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "16px 28px", borderTop: "1px solid rgba(148, 163, 184, 0.15)", background: "rgba(248, 250, 252, 0.5)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#64748b" }}>Confirmar exclusão?</span>
@@ -6426,8 +6426,8 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
 
   return (
     <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
-        <div style={{ padding: "22px 26px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", background: `linear-gradient(135deg, ${cfg.color}18, transparent)` }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
+        <div style={{ padding: "22px 26px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", background: `linear-gradient(135deg, ${cfg.color}18, transparent)`, flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: cfg.color + "22", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center" }}><cfg.icon size={18} /></div>
             <div>
@@ -6438,7 +6438,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           <button onClick={handleClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={16} /></button>
         </div>
 
-        <div style={{ padding: "20px 26px", maxHeight: "60vh", overflowY: "auto" }}>
+        <div style={{ padding: "20px 26px", flex: 1, minHeight: 0, overflowY: "auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
             <div style={{ position: "relative" }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Data</span>
@@ -6579,7 +6579,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           </div>
         </div>
 
-        <div style={{ padding: "16px 26px", borderTop: "1px solid rgba(148,163,184,0.15)", background: "rgba(248,250,252,0.6)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "16px 26px", borderTop: "1px solid rgba(148,163,184,0.15)", background: "rgba(248,250,252,0.6)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#64748b" }}>Confirmar exclusão?</span>
