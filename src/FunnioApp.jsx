@@ -3663,7 +3663,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               return (
                 <button
                   key={t.key}
-                  onClick={() => { const tag = active ? null : t.key; const updated = { ...draft, weekTag: tag, weekDone: tag ? false : draft.weekDone }; setDraft(updated); onSetWeekTag(draft.id, tag); }}
+                  onClick={() => { const tag = active ? null : t.key; if (onSetWeekTag(draft.id, tag, draft) === false) return; const updated = { ...draft, weekTag: tag, weekDone: tag ? false : draft.weekDone }; setDraft(updated); }}
                   style={{ padding: "5px 11px", borderRadius: 8, border: `1px solid ${active ? "#059669" : "rgba(148,163,184,0.3)"}`, background: active ? "rgba(16,185,129,0.14)" : "white", color: active ? "#059669" : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                 >
                   {active ? "✓ " : ""}{t.label}
@@ -7165,14 +7165,31 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
     const dateStr = new Date(info.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
     return window.confirm(`Atenção: já falaram com ${lead.company} ${when} (${dateStr}) - pode ser em outra negociação dessa mesma empresa.\n\nTem certeza que quer marcar esse lead pra essa semana de novo?`);
   };
-  const setWeekTag = (id, tag) => {
-    const lead = leads.find((l) => l.id === id);
-    if (tag && lead && !confirmIfRecentlyApproached(lead)) return;
+  // Se o lead já tem um lembrete de retorno agendado pra DEPOIS dessa semana, o SDR já decidiu
+  // quando voltar a falar com ele - colocar na lista da semana atropela esse lembrete e gasta
+  // tempo com quem já foi atendido. Avisa e pede confirmação antes de marcar.
+  const confirmIfScheduledLater = (lead) => {
+    const dateIso = lead?.nextAction?.date;
+    if (!dateIso || lead.stage === "Conquistado" || lead.stage === "Perdida") return true;
+    const actionDay = new Date(dateIso); actionDay.setHours(0, 0, 0, 0);
+    const nextWeekStart = addDays(startOfWeek(new Date()), 7); nextWeekStart.setHours(0, 0, 0, 0);
+    if (actionDay < nextWeekStart) return true;
+    const dateStr = actionDay.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }).replace(".", "");
+    const desc = lead.nextAction.description ? ` ("${lead.nextAction.description}")` : "";
+    return window.confirm(`Você já tem uma tarefa agendada nesse lead: ${dateStr}${desc}.\n\nTem certeza que quer colocar ${lead.company} na lista da semana?`);
+  };
+  // Retorna true se marcou/desmarcou, false se o usuário cancelou em algum aviso.
+  const setWeekTag = (id, tag, leadOverride = null) => {
+    const lead = leadOverride || leads.find((l) => l.id === id);
+    if (tag && lead && !lead.weekTag && !confirmIfScheduledLater(lead)) return false;
+    if (tag && lead && !confirmIfRecentlyApproached(lead)) return false;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: tag, weekDone: tag ? false : l.weekDone, weekTaggedAt: tag ? new Date().toISOString() : null } : l)));
+    return true;
   };
   const toggleWeekFlag = (id) => {
     const lead = leads.find((l) => l.id === id);
     const turningOn = !(lead?.weekTag && !lead?.weekDone);
+    if (turningOn && lead && !confirmIfScheduledLater(lead)) return;
     if (turningOn && lead && !confirmIfRecentlyApproached(lead)) return;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, weekTag: l.weekTag && !l.weekDone ? null : "semana", weekDone: false, weekTaggedAt: l.weekTag && !l.weekDone ? null : new Date().toISOString() } : l)));
   };
