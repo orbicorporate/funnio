@@ -892,8 +892,8 @@ const ContactPill = ({ icon: Icon, color, label, hasData, isMarked, onClick, siz
         padding: sm ? "6px 10px" : "8px 13px",
         borderRadius: 999,
         border: hasData ? `1px solid ${color}55` : "1px solid rgba(148, 163, 184, 0.5)",
-        background: hasData ? color + "14" : "rgba(241, 245, 249, 0.7)",
-        color: hasData ? color : "#94a3b8",
+        background: hasData ? color : "rgba(241, 245, 249, 0.7)",
+        color: hasData ? "#ffffff" : "#94a3b8",
         cursor: "pointer", fontSize: sm ? 13 : 14, fontWeight: 600,
         transition: "all 0.15s ease", whiteSpace: "nowrap",
       }}
@@ -1399,8 +1399,8 @@ const CopyButton = ({ value }) => {
       title={copied ? "Copiado!" : "Copiar"}
       style={{
         width: 26, height: 26, borderRadius: "50%", border: "none", flexShrink: 0,
-        background: copied ? "rgba(31,169,113,0.15)" : "rgba(148,163,184,0.12)",
-        color: copied ? "#1fa971" : "#94a3b8",
+        background: copied ? "#1fa971" : "rgba(148,163,184,0.12)",
+        color: copied ? "#ffffff" : "#94a3b8",
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: "pointer", transition: "all 0.15s ease",
       }}
@@ -1814,7 +1814,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
                     flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                     padding: "9px 6px", borderRadius: 999, cursor: "pointer",
                     border: `1.5px solid ${active ? c.color : "rgba(148,163,184,0.25)"}`,
-                    background: active ? c.color + "16" : "white", color: active ? c.color : "#64748b",
+                    background: active ? c.color : "white", color: active ? "#ffffff" : "#64748b",
                     fontSize: 14.5, fontWeight: 700, transition: "all 0.15s ease",
                   }}
                 >
@@ -1899,7 +1899,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
             <button
               key={s}
               onClick={() => setText(s)}
-              style={{ padding: "6px 11px", borderRadius: 999, border: `1px solid ${text === s ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: text === s ? "rgba(109,94,248,0.1)" : "white", color: text === s ? "#6d5ef8" : "#64748b", fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}
+              style={{ padding: "6px 11px", borderRadius: 999, border: `1px solid ${text === s ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: text === s ? "#6d5ef8" : "white", color: text === s ? "#ffffff" : "#64748b", fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}
             >
               {s}
             </button>
@@ -2387,7 +2387,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftMessage.trim()}
-                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#6d5ef8", fontSize: 14.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "#1eb356" : "white", color: savedFlash ? "#ffffff" : "#6d5ef8", fontSize: 14.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
@@ -2813,7 +2813,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftBody.trim()}
-                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#3b82f6", fontSize: 14.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "#1eb356" : "white", color: savedFlash ? "#ffffff" : "#3b82f6", fontSize: 14.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
@@ -3089,10 +3089,10 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                   borderRadius: 12,
                   padding: 4
                 }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "fila" ? "#128c4a" : "#94a3b8" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "#128c4a" : "transparent", color: tab === "fila" ? "#ffffff" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "historico" ? "#128c4a" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "#128c4a" : "transparent", color: tab === "historico" ? "#ffffff" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -3443,10 +3443,10 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                   borderRadius: 12,
                   padding: 4
                 }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "fila" ? "#1d4ed8" : "#94a3b8" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "#1d4ed8" : "transparent", color: tab === "fila" ? "#ffffff" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "historico" ? "#1d4ed8" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "#1d4ed8" : "transparent", color: tab === "historico" ? "#ffffff" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -3773,10 +3773,10 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                   borderRadius: 12,
                   padding: 4
                 }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "fila" ? "#7c3aed" : "#94a3b8" }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "#7c3aed" : "transparent", color: tab === "fila" ? "#ffffff" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "historico" ? "#7c3aed" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 15.5, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "#7c3aed" : "transparent", color: tab === "historico" ? "#ffffff" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -4235,7 +4235,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <button
                   key={t.key}
                   onClick={() => { const tag = active ? null : t.key; if (onSetWeekTag(draft.id, tag, draft) === false) return; const updated = { ...draft, weekTag: tag, weekDone: tag ? false : draft.weekDone }; setDraft(updated); }}
-                  style={{ padding: "5px 11px", borderRadius: 999, border: `1px solid ${active ? "#059669" : "rgba(148,163,184,0.3)"}`, background: active ? "rgba(16,185,129,0.14)" : "white", color: active ? "#059669" : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+                  style={{ padding: "5px 11px", borderRadius: 999, border: `1px solid ${active ? "#059669" : "rgba(148,163,184,0.3)"}`, background: active ? "#059669" : "white", color: active ? "#ffffff" : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
                 >
                   {active ? "✓ " : ""}{t.label}
                 </button>
@@ -4248,30 +4248,30 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 8, marginTop: 18, position: "relative" }}>
+          <div className="lead-quick" style={{ display: "flex", gap: 8, marginTop: 18, position: "relative" }}>
             <button
               onClick={() => onQuickContact("whatsapp", draft)} disabled={!draft.whatsapp}
               onMouseEnter={(e) => { if (draft.whatsapp) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "rgba(37, 211, 102, 0.1)" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#16a34a" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.whatsapp ? "0 4px 14px -8px rgba(37,211,102,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "#16a34a" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#ffffff" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.whatsapp ? "0 4px 14px -8px rgba(37,211,102,0.5)" : "none" }}
             ><MessageCircle size={15} /> WhatsApp</button>
             <button
               onClick={() => onQuickContact("email", draft)} disabled={!draft.email}
               onMouseEnter={(e) => { if (draft.email) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "rgba(59, 130, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.email ? "#2563eb" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.email ? "0 4px 14px -8px rgba(59,130,246,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "#2563eb" : "rgba(241,245,249,0.5)", color: draft.email ? "#ffffff" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.email ? "0 4px 14px -8px rgba(59,130,246,0.5)" : "none" }}
             ><Mail size={15} /> Email</button>
             <button
               onClick={() => onQuickContact("phone", draft)} disabled={!draft.phone}
               onMouseEnter={(e) => { if (draft.phone) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "rgba(139, 92, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.phone ? "#7c3aed" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.phone ? "0 4px 14px -8px rgba(139,92,246,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "#7c3aed" : "rgba(241,245,249,0.5)", color: draft.phone ? "#ffffff" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.phone ? "0 4px 14px -8px rgba(139,92,246,0.5)" : "none" }}
             ><Phone size={15} /> Ligar</button>
           </div>
         </div>
 
         <div style={{ padding: "20px 28px", flex: 1, minHeight: 0, overflowY: "auto", background: "linear-gradient(180deg, rgba(109,94,248,0.025), transparent 200px)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+          <div className="lead-temp-stage" style={{ display: "grid", gap: 14, marginBottom: 18 }}>
             <div>
               <label style={labelStyle}><SecIcon icon={Flame} color="#f0431f" />Temperatura</label>
               <div style={{ display: "flex", gap: 6 }}>
@@ -4283,7 +4283,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                       onClick={() => update({ temperature: key })}
                       style={{
                         flex: 1, padding: "8px 6px", borderRadius: 999, border: `1px solid ${active ? cfg.color : "rgba(148,163,184,0.25)"}`,
-                        background: active ? cfg.bg : "rgba(255,255,255,0.6)", color: active ? cfg.color : "#64748b", cursor: "pointer",
+                        background: active ? cfg.color : "rgba(255,255,255,0.6)", color: active ? "#ffffff" : "#64748b", cursor: "pointer",
                         fontSize: 15, fontWeight: active ? 700 : 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                         boxShadow: active ? `0 0 0 3px ${cfg.ring}` : "none",
                         transform: active ? "scale(1.03)" : "scale(1)",
@@ -4327,7 +4327,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                       const tags = active ? (draft.tags || []).filter((k) => k !== t.key) : [...(draft.tags || []), t.key];
                       update({ tags });
                     }}
-                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color : "white", color: active ? "#ffffff" : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer" }}
                   >
                     {active ? "✓ " : ""}{t.label}
                   </button>
@@ -4403,8 +4403,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                         style={{
                           flex: 1, padding: "8px 10px", borderRadius: 999,
                           border: `1.5px solid ${active ? "#1fa971" : "rgba(148,163,184,0.3)"}`,
-                          background: active ? "rgba(31,169,113,0.12)" : "white",
-                          color: active ? "#1fa971" : "#64748b",
+                          background: active ? "#1fa971" : "white",
+                          color: active ? "#ffffff" : "#64748b",
                           fontSize: 15.5, fontWeight: active ? 700 : 500, cursor: "pointer",
                         }}
                       >
@@ -4426,8 +4426,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                         style={{
                           flex: 1, minWidth: 90, padding: "8px 10px", borderRadius: 999,
                           border: `1.5px solid ${active ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`,
-                          background: active ? "rgba(109,94,248,0.1)" : "white",
-                          color: active ? "#6d5ef8" : "#64748b",
+                          background: active ? "#6d5ef8" : "white",
+                          color: active ? "#ffffff" : "#64748b",
                           fontSize: 15.5, fontWeight: active ? 700 : 500, cursor: "pointer",
                         }}
                       >
@@ -4447,7 +4447,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               {CONVERSATION_PHASES.map((p) => {
                 const active = (draft.phase || "none") === p.key;
                 return (
-                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 999, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color + "15" : "rgba(255,255,255,0.6)", color: active ? p.color : "#64748b", cursor: "pointer", fontSize: 15, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 999, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color : "rgba(255,255,255,0.6)", color: active ? "#ffffff" : "#64748b", cursor: "pointer", fontSize: 15, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: p.color }} />{p.label}
                   </button>
                 );
@@ -4546,8 +4546,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 999,
                       border: `1.5px solid ${active ? o.color : "rgba(148,163,184,0.3)"}`,
-                      background: active ? o.color + "15" : "white",
-                      color: active ? o.color : "#64748b",
+                      background: active ? o.color : "white",
+                      color: active ? "#ffffff" : "#64748b",
                       fontSize: 15, fontWeight: active ? 700 : 500, cursor: "pointer",
                     }}
                   >
@@ -5272,7 +5272,7 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
                     <button
                       key={t.key}
                       onClick={() => onUpdateTier(tier.id, { type: t.key })}
-                      style={{ padding: "9px 12px", borderRadius: 999, border: `1.5px solid ${tier.type === t.key ? color : "rgba(148,163,184,0.3)"}`, background: tier.type === t.key ? color + "15" : "white", color: tier.type === t.key ? color : "#64748b", fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}
+                      style={{ padding: "9px 12px", borderRadius: 999, border: `1.5px solid ${tier.type === t.key ? color : "rgba(148,163,184,0.3)"}`, background: tier.type === t.key ? color : "white", color: tier.type === t.key ? "#ffffff" : "#64748b", fontSize: 15.5, fontWeight: 700, cursor: "pointer" }}
                     >
                       {t.label}
                     </button>
@@ -5472,7 +5472,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
           <button
             key={t.key}
             onClick={() => { setTab(t.key); cancelEdit(); }}
-            style={{ padding: "9px 16px", borderRadius: 999, border: `1.5px solid ${tab === t.key ? t.color : "rgba(148,163,184,0.3)"}`, background: tab === t.key ? t.color + "15" : "white", color: tab === t.key ? t.color : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+            style={{ padding: "9px 16px", borderRadius: 999, border: `1.5px solid ${tab === t.key ? t.color : "rgba(148,163,184,0.3)"}`, background: tab === t.key ? t.color : "white", color: tab === t.key ? "#ffffff" : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
           >
             {t.label}
           </button>
@@ -5949,7 +5949,7 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
               onClick={() => onNavigate(s.key)}
               style={{
                 display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 999,
-                border: "none", background: active ? "rgba(109,94,248,0.1)" : "transparent", color: active ? "#6d5ef8" : "#14141a",
+                border: "none", background: active ? "#6d5ef8" : "transparent", color: active ? "#ffffff" : "#14141a",
                 fontSize: 15.5, fontWeight: active ? 700 : 500, cursor: "pointer", textAlign: "left", marginBottom: 2,
               }}
             >
@@ -6135,7 +6135,7 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                         onClick={() => handleRemoveClick(s.name)}
                         disabled={sdrs.length <= 1}
                         title={sdrs.length <= 1 ? "Precisa ter ao menos 1 SDR" : "Remover"}
-                        style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: sdrs.length <= 1 ? "transparent" : "rgba(239,68,68,0.1)", color: sdrs.length <= 1 ? "#cbd5e1" : "#dc2626", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: sdrs.length <= 1 ? "transparent" : "#dc2626", color: sdrs.length <= 1 ? "#cbd5e1" : "#ffffff", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -6843,8 +6843,8 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                     style={{
                       padding: "7px 12px", borderRadius: 999, cursor: "pointer", fontSize: 14.5, fontWeight: 700,
                       border: `1.5px solid ${selectedBatch === b.batch ? "#6d5ef8" : "#e2e4e9"}`,
-                      background: selectedBatch === b.batch ? "rgba(109,94,248,0.1)" : "white",
-                      color: selectedBatch === b.batch ? "#6d5ef8" : "#64748b",
+                      background: selectedBatch === b.batch ? "#6d5ef8" : "white",
+                      color: selectedBatch === b.batch ? "#ffffff" : "#64748b",
                     }}
                   >
                     Import de {formatDateShort(b.date)} {b.date ? new Date(b.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : ""} · {b.count} lead{b.count === 1 ? "" : "s"}
@@ -7467,7 +7467,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                   <button
                     key={t.key}
                     onClick={() => setImportTags((prev) => active ? prev.filter((k) => k !== t.key) : [...prev, t.key])}
-                    style={{ padding: "5px 12px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+                    style={{ padding: "5px 12px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color : "white", color: active ? "#ffffff" : "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
                   >
                     {active ? "✓ " : ""}{t.label}
                   </button>
@@ -7704,10 +7704,10 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           <div style={{ marginBottom: 16 }}>
             <LabelWithHint hint="Escolha uma das duas opções - o campo certo aparece conforme a escolha">Local da reunião</LabelWithHint>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-              <button onClick={() => update({ locationType: "online" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType !== "presencial" ? "#6366f1" : "rgba(148,163,184,0.25)"}`, background: draft.locationType !== "presencial" ? "rgba(99,102,241,0.1)" : "white", color: draft.locationType !== "presencial" ? "#4f46e5" : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <button onClick={() => update({ locationType: "online" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType !== "presencial" ? "#6366f1" : "rgba(148,163,184,0.25)"}`, background: draft.locationType !== "presencial" ? "#4f46e5" : "white", color: draft.locationType !== "presencial" ? "#ffffff" : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Video size={13} /> Online
               </button>
-              <button onClick={() => update({ locationType: "presencial" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType === "presencial" ? "#f59e0b" : "rgba(148,163,184,0.25)"}`, background: draft.locationType === "presencial" ? "rgba(245,158,11,0.1)" : "white", color: draft.locationType === "presencial" ? "#b45309" : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <button onClick={() => update({ locationType: "presencial" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType === "presencial" ? "#f59e0b" : "rgba(148,163,184,0.25)"}`, background: draft.locationType === "presencial" ? "#b45309" : "white", color: draft.locationType === "presencial" ? "#ffffff" : "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Users2 size={13} /> Presencial
               </button>
             </div>
@@ -7734,7 +7734,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               {Object.entries(MEETING_TYPES).map(([key, t]) => {
                 const active = draft.type === key;
                 return (
-                  <button key={key} onClick={() => update({ type: key })} style={{ padding: "7px 11px", borderRadius: 999, border: `1px solid ${active ? t.color : "rgba(148,163,184,0.25)"}`, background: active ? t.color + "18" : "white", color: active ? t.color : "#64748b", fontSize: 14.5, fontWeight: active ? 700 : 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                  <button key={key} onClick={() => update({ type: key })} style={{ padding: "7px 11px", borderRadius: 999, border: `1px solid ${active ? t.color : "rgba(148,163,184,0.25)"}`, background: active ? t.color : "white", color: active ? "#ffffff" : "#64748b", fontSize: 14.5, fontWeight: active ? 700 : 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
                     <t.icon size={12} /> {t.label}
                   </button>
                 );
@@ -9147,6 +9147,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           background: linear-gradient(155deg, var(--edge), var(--edge2) 34%, transparent 58%, var(--edge2) 82%, var(--edge));
           -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
         .lg-rim { position: relative; }
+        .lead-temp-stage { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 600px) { .lead-temp-stage { grid-template-columns: 1fr; } }
+        .lead-quick button { min-width: 0; white-space: nowrap; justify-content: center; }
+        .lead-quick button svg, .agenda-actions button svg { flex-shrink: 0; }
+        @media (max-width: 480px) {
+          .lead-quick { gap: 6px !important; }
+          .lead-quick button { padding: 10px 6px !important; font-size: 14px !important; gap: 5px !important; }
+          /* painéis/modais: grades de 2 colunas viram 1 coluna no celular (com fonte maior não cabiam) */
+          .lg-strong [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+          .lg-strong input, .lg-strong select, .lg-strong textarea { min-width: 0; }
+        }
         .agenda-actions button { white-space: nowrap; justify-content: center; }
         @media (max-width: 480px) {
           .agenda-actions button { flex: 1; font-size: 14px !important; padding: 10px 12px !important; }
@@ -10235,7 +10246,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
                   <button
                     onClick={() => setWeekSdrFilter("all")}
-                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === "all" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSdrFilter === "all" ? "rgba(109,94,248,0.1)" : "white", color: weekSdrFilter === "all" ? "#6d5ef8" : "#64748b" }}
+                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === "all" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSdrFilter === "all" ? "#6d5ef8" : "white", color: weekSdrFilter === "all" ? "#ffffff" : "#64748b" }}
                   >
                     Todos
                   </button>
@@ -10243,7 +10254,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     <button
                       key={s.name}
                       onClick={() => setWeekSdrFilter(weekSdrFilter === s.name ? "all" : s.name)}
-                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px 5px 5px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === s.name ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSdrFilter === s.name ? "rgba(109,94,248,0.1)" : "white", color: weekSdrFilter === s.name ? "#6d5ef8" : "#64748b" }}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px 5px 5px", borderRadius: 20, border: `1.5px solid ${weekSdrFilter === s.name ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSdrFilter === s.name ? "#6d5ef8" : "white", color: weekSdrFilter === s.name ? "#ffffff" : "#64748b" }}
                     >
                       <OwnerAvatar name={s.name} size={22} />
                       {s.name}
@@ -10270,13 +10281,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   </button>
                   <button
                     onClick={() => setWeekSectionFilter("leftover")}
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "leftover" ? "#d97706" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSectionFilter === "leftover" ? "rgba(245,158,11,0.12)" : "white", color: weekSectionFilter === "leftover" ? "#d97706" : "#64748b" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "leftover" ? "#d97706" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSectionFilter === "leftover" ? "#d97706" : "white", color: weekSectionFilter === "leftover" ? "#ffffff" : "#64748b" }}
                   >
                     <Clock size={12} /> Sobrou semana passada <span style={{ fontWeight: 800 }}>{weekFiltered.leftover.length}</span>
                   </button>
                   <button
                     onClick={() => setWeekSectionFilter("thisWeek")}
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "thisWeek" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSectionFilter === "thisWeek" ? "rgba(109,94,248,0.1)" : "white", color: weekSectionFilter === "thisWeek" ? "#6d5ef8" : "#64748b" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${weekSectionFilter === "thisWeek" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, cursor: "pointer", fontSize: 15, fontWeight: 700, background: weekSectionFilter === "thisWeek" ? "#6d5ef8" : "white", color: weekSectionFilter === "thisWeek" ? "#ffffff" : "#64748b" }}
                   >
                     <Target size={12} /> Esta semana <span style={{ fontWeight: 800 }}>{weekFiltered.addedThisWeekTotal}</span>
                   </button>
@@ -10685,8 +10696,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                 title="Editar comissão deste contrato"
                                 style={{
                                   display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontWeight: 700, padding: "1px 7px", borderRadius: 999, border: "none", cursor: "pointer",
-                                  background: commission > 0 ? "rgba(251,191,36,0.15)" : "rgba(148,163,184,0.15)",
-                                  color: commission > 0 ? "#b8860b" : "#64748b",
+                                  background: commission > 0 ? "#b8860b" : "rgba(148,163,184,0.15)",
+                                  color: commission > 0 ? "#ffffff" : "#64748b",
                                 }}
                               >
                                 💰 {commission > 0
@@ -11268,8 +11279,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                   style={{
                                     padding: "8px 14px", borderRadius: 999,
                                     border: `1.5px solid ${cfg.period === p.key ? metric.color : "rgba(148,163,184,0.3)"}`,
-                                    background: cfg.period === p.key ? metric.color + "15" : "white",
-                                    color: cfg.period === p.key ? metric.color : "#64748b",
+                                    background: cfg.period === p.key ? metric.color : "white",
+                                    color: cfg.period === p.key ? "#ffffff" : "#64748b",
                                     fontSize: 15.5, fontWeight: cfg.period === p.key ? 700 : 500, cursor: "pointer",
                                   }}
                                 >
@@ -11365,8 +11376,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               style={{
                                 padding: "6px 11px", borderRadius: 999,
                                 border: `1.5px solid ${active ? metric.color : "rgba(148,163,184,0.3)"}`,
-                                background: active ? metric.color + "15" : "white",
-                                color: active ? metric.color : "#64748b",
+                                background: active ? metric.color : "white",
+                                color: active ? "#ffffff" : "#64748b",
                                 fontSize: 14.5, fontWeight: 700, cursor: "pointer",
                               }}
                             >
