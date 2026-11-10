@@ -247,7 +247,12 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
         <X size={16} />
       </button>
       <div style={tooltipStyle}>
-        <div style={{ background: "white", borderRadius: 18, padding: "18px 20px", boxShadow: "0 24px 60px -16px rgba(0,0,0,0.55)" }}>
+        <div
+          className="lg"
+          style={{
+            borderRadius: 22,
+            padding: "18px 20px"
+          }}>
           <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
             {steps.map((s, i) => (
               <div key={s.id} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= stepIndex ? "#d7fa3c" : "#eef0f3", transition: "background 0.2s ease" }} />
@@ -258,8 +263,27 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <button onClick={onSkip} style={{ border: "none", background: "transparent", color: "#9a9aa3", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}>Pular tour</button>
             <div style={{ display: "flex", gap: 8 }}>
-              {!isFirst && <button onClick={onPrev} style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #eef0f3", background: "white", color: "#5c5c66", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Voltar</button>}
-              <button onClick={isLast ? onFinish : onNext} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#14141a", color: "#d7fa3c", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>{isLast ? "Concluir" : "Próximo"}</button>
+              {!isFirst && <button
+                className="lgb"
+                onClick={onPrev}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  color: "#5c5c66",
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}>Voltar</button>}
+              <button
+                className="lg-primary"
+                onClick={isLast ? onFinish : onNext}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 999,
+                  fontSize: 13.5,
+                  fontWeight: 800,
+                  cursor: "pointer"
+                }}>{isLast ? "Concluir" : "Próximo"}</button>
             </div>
           </div>
         </div>
@@ -758,15 +782,8 @@ const MONTH_LABELS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho"
 const Glass = ({ children, style = {}, onClick, className }) => (
   <div
     onClick={onClick}
-    className={className}
-    style={{
-      background: "rgba(255, 255, 255, 0.6)",
-      backdropFilter: "blur(20px) saturate(150%)",
-      WebkitBackdropFilter: "blur(20px) saturate(150%)",
-      border: "1px solid rgba(255, 255, 255, 0.75)",
-      boxShadow: "0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 28px -12px rgba(76, 29, 149, 0.14)",
-      ...style,
-    }}
+    className={"lg" + (className ? " " + className : "")}
+    style={{ ...style }}
   >
     {children}
   </div>
@@ -800,7 +817,7 @@ const ToggleSwitch = ({ on, onClick, activeColor = DARK.lime, disabled = false }
     onClick={disabled ? undefined : onClick}
     disabled={disabled}
     style={{
-      width: 44, height: 25, borderRadius: 13, border: "none", cursor: disabled ? "default" : "pointer", flexShrink: 0,
+      width: 44, height: 25, borderRadius: 999, border: "none", cursor: disabled ? "default" : "pointer", flexShrink: 0,
       background: on ? activeColor : "rgba(148,163,184,0.35)",
       position: "relative", transition: "background 0.18s ease", padding: 0,
       opacity: disabled ? 0.55 : 1,
@@ -873,8 +890,8 @@ const ContactPill = ({ icon: Icon, color, label, hasData, isMarked, onClick, siz
       style={{
         position: "relative", display: "inline-flex", alignItems: "center", gap: 6,
         padding: sm ? "6px 10px" : "8px 13px",
-        borderRadius: 10,
-        border: hasData ? `1px solid ${color}55` : "1px dashed rgba(148, 163, 184, 0.5)",
+        borderRadius: 999,
+        border: hasData ? `1px solid ${color}55` : "1px solid rgba(148, 163, 184, 0.5)",
         background: hasData ? color + "14" : "rgba(241, 245, 249, 0.7)",
         color: hasData ? color : "#94a3b8",
         cursor: "pointer", fontSize: sm ? 11.5 : 12.5, fontWeight: 600,
@@ -895,7 +912,7 @@ const Chip = ({ color, dotColor, children, active, onClick, count, onGreen }) =>
     onClick={onClick}
     style={{
       display: "inline-flex", alignItems: "center", gap: 6,
-      padding: "7px 13px", borderRadius: 10,
+      padding: "7px 13px", borderRadius: 999,
       border: `1.5px solid ${active ? color : (onGreen ? "rgba(20,20,26,0.18)" : "rgba(148,163,184,0.25)")}`,
       background: active ? "white" : (onGreen ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.55)"),
       color: active ? color : (onGreen ? "#2d3a0a" : "#475569"),
@@ -958,9 +975,10 @@ const SecIcon = ({ icon: Icon, color }) => (
   </span>
 );
 const inputStyle = {
-  width: "100%", padding: "9px 12px", borderRadius: 10,
-  border: "1px solid rgba(148, 163, 184, 0.25)", background: "rgba(255, 255, 255, 0.75)",
-  fontSize: 13, color: "#0f172a", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+  width: "100%", padding: "11px 14px", borderRadius: 14,
+  border: "1px solid rgba(255, 255, 255, 0.75)", background: "rgba(255, 255, 255, 0.5)",
+  boxShadow: "inset 0 1px 2px rgba(16, 26, 35, 0.06), 0 1px 0 rgba(255,255,255,0.6)",
+  fontSize: 14, color: "#101a23", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
 };
 const selectStyle = {
   ...inputStyle, cursor: "pointer", appearance: "none",
@@ -994,7 +1012,16 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
   ];
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.4)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "20px 20px 0 0", padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", animation: "slideUp 0.25s ease" }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: "20px 20px 0 0",
+          padding: "18px 18px calc(18px + env(safe-area-inset-bottom))",
+          animation: "slideUp 0.25s ease"
+        }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Adicionar a uma lista de envio</div>
         <div style={{ fontSize: 13.5, color: "#94a3b8", marginBottom: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company} - escolha o canal</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1004,7 +1031,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
               onClick={() => r.has && onPick(r.key)}
               disabled={!r.has}
               style={{
-                display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, cursor: r.has ? "pointer" : "not-allowed",
+                display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 999, cursor: r.has ? "pointer" : "not-allowed",
                 border: `1.5px solid ${r.active ? r.color : "#eef0f3"}`, background: r.active ? r.color + "10" : (r.has ? "white" : "#f8f9fb"), opacity: r.has ? 1 : 0.55,
               }}
             >
@@ -1051,17 +1078,17 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
 
   return (
     <div
-      className="lead-card lead-card-compact"
+      className={dark ? "lead-card lead-card-compact lg-rim" : "lead-card lead-card-compact lg"}
       style={{
-        position: "relative", borderRadius: 18,
+        position: "relative", borderRadius: 22,
         // Cards da lista da semana: fundo roxo vibrante com as marcas (mesma arte do card
         // Calendário da home), no lugar do preto - overlay levemente mais forte pra manter
         // a leitura dos textos pequenos.
         ...(dark
           ? { backgroundImage: `linear-gradient(rgba(20,14,60,0.45), rgba(20,14,60,0.45)), url(${BG_PURPLE_VIVID})`, backgroundSize: "cover", backgroundPosition: "center" }
-          : { background: "white" }),
-        border: `1px solid ${lead.superAttention ? "rgba(245,158,11,0.35)" : (dark ? "rgba(255,255,255,0.16)" : "#eef0f3")}`,
-        boxShadow: dark ? "0 8px 22px -8px rgba(76,63,215,0.55)" : "0 2px 10px -4px rgba(20,20,22,0.08)",
+          : {}),
+        ...(lead.superAttention ? { border: "1px solid rgba(245,158,11,0.45)" } : {}),
+        ...(dark ? { border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 18px 36px -18px rgba(76,63,215,0.65)" } : {}),
         cursor: "pointer", transition: "all 0.2s ease",
         overflow: "hidden",
         animation: lead.superAttention ? "superCardGlow 2.6s ease-in-out infinite" : "none",
@@ -1201,7 +1228,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkContacted(lead.id); }}
                   title="Marcar como contatado hoje"
-                  style={{ border: "none", background: dark ? "rgba(255,255,255,0.1)" : "rgba(31,169,113,0.1)", color: dark ? "#c7c7cf" : "#1fa971", fontSize: 11, fontWeight: 700, padding: "3px 7px", borderRadius: 6, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+                  style={{ border: "none", background: dark ? "rgba(255,255,255,0.1)" : "rgba(31,169,113,0.1)", color: dark ? "#c7c7cf" : "#1fa971", fontSize: 11, fontWeight: 700, padding: "3px 7px", borderRadius: 999, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
                 >
                   Marcar hoje
                 </button>
@@ -1255,7 +1282,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
           <button
             onClick={() => { window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(lead, meetings))}`; }}
             title="Compartilhar esse lead com outro SDR"
-            style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
+            style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
           >
             <Share2 size={14} />
           </button>
@@ -1268,7 +1295,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
           <button
             onClick={onMarkWeekDone}
             title="Marcar este lead como abordado essa semana"
-            style={{ width: "100%", padding: "8px 0", borderRadius: 9, cursor: "pointer", fontSize: 13, fontWeight: 700, background: dark ? "rgba(255,255,255,0.12)" : "white", color: "#34d399", border: "1.5px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
+            style={{ width: "100%", padding: "8px 0", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 700, background: dark ? "rgba(255,255,255,0.12)" : "white", color: "#34d399", border: "1.5px solid #34d399", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, transition: "all 0.15s ease" }}
           >
             <CheckCircle2 size={13} /> Marcar como feito
           </button>
@@ -1302,7 +1329,7 @@ const CopyButton = ({ value }) => {
       onClick={handleCopy}
       title={copied ? "Copiado!" : "Copiar"}
       style={{
-        width: 26, height: 26, borderRadius: 7, border: "none", flexShrink: 0,
+        width: 26, height: 26, borderRadius: "50%", border: "none", flexShrink: 0,
         background: copied ? "rgba(31,169,113,0.15)" : "rgba(148,163,184,0.12)",
         color: copied ? "#1fa971" : "#94a3b8",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -1355,11 +1382,43 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
   ];
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 120, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 20, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 120,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: "22px 22px 0 0",
+          padding: 20,
+          animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{lead.company}</div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}><X size={15} /></button>
         </div>
         <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>Toque na seta pra abrir, ou no quadradinho pra copiar.</div>
 
@@ -1380,14 +1439,14 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
                   <button
                     onClick={() => copy(r.key, r.value)}
                     title="Copiar"
-                    style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: copiedField === r.key ? "#22c55e" : "rgba(148,163,184,0.12)", color: copiedField === r.key ? "white" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
+                    style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: copiedField === r.key ? "#22c55e" : "rgba(148,163,184,0.12)", color: copiedField === r.key ? "white" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
                   >
                     {copiedField === r.key ? <Check size={14} /> : <Copy size={14} />}
                   </button>
                   <button
                     onClick={() => onDispatch(r.dispatchType, lead)}
                     title={`Abrir ${r.label}`}
-                    style={{ width: 32, height: 32, borderRadius: 9, border: "none", background: r.color + "18", color: r.color, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
+                    style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: r.color + "18", color: r.color, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s ease" }}
                   >
                     <ArrowUpRight size={15} />
                   </button>
@@ -1461,9 +1520,37 @@ const MiniCalendar = ({ value, onSelect }) => {
   return (
     <div style={{ padding: 14, borderRadius: 16, background: "linear-gradient(180deg, #fafaff, #f4f4fb)", boxShadow: "0 0 0 1.5px rgba(109,94,248,0.12) inset" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))} style={{ width: 28, height: 28, borderRadius: 9, border: "none", background: "white", boxShadow: "0 2px 6px -2px rgba(15,23,42,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.1s ease" }}><ChevronLeft size={14} color="#6d5ef8" /></button>
+        <button
+          className="lgb"
+          type="button"
+          onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 0.1s ease"
+          }}><ChevronLeft size={14} color="#6d5ef8" /></button>
         <span style={{ fontSize: 13.5, fontWeight: 800, color: "#14141a", textTransform: "capitalize", letterSpacing: 0.1 }}>{monthLabel}</span>
-        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))} style={{ width: 28, height: 28, borderRadius: 9, border: "none", background: "white", boxShadow: "0 2px 6px -2px rgba(15,23,42,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.1s ease" }}><ChevronRight size={14} color="#6d5ef8" /></button>
+        <button
+          className="lgb"
+          type="button"
+          onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "transform 0.1s ease"
+          }}><ChevronRight size={14} color="#6d5ef8" /></button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 6 }}>
         {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
@@ -1482,9 +1569,9 @@ const MiniCalendar = ({ value, onSelect }) => {
               key={i} type="button"
               onClick={() => onSelect(new Date(year, month, d, 12).toISOString())}
               style={{
-                aspectRatio: "1", borderRadius: 10, cursor: "pointer",
+                aspectRatio: "1", borderRadius: 999, cursor: "pointer",
                 border: isToday && !isSelected ? "1.5px solid #6d5ef8" : "1px solid transparent",
-                background: isSelected ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent",
+                background: isSelected ? "linear-gradient(180deg, #2a3540, #121a21)" : "transparent",
                 boxShadow: isSelected ? "0 4px 12px -4px rgba(109,94,248,0.6)" : "none",
                 color: isSelected ? "white" : "#14141a",
                 fontSize: 12.5, fontWeight: isSelected ? 800 : 600,
@@ -1517,11 +1604,19 @@ const MiniTimePicker = ({ value, onSelect }) => {
       <div style={{ display: "flex", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: "#a3a3b8", textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Hora</div>
-          <div ref={hourRef} style={{ maxHeight: 168, overflowY: "auto", borderRadius: 10, background: "white", boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)" }}>
+          <div
+            className="lg-soft"
+            ref={hourRef}
+            style={{
+              maxHeight: 168,
+              overflowY: "auto",
+              borderRadius: 10,
+              boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)"
+            }}>
             {hours.map((hh) => (
               <button
                 key={hh} type="button" data-active={hh === h} onClick={() => onSelect(`${hh}:${m}`)}
-                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: hh === h ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent", color: hh === h ? "white" : "#14141a", fontWeight: hh === h ? 800 : 600, fontSize: 13.5, borderRadius: 8 }}
+                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: hh === h ? "linear-gradient(180deg, #2a3540, #121a21)" : "transparent", color: hh === h ? "white" : "#14141a", fontWeight: hh === h ? 800 : 600, fontSize: 13.5, borderRadius: 999 }}
               >
                 {hh}
               </button>
@@ -1530,11 +1625,19 @@ const MiniTimePicker = ({ value, onSelect }) => {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: "#a3a3b8", textTransform: "uppercase", textAlign: "center", marginBottom: 6 }}>Min</div>
-          <div ref={minRef} style={{ maxHeight: 168, overflowY: "auto", borderRadius: 10, background: "white", boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)" }}>
+          <div
+            className="lg-soft"
+            ref={minRef}
+            style={{
+              maxHeight: 168,
+              overflowY: "auto",
+              borderRadius: 10,
+              boxShadow: "0 2px 8px -4px rgba(15,23,42,0.12)"
+            }}>
             {minutes.map((mm) => (
               <button
                 key={mm} type="button" data-active={mm === m} onClick={() => onSelect(`${h}:${mm}`)}
-                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: mm === m ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "transparent", color: mm === m ? "white" : "#14141a", fontWeight: mm === m ? 800 : 600, fontSize: 13.5, borderRadius: 8 }}
+                style={{ display: "block", width: "100%", padding: "8px 0", border: "none", cursor: "pointer", textAlign: "center", background: mm === m ? "linear-gradient(180deg, #2a3540, #121a21)" : "transparent", color: mm === m ? "white" : "#14141a", fontWeight: mm === m ? 800 : 600, fontSize: 13.5, borderRadius: 999 }}
               >
                 {mm}
               </button>
@@ -1568,7 +1671,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
         onClick={() => setOpen(true)}
         style={{
           display: "flex", alignItems: "center", gap: 11, width: "100%",
-          padding: "12px 14px", borderRadius: 16, cursor: "pointer", border: "none",
+          padding: "12px 14px", borderRadius: 999, cursor: "pointer", border: "none",
           background: tone.bg, boxShadow: `0 0 0 1.5px ${tone.ring} inset`,
           textAlign: "left", transition: "box-shadow 0.15s ease, background 0.15s ease",
         }}
@@ -1593,11 +1696,16 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
   }
 
   return (
-    <div style={{ padding: 16, borderRadius: 18, background: "white", boxShadow: "0 12px 30px -14px rgba(109,94,248,0.4), 0 0 0 1.5px rgba(109,94,248,0.25)" }}>
+    <div
+      className="lg"
+      style={{
+        padding: 16,
+        borderRadius: 22
+      }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Quando você quer ser lembrado de retornar?</div>
         {!required && (
-          <button onClick={() => setOpen(false)} style={{ width: 26, height: 26, borderRadius: 8, border: "none", background: "rgba(148,163,184,0.12)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={13} /></button>
+          <button onClick={() => setOpen(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(148,163,184,0.12)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={13} /></button>
         )}
       </div>
 
@@ -1608,7 +1716,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
             onClick={() => { onPick(addDaysISO(opt.days)); setOpen(false); }}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              padding: "10px 8px", borderRadius: 12, border: "1.5px solid rgba(109,94,248,0.22)",
+              padding: "10px 8px", borderRadius: 999, border: "1.5px solid rgba(109,94,248,0.22)",
               background: "linear-gradient(135deg, rgba(109,94,248,0.08), rgba(139,123,250,0.03))",
               color: "#6d5ef8", fontSize: 14, fontWeight: 700, cursor: "pointer",
             }}
@@ -1630,7 +1738,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
                   onClick={() => onPickChannel(active ? null : c.key)}
                   style={{
                     flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                    padding: "9px 6px", borderRadius: 11, cursor: "pointer",
+                    padding: "9px 6px", borderRadius: 999, cursor: "pointer",
                     border: `1.5px solid ${active ? c.color : "rgba(148,163,184,0.25)"}`,
                     background: active ? c.color + "16" : "white", color: active ? c.color : "#64748b",
                     fontSize: 13, fontWeight: 700, transition: "all 0.15s ease",
@@ -1668,14 +1776,47 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
     onConfirm(text, reminderDate, reminderChannel);
   };
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: "white", borderRadius: "22px 22px 0 0", padding: 20, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 170,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          borderRadius: "22px 22px 0 0",
+          padding: 20,
+          animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Resumo do contato</div>
             <div style={{ fontSize: 13.5, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}><X size={15} /></button>
         </div>
         <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 14 }}>Antes de marcar como feito, escreva o que aconteceu no contato - mesmo que tenha sido sem retorno.</div>
 
@@ -1684,7 +1825,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
             <button
               key={s}
               onClick={() => setText(s)}
-              style={{ padding: "6px 11px", borderRadius: 8, border: `1px solid ${text === s ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: text === s ? "rgba(109,94,248,0.1)" : "white", color: text === s ? "#6d5ef8" : "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              style={{ padding: "6px 11px", borderRadius: 999, border: `1px solid ${text === s ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: text === s ? "rgba(109,94,248,0.1)" : "white", color: text === s ? "#6d5ef8" : "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
             >
               {s}
             </button>
@@ -1708,7 +1849,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
         <button
           onClick={handleConfirm}
           disabled={!canConfirm}
-          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: canConfirm ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#e2e4e9", color: canConfirm ? "white" : "#9a9aa3", fontSize: 14, fontWeight: 700, cursor: canConfirm ? "pointer" : "default" }}
+          style={{ width: "100%", padding: "12px 0", borderRadius: 999, border: "none", background: canConfirm ? "linear-gradient(180deg, #2a3540, #121a21)" : "#e2e4e9", color: canConfirm ? "white" : "#9a9aa3", fontSize: 14, fontWeight: 700, cursor: canConfirm ? "pointer" : "default" }}
         >
           Marcar como feito
         </button>
@@ -1964,15 +2105,26 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 160, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 160,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
-        <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
+        <div style={{ background: "linear-gradient(180deg, #2a3540, #121a21)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um script" : (initialMessage ? "Editar mensagem do envio" : "Editar mensagem")}</div>
               <div style={{ fontSize: 13.5, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
             </div>
-            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
         </div>
 
@@ -1985,7 +2137,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   onClick={onNoScript}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    padding: "14px 16px", borderRadius: 16, border: "none", cursor: "pointer",
+                    padding: "14px 16px", borderRadius: 999, border: "none", cursor: "pointer",
                     background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white",
                     fontSize: 14, fontWeight: 800, boxShadow: "0 10px 24px -10px rgba(37,211,102,0.6)",
                   }}
@@ -1997,7 +2149,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
               {onSaveUserScript && (
                 <button
                   onClick={startCreate}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 14, border: "1.5px dashed rgba(109,94,248,0.45)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 999, border: "1.5px solid rgba(109,94,248,0.45)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
                 >
                   <Plus size={15} /> Criar novo script
                 </button>
@@ -2010,7 +2162,14 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
               {userScripts.map((s) => {
                 const filled = fillScriptTemplate(s.template, lead);
                 return (
-                  <div key={s.id} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(14,165,233,0.25)", overflow: "hidden" }}>
+                  <div
+                    className="lg"
+                    key={s.id}
+                    style={{
+                      borderRadius: 22,
+                      border: "1px solid rgba(14,165,233,0.25)",
+                      overflow: "hidden"
+                    }}>
                     <button onClick={() => onSelect(filled)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" }}>
                       <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Pencil size={14} />
@@ -2045,15 +2204,18 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                 const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
                 return (
                   <div
+                    className="lg"
                     key={s.key}
                     style={{
-                      textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
-                      background: "white", transition: "transform 0.12s ease, box-shadow 0.12s ease",
-                      boxShadow: `0 2px 10px -6px ${s.color}40`,
+                      textAlign: "left",
+                      padding: "14px 16px",
+                      borderRadius: 22,
+                      border: `1.5px solid ${s.color}30`,
+                      transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                      boxShadow: `0 2px 10px -6px ${s.color}40`
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
-                  >
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}>
                     <button
                       onClick={() => onSelect(filled)}
                       title="Usar esse script direto"
@@ -2107,7 +2269,12 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                   </div>
                 </div>
               )}
-              <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+              <div
+                className="lg"
+                style={{
+                  borderRadius: 22,
+                  padding: 18
+                }}>
                 {(creating || pickedUserId) && (
                   <>
                     <label style={{ ...labelStyle }}><SecIcon icon={FileText} color="#0ea5e9" />Título do script</label>
@@ -2138,7 +2305,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftMessage.trim()}
-                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#6d5ef8"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#6d5ef8", fontSize: 13, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
@@ -2146,7 +2313,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
               <button
                 onClick={confirm}
                 disabled={!draftMessage.trim()}
-                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftMessage.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 999, border: "none", background: draftMessage.trim() ? "linear-gradient(180deg, #2a3540, #121a21)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftMessage.trim() ? "pointer" : "not-allowed" }}
               >
                 {initialMessage ? "Salvar na fila" : creating ? "Salvar e usar essa mensagem" : "Usar essa mensagem"}
               </button>
@@ -2364,7 +2531,18 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(10,30,50,0.5)", backdropFilter: "blur(6px)", zIndex: 160, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 160,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
         <div style={{ background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -2372,7 +2550,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
               <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800 }}>{step === "pick" ? "Escolha um case" : (isEditingExisting ? "Editar e-mail do envio" : "Editar e-mail")}</div>
               <div style={{ fontSize: 13.5, opacity: 0.85, marginTop: 2 }}>Pra {lead.company}{lead.contactName ? ` · ${lead.contactName}` : ""}</div>
             </div>
-            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
         </div>
 
@@ -2385,7 +2563,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   onClick={onNoScript}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    padding: "14px 16px", borderRadius: 16, border: "none", cursor: "pointer",
+                    padding: "14px 16px", borderRadius: 999, border: "none", cursor: "pointer",
                     background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white",
                     fontSize: 14, fontWeight: 800, boxShadow: "0 10px 24px -10px rgba(59,130,246,0.6)",
                   }}
@@ -2397,7 +2575,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
               {onSaveUserScript && (
                 <button
                   onClick={startCreate}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 14, border: "1.5px dashed rgba(59,130,246,0.45)", background: "rgba(59,130,246,0.05)", color: "#3b82f6", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 999, border: "1.5px solid rgba(59,130,246,0.45)", background: "rgba(59,130,246,0.05)", color: "#3b82f6", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
                 >
                   <Plus size={15} /> Criar novo script
                 </button>
@@ -2410,7 +2588,14 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                 const filledSubject = fillScriptTemplate(s.subject || "", lead);
                 const filledBody = fillScriptTemplate(s.body, lead);
                 return (
-                  <div key={s.id} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(14,165,233,0.25)", overflow: "hidden" }}>
+                  <div
+                    className="lg"
+                    key={s.id}
+                    style={{
+                      borderRadius: 22,
+                      border: "1px solid rgba(14,165,233,0.25)",
+                      overflow: "hidden"
+                    }}>
                     <button onClick={() => onSelect(filledSubject, filledBody)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", width: "100%", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" }}>
                       <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(14,165,233,0.12)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Mail size={14} />
@@ -2447,15 +2632,18 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                 const isCustomized = scriptOverrides && scriptOverrides[s.key] !== undefined;
                 return (
                   <div
+                    className="lg"
                     key={s.key}
                     style={{
-                      textAlign: "left", padding: "14px 16px", borderRadius: 16, border: `1.5px solid ${s.color}30`,
-                      background: "white", transition: "transform 0.12s ease, box-shadow 0.12s ease",
-                      boxShadow: `0 2px 10px -6px ${s.color}40`,
+                      textAlign: "left",
+                      padding: "14px 16px",
+                      borderRadius: 22,
+                      border: `1.5px solid ${s.color}30`,
+                      transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                      boxShadow: `0 2px 10px -6px ${s.color}40`
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 10px 22px -10px ${s.color}70`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}
-                  >
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 2px 10px -6px ${s.color}40`; }}>
                     <button
                       onClick={() => onSelect(filledSubject, filledBody)}
                       title="Usar esse case direto"
@@ -2507,7 +2695,12 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                   </div>
                 </div>
               )}
-              <div style={{ background: "white", borderRadius: 18, padding: 18, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -14px rgba(20,20,26,0.12)" }}>
+              <div
+                className="lg"
+                style={{
+                  borderRadius: 22,
+                  padding: 18
+                }}>
                 {(creating || pickedUserId) && (
                   <>
                     <label style={{ ...labelStyle }}><SecIcon icon={FileText} color="#0ea5e9" />Título do script</label>
@@ -2538,7 +2731,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                 <button
                   onClick={saveAsDefault}
                   disabled={!draftBody.trim()}
-                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 14, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#3b82f6", fontSize: 13, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                  style={{ width: "100%", marginTop: 12, padding: "11px 0", borderRadius: 999, border: `1.5px solid ${savedFlash ? "#1eb356" : "#3b82f6"}`, background: savedFlash ? "rgba(37,211,102,0.1)" : "white", color: savedFlash ? "#1eb356" : "#3b82f6", fontSize: 13, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 >
                   {savedFlash ? <><Check size={15} /> Salvo!</> : <>💾 {creating ? "Só salvar na biblioteca" : pickedUserId ? "Salvar alterações" : "Salvar como padrão"}</>}
                 </button>
@@ -2546,7 +2739,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
               <button
                 onClick={confirm}
                 disabled={!draftBody.trim()}
-                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 14, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
+                style={{ width: "100%", marginTop: (pickedKey || pickedUserId || creating) ? 8 : 14, padding: "13px 0", borderRadius: 999, border: "none", background: draftBody.trim() ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: draftBody.trim() ? "pointer" : "not-allowed" }}
               >
                 {isEditingExisting ? "Salvar na fila" : creating ? "Salvar e usar esse e-mail" : "Usar esse e-mail"}
               </button>
@@ -2595,11 +2788,11 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
-      <div style={{ background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+      <div style={{ background: "linear-gradient(180deg, #2a3540, #121a21)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <ArrowLeft size={17} />
               </button>
               <div>
@@ -2610,7 +2803,7 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
           </div>
           <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.15)", borderRadius: 12, padding: 4 }}>
             {WEEK_HISTORY_RANGES.map((r) => (
-              <button key={r.key} onClick={() => setRange(r.key)} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 9, border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", background: range === r.key ? "white" : "transparent", color: range === r.key ? "#6d5ef8" : "rgba(255,255,255,0.8)" }}>
+              <button key={r.key} onClick={() => setRange(r.key)} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: 999, border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", background: range === r.key ? "white" : "transparent", color: range === r.key ? "#6d5ef8" : "rgba(255,255,255,0.8)" }}>
                 {r.label}
               </button>
             ))}
@@ -2650,10 +2843,18 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                       const lead = leads.find((l) => l.id === h.leadId);
                       return (
                         <div
+                          className="lg"
                           key={h.id}
                           onClick={() => lead && onOpenLead(lead)}
-                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, background: "white", border: `1px solid ${cfg.color}22`, cursor: lead ? "pointer" : "default" }}
-                        >
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "12px 14px",
+                            borderRadius: 22,
+                            border: `1px solid ${cfg.color}22`,
+                            cursor: lead ? "pointer" : "default"
+                          }}>
                           <div style={{ width: 32, height: 32, borderRadius: "50%", background: cfg.color + "18", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <cfg.icon size={14} />
                           </div>
@@ -2763,7 +2964,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <ArrowLeft size={17} />
               </button>
               <div style={{ minWidth: 0 }}>
@@ -2775,11 +2976,18 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                 </div>
               </div>
             </div>
-            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
           {mode === "sending" && (
             <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+              <div
+                className="lg-soft"
+                style={{
+                  height: "100%",
+                  borderRadius: 4,
+                  width: `${((idx) / validLeads.length) * 100}%`,
+                  transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)"
+                }} />
             </div>
           )}
         </div>
@@ -2790,11 +2998,19 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
           {mode === "list" && (
             <>
               {/* Seletor de abas: fila pendente x histórico de envios já feitos */}
-              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "fila" ? "#128c4a" : "#94a3b8" }}>
+              <div
+                className="lg-soft"
+                style={{
+                  display: "flex",
+                  gap: 4,
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  padding: 4
+                }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "fila" ? "#128c4a" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "historico" ? "#128c4a" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(37,211,102,0.12)" : "transparent", color: tab === "historico" ? "#128c4a" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -2805,7 +3021,18 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                     <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 14, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
-                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                    <button
+                      className="lgb"
+                      onClick={onClose}
+                      style={{
+                        marginTop: 18,
+                        padding: "10px 20px",
+                        borderRadius: 999,
+                        color: "#64748b",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}>
                       ← Voltar pros leads
                     </button>
                   </div>
@@ -2818,7 +3045,17 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
                       {leadsInList.map((lead, i) => (
-                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                        <div
+                          className="lg"
+                          key={lead.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 12px",
+                            borderRadius: 22,
+                            border: `1px solid ${lead.whatsapp ? "#eef0f3" : "rgba(245,158,11,0.3)"}`
+                          }}>
                           <OwnerAvatar name={lead.company} size={32} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -2828,16 +3065,16 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                             <div style={{ fontSize: 12.5, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
                           </div>
                           {lead.whatsapp && (
-                            <button onClick={() => setEditingLead(lead)} title="Editar mensagem" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <button onClick={() => setEditingLead(lead)} title="Editar mensagem" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Pencil size={13} />
                             </button>
                           )}
                           {lead.whatsapp && (
-                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(37,211,102,0.12)", color: "#128c4a", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Send size={13} />
                             </button>
                           )}
-                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <X size={13} />
                           </button>
                         </div>
@@ -2857,7 +3094,15 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                     {history.map((h) => (
-                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                      <div
+                        className="lg"
+                        key={h.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          padding: "12px 14px",
+                          borderRadius: 22
+                        }}>
                         <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(37,211,102,0.12)", color: "#128c4a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Check size={15} />
                         </div>
@@ -2884,7 +3129,14 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                   Você está ajustando <strong>só esta mensagem</strong>, pra esse envio agora. O script padrão desse lead continua o mesmo.
                 </div>
               </div>
-              <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+              <div
+                className="lg"
+                style={{
+                  borderRadius: 20,
+                  padding: 20,
+                  marginBottom: 16,
+                  animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <OwnerAvatar name={currentLead.company} size={42} />
                   <div>
@@ -2902,10 +3154,21 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                <button
+                  className="lgb"
+                  onClick={handleSkip}
+                  style={{
+                    flex: 1,
+                    padding: "13px 0",
+                    borderRadius: 999,
+                    color: "#64748b",
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}>
                   Pular
                 </button>
-                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.6)", position: "relative" }}>
+                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.6)", position: "relative" }}>
                   <Send size={15} /> Abrir WhatsApp e continuar
                 </button>
               </div>
@@ -2929,7 +3192,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
                 {sentCount} mensage{sentCount === 1 ? "m aberta" : "ns abertas"} no WhatsApp{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
-              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
                 Fechar
               </button>
             </div>
@@ -2954,15 +3217,25 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
       </div>
 
       {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
-        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+        <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.42)", display: "flex", gap: 8, flexShrink: 0 }}>
           <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
-            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <button
+              className="lgb"
+              onClick={onClear}
+              style={{
+                padding: "13px 18px",
+                borderRadius: 999,
+                color: "#64748b",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}>
               Limpar lista
             </button>
             <button
               onClick={() => startSending(0)}
               disabled={validLeads.length === 0}
-              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 999, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #25d366, #128c4a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(37,211,102,0.6)" : "none" }}
             >
               <Send size={15} /> Iniciar envio ({validLeads.length})
             </button>
@@ -3046,7 +3319,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <ArrowLeft size={17} />
               </button>
               <div style={{ minWidth: 0 }}>
@@ -3058,11 +3331,18 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                 </div>
               </div>
             </div>
-            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
           {mode === "sending" && (
             <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 4, width: `${((idx) / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+              <div
+                className="lg-soft"
+                style={{
+                  height: "100%",
+                  borderRadius: 4,
+                  width: `${((idx) / validLeads.length) * 100}%`,
+                  transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)"
+                }} />
             </div>
           )}
         </div>
@@ -3072,11 +3352,19 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           {mode === "list" && (
             <>
-              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "fila" ? "#1d4ed8" : "#94a3b8" }}>
+              <div
+                className="lg-soft"
+                style={{
+                  display: "flex",
+                  gap: 4,
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  padding: 4
+                }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "fila" ? "#1d4ed8" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "historico" ? "#1d4ed8" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(59,130,246,0.12)" : "transparent", color: tab === "historico" ? "#1d4ed8" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -3087,7 +3375,18 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                     <Mail size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 14, marginTop: 4 }}>Toque no ícone de e-mail num lead pra adicionar aqui.</div>
-                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                    <button
+                      className="lgb"
+                      onClick={onClose}
+                      style={{
+                        marginTop: 18,
+                        padding: "10px 20px",
+                        borderRadius: 999,
+                        color: "#64748b",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}>
                       ← Voltar pros leads
                     </button>
                   </div>
@@ -3100,7 +3399,17 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
                       {leadsInList.map((lead, i) => (
-                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.email ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                        <div
+                          className="lg"
+                          key={lead.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 12px",
+                            borderRadius: 22,
+                            border: `1px solid ${lead.email ? "#eef0f3" : "rgba(245,158,11,0.3)"}`
+                          }}>
                           <OwnerAvatar name={lead.company} size={32} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -3110,16 +3419,16 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                             <div style={{ fontSize: 12.5, color: lead.email ? "#94a3b8" : "#b45309", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.emailSubject || lead.email || "sem e-mail cadastrado"}</div>
                           </div>
                           {lead.email && (
-                            <button onClick={() => setEditingLead(lead)} title="Editar e-mail" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(59,130,246,0.12)", color: "#3b82f6", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <button onClick={() => setEditingLead(lead)} title="Editar e-mail" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(59,130,246,0.12)", color: "#3b82f6", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Pencil size={13} />
                             </button>
                           )}
                           {lead.email && (
-                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(14,165,233,0.12)", color: "#0284c7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <button onClick={() => startSending(i)} title="Abrir na fila de envio, começando por esse" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(14,165,233,0.12)", color: "#0284c7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Send size={13} />
                             </button>
                           )}
-                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <X size={13} />
                           </button>
                         </div>
@@ -3139,7 +3448,15 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                     {history.map((h) => (
-                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                      <div
+                        className="lg"
+                        key={h.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          padding: "12px 14px",
+                          borderRadius: 22
+                        }}>
                         <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(59,130,246,0.12)", color: "#1d4ed8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Check size={15} />
                         </div>
@@ -3167,7 +3484,14 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                   Você está ajustando <strong>só este e-mail</strong>, pra esse envio agora. O script padrão desse lead continua o mesmo.
                 </div>
               </div>
-              <div style={{ background: "white", borderRadius: 20, padding: 20, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+              <div
+                className="lg"
+                style={{
+                  borderRadius: 20,
+                  padding: 20,
+                  marginBottom: 16,
+                  animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <OwnerAvatar name={currentLead.company} size={42} />
                   <div>
@@ -3187,10 +3511,21 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                <button
+                  className="lgb"
+                  onClick={handleSkip}
+                  style={{
+                    flex: 1,
+                    padding: "13px 0",
+                    borderRadius: 999,
+                    color: "#64748b",
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}>
                   Pular
                 </button>
-                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(59,130,246,0.6)", position: "relative" }}>
+                <button onClick={handleSend} style={{ flex: 2, padding: "13px 0", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(59,130,246,0.6)", position: "relative" }}>
                   <Mail size={15} /> Abrir e-mail e continuar
                 </button>
               </div>
@@ -3214,7 +3549,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
                 {sentCount} e-mail{sentCount === 1 ? " aberto" : "s abertos"} no seu app de e-mail{skippedCount > 0 ? `, ${skippedCount} pulado${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
-              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
                 Fechar
               </button>
             </div>
@@ -3239,15 +3574,25 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
       </div>
 
       {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
-        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+        <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.42)", display: "flex", gap: 8, flexShrink: 0 }}>
           <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
-            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <button
+              className="lgb"
+              onClick={onClear}
+              style={{
+                padding: "13px 18px",
+                borderRadius: 999,
+                color: "#64748b",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}>
               Limpar lista
             </button>
             <button
               onClick={() => startSending(0)}
               disabled={validLeads.length === 0}
-              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(59,130,246,0.6)" : "none" }}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 999, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #3b82f6, #0ea5e9)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(59,130,246,0.6)" : "none" }}
             >
               <Mail size={15} /> Iniciar envio ({validLeads.length})
             </button>
@@ -3300,11 +3645,11 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#f4f5f7", zIndex: 200, display: "flex", flexDirection: "column", animation: "fadeIn 0.2s ease" }}>
-      <div style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
+      <div style={{ background: "linear-gradient(180deg, #2a3540, #121a21)", padding: "16px 20px", color: "white", flexShrink: 0 }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <button onClick={onClose} title="Voltar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <ArrowLeft size={17} />
               </button>
               <div style={{ minWidth: 0 }}>
@@ -3316,11 +3661,18 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                 </div>
               </div>
             </div>
-            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: 11, border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
+            <button onClick={onClose} title="Fechar" style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.2)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={17} /></button>
           </div>
           {mode === "calling" && (
             <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.25)", marginTop: 14, overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 4, width: `${(idx / validLeads.length) * 100}%`, background: "white", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+              <div
+                className="lg-soft"
+                style={{
+                  height: "100%",
+                  borderRadius: 4,
+                  width: `${(idx / validLeads.length) * 100}%`,
+                  transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)"
+                }} />
             </div>
           )}
         </div>
@@ -3330,11 +3682,19 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           {mode === "list" && (
             <>
-              <div style={{ display: "flex", gap: 4, marginBottom: 16, background: "white", borderRadius: 12, padding: 4, border: "1px solid #eef0f3" }}>
-                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "fila" ? "#7c3aed" : "#94a3b8" }}>
+              <div
+                className="lg-soft"
+                style={{
+                  display: "flex",
+                  gap: 4,
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  padding: 4
+                }}>
+                <button onClick={() => setTab("fila")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "fila" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "fila" ? "#7c3aed" : "#94a3b8" }}>
                   Fila ({leadsInList.length})
                 </button>
-                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 9, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "historico" ? "#7c3aed" : "#94a3b8" }}>
+                <button onClick={() => setTab("historico")} style={{ flex: 1, textAlign: "center", padding: "9px 8px", borderRadius: 999, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: tab === "historico" ? "rgba(124,58,237,0.12)" : "transparent", color: tab === "historico" ? "#7c3aed" : "#94a3b8" }}>
                   Histórico ({history.length})
                 </button>
               </div>
@@ -3345,7 +3705,18 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                     <Phone size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 14, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 14, marginTop: 4 }}>Toque no avião num lead e escolha "Ligação" pra adicionar aqui.</div>
-                    <button onClick={onClose} style={{ marginTop: 18, padding: "10px 20px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                    <button
+                      className="lgb"
+                      onClick={onClose}
+                      style={{
+                        marginTop: 18,
+                        padding: "10px 20px",
+                        borderRadius: 999,
+                        color: "#64748b",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}>
                       ← Voltar pros leads
                     </button>
                   </div>
@@ -3358,18 +3729,28 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 90 }}>
                       {leadsInList.map((lead, i) => (
-                        <div key={lead.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 14, background: "white", border: `1px solid ${lead.phone ? "#eef0f3" : "rgba(245,158,11,0.3)"}` }}>
+                        <div
+                          className="lg"
+                          key={lead.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 12px",
+                            borderRadius: 22,
+                            border: `1px solid ${lead.phone ? "#eef0f3" : "rgba(245,158,11,0.3)"}`
+                          }}>
                           <OwnerAvatar name={lead.company} size={32} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
                             <div style={{ fontSize: 12.5, color: lead.phone ? "#94a3b8" : "#b45309" }}>{lead.phone || "sem telefone cadastrado"}</div>
                           </div>
                           {lead.phone && (
-                            <button onClick={() => startCalling(i)} title="Começar a ligar por aqui" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(124,58,237,0.12)", color: "#7c3aed", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <button onClick={() => startCalling(i)} title="Começar a ligar por aqui" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(124,58,237,0.12)", color: "#7c3aed", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Phone size={13} />
                             </button>
                           )}
-                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: 9, border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <button onClick={() => onRemove(lead.id)} title="Remover da lista" style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(239,68,68,0.1)", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <X size={13} />
                           </button>
                         </div>
@@ -3387,7 +3768,15 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
                     {history.map((h) => (
-                      <div key={h.id} style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 14, background: "white", border: "1px solid #eef0f3" }}>
+                      <div
+                        className="lg"
+                        key={h.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          padding: "12px 14px",
+                          borderRadius: 22
+                        }}>
                         <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(124,58,237,0.12)", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Check size={15} />
                         </div>
@@ -3408,17 +3797,36 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
 
           {mode === "calling" && currentLead && (
             <div>
-              <div style={{ background: "white", borderRadius: 20, padding: 24, border: "1px solid #eef0f3", boxShadow: "0 10px 30px -12px rgba(20,20,26,0.1)", marginBottom: 16, textAlign: "center", animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+              <div
+                className="lg"
+                style={{
+                  borderRadius: 20,
+                  padding: 24,
+                  marginBottom: 16,
+                  textAlign: "center",
+                  animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                }}>
                 <OwnerAvatar name={currentLead.company} size={56} />
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginTop: 12 }}>{currentLead.company}</div>
                 <div style={{ fontSize: 14, color: "#7c3aed", fontWeight: 700, marginTop: 2 }}>{currentLead.phone}</div>
                 {currentLead.contactName && <div style={{ fontSize: 13.5, color: "#94a3b8", marginTop: 4 }}>Falar com {currentLead.contactName}{currentLead.role ? ` (${currentLead.role})` : ""}</div>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleSkip} style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                <button
+                  className="lgb"
+                  onClick={handleSkip}
+                  style={{
+                    flex: 1,
+                    padding: "13px 0",
+                    borderRadius: 999,
+                    color: "#64748b",
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}>
                   Pular
                 </button>
-                <button onClick={handleCall} style={{ flex: 2, padding: "13px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(124,58,237,0.6)" }}>
+                <button onClick={handleCall} style={{ flex: 2, padding: "13px 0", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 20px -8px rgba(124,58,237,0.6)" }}>
                   <Phone size={15} /> Ligar agora
                 </button>
               </div>
@@ -3442,7 +3850,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
                 {calledCount} ligação{calledCount === 1 ? "" : "ões"} feita{calledCount === 1 ? "" : "s"}{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
-              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+              <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
                 Fechar
               </button>
             </div>
@@ -3451,15 +3859,25 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
       </div>
 
       {mode === "list" && tab === "fila" && leadsInList.length > 0 && (
-        <div style={{ padding: 16, borderTop: "1px solid #eef0f3", background: "white", display: "flex", gap: 8, flexShrink: 0 }}>
+        <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.42)", display: "flex", gap: 8, flexShrink: 0 }}>
           <div style={{ maxWidth: 560, margin: "0 auto", width: "100%", display: "flex", gap: 8 }}>
-            <button onClick={onClear} style={{ padding: "13px 18px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <button
+              className="lgb"
+              onClick={onClear}
+              style={{
+                padding: "13px 18px",
+                borderRadius: 999,
+                color: "#64748b",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}>
               Limpar lista
             </button>
             <button
               onClick={() => startCalling(0)}
               disabled={validLeads.length === 0}
-              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: validLeads.length > 0 ? "linear-gradient(135deg, #8b5cf6, #7c3aed)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(124,58,237,0.6)" : "none" }}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 999, border: "none", background: validLeads.length > 0 ? "linear-gradient(180deg, #2a3540, #121a21)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: validLeads.length > 0 ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: validLeads.length > 0 ? "0 8px 20px -8px rgba(124,58,237,0.6)" : "none" }}
             >
               <Phone size={15} /> Começar a ligar ({validLeads.length})
             </button>
@@ -3537,7 +3955,7 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
           onClick={() => onToggleWeekDone(lead.id)}
           style={{
             flex: "1 1 120px", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-            padding: "10px 16px", borderRadius: 12, border: "none", cursor: "pointer",
+            padding: "10px 16px", borderRadius: 999, border: "none", cursor: "pointer",
             fontSize: 13, fontWeight: 700,
             background: lead.weekDone ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(241, 245, 249, 0.8)",
             color: lead.weekDone ? "white" : "#64748b",
@@ -3613,8 +4031,20 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   };
 
   return (
-    <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 660, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(40px) saturate(160%)", WebkitBackdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.9)", boxShadow: "0 30px 90px -20px rgba(76, 29, 149, 0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+    <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(16, 22, 34, 0.26)", backdropFilter: "blur(12px) saturate(140%)", WebkitBackdropFilter: "blur(12px) saturate(140%)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
+      <div
+        className="lg lg-strong"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 660,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 24,
+          overflow: "hidden",
+          animation: "slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        }}>
         <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(148, 163, 184, 0.15)", position: "relative", overflow: "hidden", flexShrink: 0 }}>
           {/* Brilho de fundo que muda de cor com a temperatura do lead - dá vida ao topo do painel */}
           <div style={{
@@ -3642,7 +4072,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                   onClick={() => { const updated = { ...draft, superAttention: !draft.superAttention }; setDraft(updated); onToggleSuper(draft.id); }}
                   title="Marcar como lead grande / super atenção"
                   style={{
-                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13.5, fontWeight: 800, padding: "6px 12px", borderRadius: 9,
+                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13.5, fontWeight: 800, padding: "6px 12px", borderRadius: 999,
                     color: draft.superAttention ? "white" : "#b45309",
                     background: draft.superAttention ? "linear-gradient(135deg, #f59e0b, #d97706)" : "rgba(245, 158, 11, 0.12)",
                     border: `1.5px solid ${draft.superAttention ? "#d97706" : "rgba(245, 158, 11, 0.5)"}`,
@@ -3653,7 +4083,20 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 </button>
               </div>
             </div>
-            <button onClick={handleClose} style={{ width: 36, height: 36, borderRadius: 12, border: "1px solid rgba(148, 163, 184, 0.25)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={18} /></button>
+            <button
+              className="lgb"
+              onClick={handleClose}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                color: "#64748b",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0
+              }}><X size={18} /></button>
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 14, alignItems: "center", flexWrap: "wrap" }}>
@@ -3664,14 +4107,14 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <button
                   key={t.key}
                   onClick={() => { const tag = active ? null : t.key; if (onSetWeekTag(draft.id, tag, draft) === false) return; const updated = { ...draft, weekTag: tag, weekDone: tag ? false : draft.weekDone }; setDraft(updated); }}
-                  style={{ padding: "5px 11px", borderRadius: 8, border: `1px solid ${active ? "#059669" : "rgba(148,163,184,0.3)"}`, background: active ? "rgba(16,185,129,0.14)" : "white", color: active ? "#059669" : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                  style={{ padding: "5px 11px", borderRadius: 999, border: `1px solid ${active ? "#059669" : "rgba(148,163,184,0.3)"}`, background: active ? "rgba(16,185,129,0.14)" : "white", color: active ? "#059669" : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                 >
                   {active ? "✓ " : ""}{t.label}
                 </button>
               );
             })}
             {draft.weekTag && (
-              <button onClick={() => { const updated = { ...draft, weekTag: null }; setDraft(updated); onSetWeekTag(draft.id, null); }} style={{ padding: "5px 9px", borderRadius: 8, border: "none", background: "transparent", color: "#94a3b8", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => { const updated = { ...draft, weekTag: null }; setDraft(updated); onSetWeekTag(draft.id, null); }} style={{ padding: "5px 9px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                 remover
               </button>
             )}
@@ -3682,19 +4125,19 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               onClick={() => onQuickContact("whatsapp", draft)} disabled={!draft.whatsapp}
               onMouseEnter={(e) => { if (draft.whatsapp) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "rgba(37, 211, 102, 0.1)" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#16a34a" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.whatsapp ? "0 4px 14px -8px rgba(37,211,102,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.whatsapp ? "rgba(37, 211, 102, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.whatsapp ? "rgba(37, 211, 102, 0.1)" : "rgba(241,245,249,0.5)", color: draft.whatsapp ? "#16a34a" : "#94a3b8", cursor: draft.whatsapp ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.whatsapp ? "0 4px 14px -8px rgba(37,211,102,0.5)" : "none" }}
             ><MessageCircle size={15} /> WhatsApp</button>
             <button
               onClick={() => onQuickContact("email", draft)} disabled={!draft.email}
               onMouseEnter={(e) => { if (draft.email) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "rgba(59, 130, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.email ? "#2563eb" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.email ? "0 4px 14px -8px rgba(59,130,246,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.email ? "rgba(59, 130, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.email ? "rgba(59, 130, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.email ? "#2563eb" : "#94a3b8", cursor: draft.email ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.email ? "0 4px 14px -8px rgba(59,130,246,0.5)" : "none" }}
             ><Mail size={15} /> Email</button>
             <button
               onClick={() => onQuickContact("phone", draft)} disabled={!draft.phone}
               onMouseEnter={(e) => { if (draft.phone) e.currentTarget.style.transform = "translateY(-2px) scale(1.02)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "rgba(139, 92, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.phone ? "#7c3aed" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.phone ? "0 4px 14px -8px rgba(139,92,246,0.5)" : "none" }}
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 999, border: `1px solid ${draft.phone ? "rgba(139, 92, 246, 0.3)" : "rgba(148,163,184,0.2)"}`, background: draft.phone ? "rgba(139, 92, 246, 0.1)" : "rgba(241,245,249,0.5)", color: draft.phone ? "#7c3aed" : "#94a3b8", cursor: draft.phone ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: draft.phone ? "0 4px 14px -8px rgba(139,92,246,0.5)" : "none" }}
             ><Phone size={15} /> Ligar</button>
           </div>
         </div>
@@ -3711,7 +4154,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                       key={key}
                       onClick={() => update({ temperature: key })}
                       style={{
-                        flex: 1, padding: "8px 6px", borderRadius: 10, border: `1px solid ${active ? cfg.color : "rgba(148,163,184,0.25)"}`,
+                        flex: 1, padding: "8px 6px", borderRadius: 999, border: `1px solid ${active ? cfg.color : "rgba(148,163,184,0.25)"}`,
                         background: active ? cfg.bg : "rgba(255,255,255,0.6)", color: active ? cfg.color : "#64748b", cursor: "pointer",
                         fontSize: 13.5, fontWeight: active ? 700 : 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                         boxShadow: active ? `0 0 0 3px ${cfg.ring}` : "none",
@@ -3756,7 +4199,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                       const tags = active ? (draft.tags || []).filter((k) => k !== t.key) : [...(draft.tags || []), t.key];
                       update({ tags });
                     }}
-                    style={{ padding: "7px 14px", borderRadius: 9, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
+                    style={{ padding: "7px 14px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
                   >
                     {active ? "✓ " : ""}{t.label}
                   </button>
@@ -3830,7 +4273,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                         key={t.key}
                         onClick={() => update({ dealType: t.key })}
                         style={{
-                          flex: 1, padding: "8px 10px", borderRadius: 9,
+                          flex: 1, padding: "8px 10px", borderRadius: 999,
                           border: `1.5px solid ${active ? "#1fa971" : "rgba(148,163,184,0.3)"}`,
                           background: active ? "rgba(31,169,113,0.12)" : "white",
                           color: active ? "#1fa971" : "#64748b",
@@ -3853,7 +4296,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                         key={p.key}
                         onClick={() => update({ contractPeriod: p.key })}
                         style={{
-                          flex: 1, minWidth: 90, padding: "8px 10px", borderRadius: 9,
+                          flex: 1, minWidth: 90, padding: "8px 10px", borderRadius: 999,
                           border: `1.5px solid ${active ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`,
                           background: active ? "rgba(109,94,248,0.1)" : "white",
                           color: active ? "#6d5ef8" : "#64748b",
@@ -3876,7 +4319,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               {CONVERSATION_PHASES.map((p) => {
                 const active = (draft.phase || "none") === p.key;
                 return (
-                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 10, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color + "15" : "rgba(255,255,255,0.6)", color: active ? p.color : "#64748b", cursor: "pointer", fontSize: 13.5, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 999, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color + "15" : "rgba(255,255,255,0.6)", color: active ? p.color : "#64748b", cursor: "pointer", fontSize: 13.5, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: p.color }} />{p.label}
                   </button>
                 );
@@ -3924,7 +4367,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <button
                 type="button"
                 onClick={() => setShowExtraContacts(true)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, border: "1.5px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", borderRadius: 12, padding: "10px 14px", color: "#6d5ef8", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, border: "1.5px solid rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", borderRadius: 999, padding: "10px 14px", color: "#6d5ef8", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
               >
                 <div style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(109,94,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Plus size={14} />
@@ -3939,17 +4382,25 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                     <SecIcon icon={UserPlus} color="#6d5ef8" />Outros contatos / informações extras
                     <div style={{ fontWeight: 500, color: "#94a3b8", textTransform: "none", letterSpacing: 0, marginTop: 2, fontSize: 12.5 }}>Segundo telefone, outro decisor, e-mail alternativo etc.</div>
                   </label>
-                  <button type="button" onClick={() => setShowExtraContacts(false)} title="Recolher" style={{ width: 24, height: 24, borderRadius: 7, border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <button type="button" onClick={() => setShowExtraContacts(false)} title="Recolher" style={{ width: 24, height: 24, borderRadius: "50%", border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <ChevronRight size={13} style={{ transform: "rotate(90deg)" }} />
                   </button>
                 </div>
                 <textarea
+                  className="lg-field"
                   value={draft.extraContacts || ""}
                   onChange={(e) => update({ extraContacts: e.target.value })}
                   placeholder={"Ex:\nMaria Silva (Financeiro) - (11) 98888-7777\nfinanceiro@empresa.com"}
                   rows={7}
-                  style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.7, fontSize: 15.5, minHeight: 150, background: "white", marginBottom: 0 }}
-                />
+                  style={{
+                    ...inputStyle,
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                    lineHeight: 1.7,
+                    fontSize: 15.5,
+                    minHeight: 150,
+                    marginBottom: 0
+                  }} />
               </div>
             )}
           </div>
@@ -3965,7 +4416,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                     onClick={() => update({ origin: active ? null : o.key })}
                     title={active ? "Clique para remover" : `Marcar origem: ${o.label}`}
                     style={{
-                      display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9,
+                      display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 999,
                       border: `1.5px solid ${active ? o.color : "rgba(148,163,184,0.3)"}`,
                       background: active ? o.color + "15" : "white",
                       color: active ? o.color : "#64748b",
@@ -4059,12 +4510,12 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <button
                 onClick={() => update({ lastContact: new Date().toISOString() })}
                 title="Marcar como contatado hoje"
-                style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(31,169,113,0.35)", background: "rgba(31,169,113,0.08)", color: "#1fa971", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}
+                style={{ padding: "9px 14px", borderRadius: 999, border: "1.5px solid rgba(31,169,113,0.35)", background: "rgba(31,169,113,0.08)", color: "#1fa971", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}
               >
                 <CheckCircle2 size={14} /> Marcar hoje
               </button>
               {draft.lastContact && (
-                <button onClick={() => update({ lastContact: null })} title="Remover data" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 32, height: 32, borderRadius: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <button onClick={() => update({ lastContact: null })} title="Remover data" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <X size={13} />
                 </button>
               )}
@@ -4091,7 +4542,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             <button
               onClick={() => window.location.href = `https://wa.me/?text=${encodeURIComponent(buildLeadShareMessage(draft, meetings))}`}
               title="Envia o resumo desse lead e da próxima ação pra outro SDR pelo WhatsApp"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 12, padding: "12px 14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginTop: 12, padding: "12px 14px", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
             >
               <Share2 size={15} /> Compartilhar com outro SDR
             </button>
@@ -4102,7 +4553,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <div style={{ fontSize: 14, fontWeight: 700, color: draft.weekDone ? "#16a34a" : "#64748b" }}>Ação desta semana</div>
               <div style={{ fontSize: 12.5, color: "#94a3b8" }}>Marcado como feito conta na meta semanal do time</div>
             </div>
-            <button onClick={() => update({ weekDone: !draft.weekDone })} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13.5, background: draft.weekDone ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(203, 213, 225, 0.5)", color: draft.weekDone ? "white" : "#64748b" }}>
+            <button onClick={() => update({ weekDone: !draft.weekDone })} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13.5, background: draft.weekDone ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(203, 213, 225, 0.5)", color: draft.weekDone ? "white" : "#64748b" }}>
               <CheckCircle2 size={14} /> {draft.weekDone ? "Feito" : "Marcar"}
             </button>
           </div>
@@ -4112,7 +4563,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             <span style={hintStyle}>Cada conversa fica registrada aqui com data - diferente do resumo acima, que é só um texto curto. Usar os botões de WhatsApp/Email/Ligar já adiciona um registro automaticamente.</span>
             <div style={{ display: "flex", gap: 8, marginBottom: 12, marginTop: 6 }}>
               <input value={newNote} onChange={(e) => setNewNote(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addNote()} placeholder="Registrar manualmente uma conversa ou anotação..." style={inputStyle} />
-              <button onClick={addNote} disabled={!newNote.trim()} style={{ padding: "0 18px", borderRadius: 10, border: "none", background: newNote.trim() ? "#0f172a" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 600, cursor: newNote.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}>Adicionar</button>
+              <button onClick={addNote} disabled={!newNote.trim()} style={{ padding: "0 18px", borderRadius: 999, border: "none", background: newNote.trim() ? "#0f172a" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 600, cursor: newNote.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}>Adicionar</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
               {(draft.notes || []).length === 0 && <div style={{ fontSize: 13, color: "#94a3b8", padding: "16px 0", textAlign: "center" }}>Nenhuma anotação ainda.</div>}
@@ -4141,11 +4592,11 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#64748b" }}>Confirmar exclusão?</span>
-              <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "#ef4444", color: "white", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
-              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 13.5, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 999, border: "none", background: "#ef4444", color: "white", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 13.5, cursor: "pointer" }}>Cancelar</button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
+            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
           )}
           {nextActionAttempt > 0 && draft.stage !== "Conquistado" && draft.stage !== "Perdida" && !draft.nextAction?.date && (
             <span style={{ fontSize: 13, color: "#d97706", fontWeight: 700, marginRight: 8 }}>Defina o lembrete de retorno acima antes de salvar</span>
@@ -4153,8 +4604,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           <button
             onClick={handleSave}
             style={{
-              padding: "11px 24px", borderRadius: 12, border: "none",
-              background: draft.stage === "Conquistado" ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              padding: "11px 24px", borderRadius: 999, border: "none",
+              background: draft.stage === "Conquistado" ? "linear-gradient(135deg, #22c55e, #16a34a)" : "linear-gradient(180deg, #2a3540, #121a21)",
               color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer",
               boxShadow: draft.stage === "Conquistado" ? "0 8px 22px -8px rgba(34, 197, 94, 0.55)" : "0 8px 22px -8px rgba(99, 102, 241, 0.5)",
               animation: draft.stage === "Conquistado" && draft.stage !== lead.stage ? "celebrate 0.5s ease-out" : "none",
@@ -4183,8 +4634,8 @@ const DayStrip = ({ selectedDate, onSelect, meetings }) => {
         const types = [...new Set(dayMeetings.map((m) => m.type))].slice(0, 2);
         return (
           <button key={d.toISOString()} onClick={() => onSelect(d)} style={{
-            flex: "0 0 auto", width: 62, padding: "10px 0", borderRadius: 14, border: "none", cursor: "pointer",
-            background: active ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(255,255,255,0.6)",
+            flex: "0 0 auto", width: 62, padding: "10px 0", borderRadius: 999, border: "none", cursor: "pointer",
+            background: active ? "linear-gradient(180deg, #2a3540, #121a21)" : "rgba(255,255,255,0.6)",
             color: active ? "white" : "#334155", boxShadow: active ? "0 8px 20px -6px rgba(99,102,241,0.5)" : "none",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.2s ease",
           }}>
@@ -4228,8 +4679,8 @@ const MonthGrid = ({ selectedDate, onSelect, meetings }) => {
           const types = [...new Set(dayMeetings.map((m) => m.type))].slice(0, 3);
           return (
             <button key={i} onClick={() => onSelect(d)} style={{
-              aspectRatio: "1", borderRadius: 10, border: "none", cursor: "pointer",
-              background: active ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
+              aspectRatio: "1", borderRadius: 999, border: "none", cursor: "pointer",
+              background: active ? "linear-gradient(180deg, #2a3540, #121a21)" : "transparent",
               color: active ? "white" : "#334155", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
               fontSize: 14, fontWeight: active ? 700 : 500,
             }}>
@@ -4327,8 +4778,31 @@ const BadgePopup = ({ badge, onClose }) => {
     <>
       {/* camada 1: moedas caindo atrás do card */}
       <CoinRain zIndex={199} />
-      <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.55)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }} onClick={onClose}>
-        <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "white", borderRadius: 24, padding: "34px 26px 26px", textAlign: "center", boxShadow: "0 40px 100px -20px rgba(0,0,0,0.5)", animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+      <div style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(16, 22, 34, 0.26)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        zIndex: 200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        animation: "fadeIn 0.2s ease",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      }} onClick={onClose}>
+        <div
+          className="lg"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: 340,
+            borderRadius: 24,
+            padding: "34px 26px 26px",
+            textAlign: "center",
+            animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)"
+          }}>
           {/* brilho tipo LED, forte, na cor da própria métrica */}
           <div style={{
             position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 190, height: 190,
@@ -4353,7 +4827,7 @@ const BadgePopup = ({ badge, onClose }) => {
               💰 R$ {badge.reward.toLocaleString("pt-BR")} destravado!
             </div>
           )}
-          <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
+          <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
             Continuar
           </button>
         </div>
@@ -4369,8 +4843,31 @@ const BadgePopup = ({ badge, onClose }) => {
 const WeekApproachBadgePopup = ({ badge, onClose }) => (
   <>
     <CoinRain zIndex={199} />
-    <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.55)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "white", borderRadius: 24, padding: "34px 26px 26px", textAlign: "center", boxShadow: "0 40px 100px -20px rgba(0,0,0,0.5)", animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 200,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }} onClick={onClose}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 340,
+          borderRadius: 24,
+          padding: "34px 26px 26px",
+          textAlign: "center",
+          animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)"
+        }}>
         <div style={{
           position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 190, height: 190,
           borderRadius: "50%",
@@ -4395,7 +4892,18 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
             💰 R$ {badge.reward.toLocaleString("pt-BR")} destravado!
           </div>
         )}
-        <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
+        <button
+          className="lg-primary"
+          onClick={onClose}
+          style={{
+            padding: "11px 28px",
+            borderRadius: 999,
+            color: DARK.lime,
+            fontSize: 13.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            position: "relative"
+          }}>
           Continuar
         </button>
       </div>
@@ -4408,8 +4916,31 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
 const AllGoalsRewardPopup = ({ badge, onClose }) => (
   <>
     <CoinRain zIndex={199} />
-    <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.55)", backdropFilter: "blur(6px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", width: "100%", maxWidth: 340, background: "white", borderRadius: 24, padding: "34px 26px 26px", textAlign: "center", boxShadow: "0 40px 100px -20px rgba(0,0,0,0.5)", animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 200,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }} onClick={onClose}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 340,
+          borderRadius: 24,
+          padding: "34px 26px 26px",
+          textAlign: "center",
+          animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)"
+        }}>
         <div style={{
           position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 190, height: 190,
           borderRadius: "50%",
@@ -4434,7 +4965,17 @@ const AllGoalsRewardPopup = ({ badge, onClose }) => (
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 10, background: "rgba(22,163,74,0.1)", color: "#16a34a", fontSize: 14, fontWeight: 800, marginBottom: 20 }}>
           💰 R$ {badge.amount.toLocaleString("pt-BR")} destravado!
         </div>
-        <button onClick={onClose} style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "#14141a", color: "#16a34a", fontSize: 13.5, fontWeight: 700, cursor: "pointer", position: "relative" }}>
+        <button
+          className="lg-primary"
+          onClick={onClose}
+          style={{
+            padding: "11px 28px",
+            borderRadius: 999,
+            fontSize: 13.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            position: "relative"
+          }}>
           Continuar
         </button>
       </div>
@@ -4458,17 +4999,58 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
         ? `🏆💰 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio e destravei R$ ${achievement.reward.toLocaleString("pt-BR")}! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`
         : `🏆 Bati a meta "${METRIC_DEFS[achievement.metric]?.label}" no Funnio! ${achievement.value}/${achievement.target} ${(PERIOD_OPTIONS.find((p) => p.key === achievement.period)?.label || "").toLowerCase()}.`);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 165, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 165,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: "22px 22px 0 0",
+          padding: 22,
+          animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Compartilhe essa conquista!</div>
             <div style={{ fontSize: 13.5, color: "#94a3b8", marginTop: 2 }}>{gestorName ? `Manda pro ${gestorName} saber que você bateu a meta` : "Manda pro seu gestor saber que você bateu a meta"}</div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}><X size={15} /></button>
         </div>
 
-        <div style={{ background: "#f8fafc", border: "1px solid #eef0f3", borderRadius: 12, padding: "12px 14px", fontSize: 13, color: "#334155", margin: "14px 0" }}>
+        <div
+          className="lg-soft"
+          style={{
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 13,
+            color: "#334155",
+            margin: "14px 0"
+          }}>
           {message}
         </div>
 
@@ -4481,7 +5063,7 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
         >
           <MessageCircle size={16} /> Compartilhar por WhatsApp
         </a>
-        <button onClick={onClose} style={{ width: "100%", padding: "10px 0", borderRadius: 12, border: "none", background: "transparent", color: "#94a3b8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={onClose} style={{ width: "100%", padding: "10px 0", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
           Agora não
         </button>
       </div>
@@ -4526,7 +5108,7 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
                     <button
                       key={t.key}
                       onClick={() => onUpdateTier(tier.id, { type: t.key })}
-                      style={{ padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${tier.type === t.key ? color : "rgba(148,163,184,0.3)"}`, background: tier.type === t.key ? color + "15" : "white", color: tier.type === t.key ? color : "#64748b", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                      style={{ padding: "9px 12px", borderRadius: 999, border: `1.5px solid ${tier.type === t.key ? color : "rgba(148,163,184,0.3)"}`, background: tier.type === t.key ? color + "15" : "white", color: tier.type === t.key ? color : "#64748b", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                     >
                       {t.label}
                     </button>
@@ -4537,14 +5119,30 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
                   <NumberField value={tier.value} min={0} step="0.01" onCommit={(v) => onUpdateTier(tier.id, { value: v })} style={{ ...inputStyle, width: 95 }} />
                 </div>
                 {sortedTiers.length > 1 && (
-                  <button onClick={() => onRemoveTier(tier.id)} title="Remover faixa" style={{ marginLeft: "auto", width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <button
+                    className="lgb"
+                    onClick={() => onRemoveTier(tier.id)}
+                    title="Remover faixa"
+                    style={{
+                      marginLeft: "auto",
+                      width: 34,
+                      height: 34,
+                      borderRadius: "50%",
+                      border: "1px solid rgba(220,38,38,0.25)",
+                      color: "#dc2626",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0
+                    }}>
                     <Trash2 size={14} />
                   </button>
                 )}
               </div>
             ))}
           </div>
-          <button onClick={onAddTier} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${color}66`, background: "transparent", color: color, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={onAddTier} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 999, border: `1.5px solid ${color}66`, background: "transparent", color: color, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
             <Plus size={14} /> Adicionar faixa
           </button>
         </div>
@@ -4561,20 +5159,53 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
   const [customValue, setCustomValue] = useState(typeof lead?.commissionOverride === "number" ? String(lead.commissionOverride) : "");
   if (!lead) return null;
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.5)", backdropFilter: "blur(6px)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "22px 22px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 170,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          borderRadius: "22px 22px 0 0",
+          padding: 22,
+          animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Comissão deste contrato</div>
             <div style={{ fontSize: 13.5, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={15} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}><X size={15} /></button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "16px 0" }}>
           <button
             onClick={() => setMode("auto")}
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${mode === "auto" ? "#b8860b" : "rgba(148,163,184,0.3)"}`, background: mode === "auto" ? "rgba(251,191,36,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 999, border: `1.5px solid ${mode === "auto" ? "#b8860b" : "rgba(148,163,184,0.3)"}`, background: mode === "auto" ? "rgba(251,191,36,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
           >
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>Regra automática</div>
@@ -4584,7 +5215,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
           </button>
           <button
             onClick={() => setMode("custom")}
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${mode === "custom" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: mode === "custom" ? "rgba(109,94,248,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 999, border: `1.5px solid ${mode === "custom" ? "#6d5ef8" : "rgba(148,163,184,0.3)"}`, background: mode === "custom" ? "rgba(109,94,248,0.08)" : "white", cursor: "pointer", textAlign: "left" }}
           >
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>Valor personalizado</div>
@@ -4609,7 +5240,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
 
         <button
           onClick={() => onSave(mode === "auto" ? null : Math.max(0, parseFloat(customValue) || 0))}
-          style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          style={{ width: "100%", padding: "12px 0", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
         >
           Salvar
         </button>
@@ -4653,7 +5284,19 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+        <button
+          className="lgb"
+          onClick={onBack}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            color: "#64748b",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}><ArrowLeft size={18} /></button>
         <div>
           <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Scripts</h1>
           <div style={{ fontSize: 13, color: "#9a9aa3" }}>Crie os seus, edite os padrões - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos em cada envio</div>
@@ -4665,14 +5308,14 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
           <button
             key={t.key}
             onClick={() => { setTab(t.key); cancelEdit(); }}
-            style={{ padding: "9px 16px", borderRadius: 11, border: `1.5px solid ${tab === t.key ? t.color : "rgba(148,163,184,0.3)"}`, background: tab === t.key ? t.color + "15" : "white", color: tab === t.key ? t.color : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+            style={{ padding: "9px 16px", borderRadius: 999, border: `1.5px solid ${tab === t.key ? t.color : "rgba(148,163,184,0.3)"}`, background: tab === t.key ? t.color + "15" : "white", color: tab === t.key ? t.color : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
           >
             {t.label}
           </button>
         ))}
         <button
           onClick={startCreate}
-          style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", padding: "9px 16px", borderRadius: 11, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", padding: "9px 16px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13, fontWeight: 800, cursor: "pointer" }}
         >
           <Plus size={14} /> Novo script
         </button>
@@ -4710,7 +5353,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                   cancelEdit();
                 }}
                 disabled={!(tab === "email" ? draftBody : draft).trim()}
-                style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!(tab === "email" ? draftBody : draft).trim())}
+                style={saveBtn("linear-gradient(180deg, #2a3540, #121a21)", !!(tab === "email" ? draftBody : draft).trim())}
               >
                 <Check size={13} /> Criar script
               </button>
@@ -4778,7 +5421,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                     <div style={{ marginTop: 12 }}>
                       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <button onClick={() => { if (draft.trim()) { onSaveWa(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #6d5ef8, #8b7bfa)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
+                        <button onClick={() => { if (draft.trim()) { onSaveWa(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(180deg, #2a3540, #121a21)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
                         <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
                         {isCustomized && <button onClick={() => { onResetWa(s.key); cancelEdit(); }} title="Voltar pro texto original de fábrica" style={dangerBtn}>Restaurar original</button>}
                         <button onClick={() => { if (window.confirm(`Ocultar a sugestão "${s.title}"? Dá pra restaurar depois.`)) { onHideWa(s.key); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir sugestão</button>
@@ -4962,7 +5605,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                     <div style={{ marginTop: 12 }}>
                       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} autoFocus style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5, fontSize: 13, marginBottom: 10 }} />
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <button onClick={() => { if (draft.trim()) { onSaveCall(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(135deg, #8b5cf6, #a78bfa)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
+                        <button onClick={() => { if (draft.trim()) { onSaveCall(s.key, draft.trim()); flashSaved(s.key); setEditingKey(null); } }} disabled={!draft.trim()} style={saveBtn("linear-gradient(180deg, #2a3540, #121a21)", !!draft.trim())}><Check size={13} /> Salvar padrão</button>
                         <button onClick={cancelEdit} style={cancelBtn}>Cancelar</button>
                         {isCustomized && <button onClick={() => { onResetCall(s.key); cancelEdit(); }} title="Voltar pro texto original de fábrica" style={dangerBtn}>Restaurar original</button>}
                         <button onClick={() => { if (window.confirm(`Ocultar a sugestão "${s.title}"? Dá pra restaurar depois.`)) { onHideCall(s.key); cancelEdit(); } }} style={{ ...dangerBtn, marginLeft: "auto" }}><Trash2 size={12} /> Excluir sugestão</button>
@@ -5002,30 +5645,100 @@ const MENU_SECTIONS = [
 ];
 
 const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLead, onSwitchWorkspace, workspaceName, onBulkPhones, onBulkManage, onStartTour }) => (
-  <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 150, display: "flex", animation: "fadeIn 0.15s ease" }}>
-    <div onClick={(e) => e.stopPropagation()} style={{ width: "82%", maxWidth: 300, height: "100%", background: "white", boxShadow: "8px 0 30px -8px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", animation: "menuSlideIn 0.2s ease" }}>
+  <div onClick={onClose} style={{
+    position: "fixed",
+    inset: 0,
+    background: "rgba(16, 22, 34, 0.26)",
+    backdropFilter: "blur(12px) saturate(140%)",
+    zIndex: 150,
+    display: "flex",
+    animation: "fadeIn 0.15s ease",
+    WebkitBackdropFilter: "blur(12px) saturate(140%)"
+  }}>
+    <div
+      className="lg lg-strong"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "82%",
+        maxWidth: 300,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        animation: "menuSlideIn 0.2s ease"
+      }}>
       <div style={{ padding: "20px 18px", borderBottom: "1px solid #f1f2f5" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, color: "#14141a" }}>Menu</div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={14} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}><X size={14} /></button>
         </div>
         {workspaceName && <div style={{ fontSize: 13, color: "#9a9aa3", marginTop: 2 }}>{workspaceName}</div>}
       </div>
 
       <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <button onClick={onNewLead} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "none", background: DARK.lime, color: "#14141a", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+        <button onClick={onNewLead} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 999, border: "none", background: DARK.lime, color: "#14141a", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
           <Plus size={16} /> Novo lead
         </button>
-        <button onClick={onImport} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+        <button
+          className="lgb"
+          onClick={onImport}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 9,
+            padding: "11px 14px",
+            borderRadius: 999,
+            color: "#14141a",
+            fontSize: 13.5,
+            fontWeight: 700,
+            cursor: "pointer"
+          }}>
           <Upload size={16} /> Importar leads
         </button>
         {onBulkPhones && (
-          <button onClick={onBulkPhones} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+          <button
+            className="lgb"
+            onClick={onBulkPhones}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "11px 14px",
+              borderRadius: 999,
+              color: "#14141a",
+              fontSize: 13.5,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}>
             <Phone size={16} /> Atualizar telefones em massa
           </button>
         )}
         {onBulkManage && (
-          <button onClick={onBulkManage} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #eef0f3", background: "white", color: "#14141a", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+          <button
+            className="lgb"
+            onClick={onBulkManage}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "11px 14px",
+              borderRadius: 999,
+              color: "#14141a",
+              fontSize: 13.5,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}>
             <Trash2 size={16} /> Gerenciar leads em massa
           </button>
         )}
@@ -5039,7 +5752,7 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
               key={s.key}
               onClick={() => onNavigate(s.key)}
               style={{
-                display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12,
+                display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 999,
                 border: "none", background: active ? "rgba(109,94,248,0.1)" : "transparent", color: active ? "#6d5ef8" : "#14141a",
                 fontSize: 14, fontWeight: active ? 700 : 500, cursor: "pointer", textAlign: "left", marginBottom: 2,
               }}
@@ -5052,16 +5765,16 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
       </div>
 
       <div style={{ padding: "12px", borderTop: "1px solid #f1f2f5", display: "flex", flexDirection: "column", gap: 2 }}>
-        <button onClick={onManageSdrs} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+        <button onClick={onManageSdrs} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
           <Settings2 size={17} color="#6b6b75" /> Gerenciar SDRs
         </button>
         {onStartTour && (
-          <button onClick={onStartTour} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+          <button onClick={onStartTour} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
             <Rocket size={17} color="#6b6b75" /> Ver tour novamente
           </button>
         )}
         {onSwitchWorkspace && (
-          <button onClick={onSwitchWorkspace} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 12, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+          <button onClick={onSwitchWorkspace} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#14141a", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
             <Users2 size={17} color="#6b6b75" /> Trocar de funil
           </button>
         )}
@@ -5103,13 +5816,45 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 110, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(30px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 80px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 110,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg lg-strong"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 380,
+          borderRadius: 20,
+          overflow: "hidden"
+        }}>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
         <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 500, color: "#0f172a" }}>Gerenciar SDRs</span>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} /></button>
+            <button
+              className="lgb"
+              onClick={onClose}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                color: "#64748b",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}><X size={15} /></button>
           </div>
           <div style={{ fontSize: 13, color: "#9a9aa3", marginTop: 4 }}>
             {isOwner ? "Nomes usados pra atribuir leads. O selo verde mostra quem também tem login de verdade no funil." : "Sua foto de perfil no funil."}
@@ -5119,7 +5864,7 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
           {isOwner && authMembers.length > 0 && (
             <button
               onClick={onSync}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "8px 12px", borderRadius: 10, border: "1px dashed rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.06)", color: "#6366f1", fontSize: 13.5, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.06)", color: "#6366f1", fontSize: 13.5, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}
             >
               <Users2 size={13} /> Sincronizar com quem tem login no funil
             </button>
@@ -5131,88 +5876,111 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
               // Membros com login que ainda não estão vinculados a nenhum SDR (pra oferecer no seletor)
               const unlinkedMembers = authMembers.filter((m) => !sdrs.some((x) => x.authUserId === m.user_id));
               return (
-              <div key={s.name}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 11, background: "rgba(241,245,249,0.6)" }}>
-                  <button
-                    onClick={() => handlePickPhoto(s.name)}
-                    title="Trocar foto"
-                    style={{ position: "relative", border: "none", background: "transparent", padding: 0, cursor: "pointer", flexShrink: 0 }}
-                  >
-                    <OwnerAvatar name={s.name} size={30} avatarUrl={s.avatarUrl} />
-                    <div style={{ position: "absolute", bottom: -2, right: -2, width: 15, height: 15, borderRadius: "50%", background: "#6366f1", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {uploadingFor === s.name ? <Loader2 size={8} color="white" style={{ animation: "spin 1s linear infinite" }} /> : <Pencil size={8} color="white" />}
-                    </div>
-                  </button>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
-                      {hasLogin && (
-                        <span title={linkedMember ? `Vinculado a ${linkedMember.display_name}` : "Tem login de verdade no funil"} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.1)", padding: "1px 6px", borderRadius: 20 }}>
-                          <CheckCircle2 size={9} /> login
-                        </span>
+                <div key={s.name}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 11, background: "rgba(241,245,249,0.6)" }}>
+                    <button
+                      onClick={() => handlePickPhoto(s.name)}
+                      title="Trocar foto"
+                      style={{ position: "relative", border: "none", background: "transparent", padding: 0, cursor: "pointer", flexShrink: 0 }}
+                    >
+                      <OwnerAvatar name={s.name} size={30} avatarUrl={s.avatarUrl} />
+                      <div style={{ position: "absolute", bottom: -2, right: -2, width: 15, height: 15, borderRadius: "50%", background: "#6366f1", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {uploadingFor === s.name ? <Loader2 size={8} color="white" style={{ animation: "spin 1s linear infinite" }} /> : <Pencil size={8} color="white" />}
+                      </div>
+                    </button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0f172a" }}>{s.name}</span>
+                        {hasLogin && (
+                          <span title={linkedMember ? `Vinculado a ${linkedMember.display_name}` : "Tem login de verdade no funil"} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(5,150,105,0.1)", padding: "1px 6px", borderRadius: 20 }}>
+                            <CheckCircle2 size={9} /> login
+                          </span>
+                        )}
+                      </div>
+                      {!hasLogin && <div style={{ fontSize: 12, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
+                      {isOwner && linkedMember && (
+                        <button onClick={() => onLinkAuth(s.name, null)} style={{ border: "none", background: "transparent", padding: 0, fontSize: 11, color: "#94a3b8", cursor: "pointer", textDecoration: "underline" }}>
+                          desvincular de {linkedMember.display_name}
+                        </button>
+                      )}
+                      {isOwner && !linkedMember && unlinkedMembers.length > 0 && (
+                        <select
+                          className="lg-field"
+                          defaultValue=""
+                          onChange={(e) => { if (e.target.value) onLinkAuth(s.name, e.target.value); e.target.value = ""; }}
+                          style={{
+                            marginTop: 3,
+                            fontSize: 11,
+                            padding: "3px 6px",
+                            borderRadius: 7,
+                            border: "1px solid rgba(99,102,241,0.35)",
+                            color: "#6366f1"
+                          }}>
+                          <option value="">Vincular a um login...</option>
+                          {unlinkedMembers.map((m) => (
+                            <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
+                          ))}
+                        </select>
                       )}
                     </div>
-                    {!hasLogin && <div style={{ fontSize: 12, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
-                    {isOwner && linkedMember && (
-                      <button onClick={() => onLinkAuth(s.name, null)} style={{ border: "none", background: "transparent", padding: 0, fontSize: 11, color: "#94a3b8", cursor: "pointer", textDecoration: "underline" }}>
-                        desvincular de {linkedMember.display_name}
+                    {isOwner && (
+                      <button
+                        onClick={() => handleRemoveClick(s.name)}
+                        disabled={sdrs.length <= 1}
+                        title={sdrs.length <= 1 ? "Precisa ter ao menos 1 SDR" : "Remover"}
+                        style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: sdrs.length <= 1 ? "transparent" : "rgba(239,68,68,0.1)", color: sdrs.length <= 1 ? "#cbd5e1" : "#dc2626", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <Trash2 size={13} />
                       </button>
                     )}
-                    {isOwner && !linkedMember && unlinkedMembers.length > 0 && (
-                      <select
-                        defaultValue=""
-                        onChange={(e) => { if (e.target.value) onLinkAuth(s.name, e.target.value); e.target.value = ""; }}
-                        style={{ marginTop: 3, fontSize: 11, padding: "3px 6px", borderRadius: 7, border: "1px solid rgba(99,102,241,0.35)", color: "#6366f1", background: "white" }}
-                      >
-                        <option value="">Vincular a um login...</option>
-                        {unlinkedMembers.map((m) => (
-                          <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
-                        ))}
-                      </select>
-                    )}
                   </div>
-                  {isOwner && (
-                    <button
-                      onClick={() => handleRemoveClick(s.name)}
-                      disabled={sdrs.length <= 1}
-                      title={sdrs.length <= 1 ? "Precisa ter ao menos 1 SDR" : "Remover"}
-                      style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: sdrs.length <= 1 ? "transparent" : "rgba(239,68,68,0.1)", color: sdrs.length <= 1 ? "#cbd5e1" : "#dc2626", cursor: sdrs.length <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                  {isOwner && pendingRemoval === s.name && (
+                    <div style={{ marginTop: 6, padding: "10px 12px", borderRadius: 10, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                      <div style={{ fontSize: 13.5, color: "#7f1d1d", marginBottom: 8 }}>
+                        {s.name} tem {countFor(s.name)} lead(s)/reunião(ões). Reatribuir para:
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <select value={reassignTo} onChange={(e) => setReassignTo(e.target.value)} style={{ ...selectStyle, flex: 1, padding: "7px 10px", fontSize: 14 }}>
+                          {sdrs.filter((o) => o.name !== s.name).map((o) => <option key={o.name} value={o.name}>{o.name}</option>)}
+                        </select>
+                        <button onClick={() => { onRemove(s.name, reassignTo); setPendingRemoval(null); }} style={{ padding: "0 12px", borderRadius: 999, border: "none", background: "#dc2626", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Confirmar</button>
+                        <button
+                          className="lgb"
+                          onClick={() => setPendingRemoval(null)}
+                          style={{
+                            padding: "0 12px",
+                            borderRadius: 999,
+                            color: "#64748b",
+                            fontSize: 13.5,
+                            cursor: "pointer"
+                          }}>Cancelar</button>
+                      </div>
+                    </div>
                   )}
                 </div>
-                {isOwner && pendingRemoval === s.name && (
-                  <div style={{ marginTop: 6, padding: "10px 12px", borderRadius: 10, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                    <div style={{ fontSize: 13.5, color: "#7f1d1d", marginBottom: 8 }}>
-                      {s.name} tem {countFor(s.name)} lead(s)/reunião(ões). Reatribuir para:
-                    </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <select value={reassignTo} onChange={(e) => setReassignTo(e.target.value)} style={{ ...selectStyle, flex: 1, padding: "7px 10px", fontSize: 14 }}>
-                        {sdrs.filter((o) => o.name !== s.name).map((o) => <option key={o.name} value={o.name}>{o.name}</option>)}
-                      </select>
-                      <button onClick={() => { onRemove(s.name, reassignTo); setPendingRemoval(null); }} style={{ padding: "0 12px", borderRadius: 8, border: "none", background: "#dc2626", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Confirmar</button>
-                      <button onClick={() => setPendingRemoval(null)} style={{ padding: "0 12px", borderRadius: 8, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13.5, cursor: "pointer" }}>Cancelar</button>
-                    </div>
-                  </div>
-                )}
-              </div>
               );
             })}
           </div>
           {isOwner && (
             <div style={{ display: "flex", gap: 8 }}>
               <input
+                className="lg-field"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && name.trim()) { onAdd(name); setName(""); } }}
                 placeholder="Nome do novo SDR"
-                style={{ flex: 1, padding: "9px 12px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", fontSize: 13, color: "#0f172a", outline: "none" }}
-              />
+                style={{
+                  flex: 1,
+                  padding: "9px 12px",
+                  borderRadius: 10,
+                  fontSize: 13,
+                  color: "#0f172a",
+                  outline: "none"
+                }} />
               <button
                 onClick={() => { if (name.trim()) { onAdd(name); setName(""); } }}
                 disabled={!name.trim()}
-                style={{ padding: "0 16px", borderRadius: 10, border: "none", background: name.trim() ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: name.trim() ? "pointer" : "not-allowed" }}
+                style={{ padding: "0 16px", borderRadius: 999, border: "none", background: name.trim() ? "linear-gradient(180deg, #2a3540, #121a21)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: name.trim() ? "pointer" : "not-allowed" }}
               >
                 <Plus size={15} />
               </button>
@@ -5535,14 +6303,50 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 130, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "88vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(30px)", borderRadius: 22, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 130,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg lg-strong"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 560,
+          maxHeight: "88vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 22,
+          overflow: "hidden"
+        }}>
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Atualizar telefones em massa</div>
             <div style={{ fontSize: 13.5, color: "#64748b", marginTop: 2 }}>Cole uma lista de "empresa + WhatsApp", ou suba um Excel/CSV com essas duas colunas. O app casa pelo nome da empresa com os leads que já existem.</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: "18px 24px", overflowY: "auto", flex: 1 }}>
@@ -5550,7 +6354,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={fileLoading}
-            style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 999, border: "1.5px solid rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.05)", color: "#6d5ef8", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}
           >
             {fileLoading ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <FileUp size={15} />}
             {fileLoading ? "Lendo arquivo..." : "Subir Excel/CSV (Empresa | WhatsApp)"}
@@ -5588,11 +6392,21 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
         </div>
 
         <div style={{ padding: "14px 24px", borderTop: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancelar</button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 999,
+              color: "#64748b",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer"
+            }}>Cancelar</button>
           <button
             onClick={handleApply}
             disabled={matchedCount === 0}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: matchedCount > 0 ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: matchedCount > 0 ? "pointer" : "not-allowed" }}
+            style={{ padding: "10px 20px", borderRadius: 999, border: "none", background: matchedCount > 0 ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(148,163,184,0.3)", color: "white", fontSize: 13, fontWeight: 700, cursor: matchedCount > 0 ? "pointer" : "not-allowed" }}
           >
             Atualizar {matchedCount > 0 ? `${matchedCount} telefone${matchedCount === 1 ? "" : "s"}` : ""}
           </button>
@@ -5706,14 +6520,50 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
   const applyBulkStage = () => { if (bulkStage && selectedCount) { onBulkEdit([...selectedIds], { stage: bulkStage }); setBulkStage(""); } };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 130, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(30px)", borderRadius: 22, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 130,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg lg-strong"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 640,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 22,
+          overflow: "hidden"
+        }}>
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Gerenciar leads em massa</div>
             <div style={{ fontSize: 13.5, color: "#64748b", marginTop: 2 }}>Filtre por data, responsável, estágio ou lote de importação, selecione e exclua ou edite vários de uma vez.</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
@@ -5723,7 +6573,17 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 10 }}>Move todos os leads de um responsável pra outro (ou pra "Todos") de uma vez, sem precisar filtrar um por um.</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {ownerCounts.map((row) => (
-                  <div key={row.key} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "8px 10px", borderRadius: 10, background: "white", border: "1px solid #eef0f3" }}>
+                  <div
+                    className="lg-soft"
+                    key={row.key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
+                      padding: "8px 10px",
+                      borderRadius: 10
+                    }}>
                     <OwnerAvatar name={row.label} size={26} />
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#14141a" }}>{row.label}</div>
                     <div style={{ fontSize: 12.5, color: "#94a3b8" }}>{row.count} lead{row.count === 1 ? "" : "s"}</div>
@@ -5740,7 +6600,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                     <button
                       onClick={() => reassignAllFrom(row.key)}
                       disabled={!reassignTarget[row.key] || reassignTarget[row.key] === "__none__"}
-                      style={{ padding: "7px 12px", borderRadius: 9, border: "none", background: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "#6d5ef8" : "#eef0f3", color: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "white" : "#b4b6bc", fontSize: 13, fontWeight: 700, cursor: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "pointer" : "not-allowed", flexShrink: 0 }}
+                      style={{ padding: "7px 12px", borderRadius: 999, border: "none", background: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "#6d5ef8" : "#eef0f3", color: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "white" : "#b4b6bc", fontSize: 13, fontWeight: 700, cursor: (reassignTarget[row.key] && reassignTarget[row.key] !== "__none__") ? "pointer" : "not-allowed", flexShrink: 0 }}
                     >
                       Mover
                     </button>
@@ -5758,7 +6618,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                     key={b.batch}
                     onClick={() => setSelectedBatch(selectedBatch === b.batch ? null : b.batch)}
                     style={{
-                      padding: "7px 12px", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 700,
+                      padding: "7px 12px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 700,
                       border: `1.5px solid ${selectedBatch === b.batch ? "#6d5ef8" : "#e2e4e9"}`,
                       background: selectedBatch === b.batch ? "rgba(109,94,248,0.1)" : "white",
                       color: selectedBatch === b.batch ? "#6d5ef8" : "#64748b",
@@ -5832,25 +6692,35 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                   <option value="__todos__">Todos</option>
                   {sdrs.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
                 </select>
-                <button onClick={applyBulkOwner} disabled={!bulkOwner} style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: bulkOwner ? "#6d5ef8" : "#eef0f3", color: bulkOwner ? "white" : "#b4b6bc", fontSize: 14, fontWeight: 700, cursor: bulkOwner ? "pointer" : "not-allowed" }}>Aplicar</button>
+                <button onClick={applyBulkOwner} disabled={!bulkOwner} style={{ padding: "9px 16px", borderRadius: 999, border: "none", background: bulkOwner ? "#6d5ef8" : "#eef0f3", color: bulkOwner ? "white" : "#b4b6bc", fontSize: 14, fontWeight: 700, cursor: bulkOwner ? "pointer" : "not-allowed" }}>Aplicar</button>
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <select value={bulkStage} onChange={(e) => setBulkStage(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 160 }}>
                   <option value="">Mudar estágio para...</option>
                   {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <button onClick={applyBulkStage} disabled={!bulkStage} style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: bulkStage ? "#6d5ef8" : "#eef0f3", color: bulkStage ? "white" : "#b4b6bc", fontSize: 14, fontWeight: 700, cursor: bulkStage ? "pointer" : "not-allowed" }}>Aplicar</button>
+                <button onClick={applyBulkStage} disabled={!bulkStage} style={{ padding: "9px 16px", borderRadius: 999, border: "none", background: bulkStage ? "#6d5ef8" : "#eef0f3", color: bulkStage ? "white" : "#b4b6bc", fontSize: 14, fontWeight: 700, cursor: bulkStage ? "pointer" : "not-allowed" }}>Aplicar</button>
               </div>
             </div>
           )}
         </div>
 
         <div style={{ padding: "14px 24px", borderTop: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Fechar</button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 999,
+              color: "#64748b",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer"
+            }}>Fechar</button>
           <button
             onClick={handleDelete}
             disabled={selectedCount === 0}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: selectedCount === 0 ? "rgba(148,163,184,0.3)" : (confirmDelete ? "#dc2626" : "linear-gradient(135deg, #ef4444, #dc2626)"), color: "white", fontSize: 13, fontWeight: 700, cursor: selectedCount === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7 }}
+            style={{ padding: "10px 20px", borderRadius: 999, border: "none", background: selectedCount === 0 ? "rgba(148,163,184,0.3)" : (confirmDelete ? "#dc2626" : "linear-gradient(135deg, #ef4444, #dc2626)"), color: "white", fontSize: 13, fontWeight: 700, cursor: selectedCount === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 7 }}
           >
             <Trash2 size={14} /> {confirmDelete ? `Confirmar exclusão de ${selectedCount}` : `Excluir ${selectedCount > 0 ? selectedCount : ""} selecionado${selectedCount === 1 ? "" : "s"}`}
           </button>
@@ -5875,14 +6745,46 @@ const IMPORT_HELP_ITEMS = [
 ];
 
 const ImportHelpPanel = ({ onClose }) => (
-  <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.5)", backdropFilter: "blur(4px)", zIndex: 140, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
-    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, maxHeight: "85vh", overflowY: "auto", background: "white", borderRadius: "22px 22px 0 0", padding: 22, boxShadow: "0 -20px 60px -12px rgba(0,0,0,0.35)", animation: "slideUp 0.25s ease" }}>
+  <div onClick={onClose} style={{
+    position: "fixed",
+    inset: 0,
+    background: "rgba(16, 22, 34, 0.26)",
+    backdropFilter: "blur(12px) saturate(140%)",
+    zIndex: 140,
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    animation: "fadeIn 0.15s ease",
+    WebkitBackdropFilter: "blur(12px) saturate(140%)"
+  }}>
+    <div
+      className="lg"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%",
+        maxWidth: 640,
+        maxHeight: "85vh",
+        overflowY: "auto",
+        borderRadius: "22px 22px 0 0",
+        padding: 22,
+        animation: "slideUp 0.25s ease"
+      }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
         <div>
           <div style={{ fontSize: 17, fontWeight: 800, color: "#14141a" }}>A extração não ficou boa?</div>
           <div style={{ fontSize: 14, color: "#9a9aa3", marginTop: 2 }}>Motivos mais comuns e como resolver cada um</div>
         </div>
-        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", flexShrink: 0 }}><X size={14} /></button>
+        <button
+          className="lgb"
+          onClick={onClose}
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: "50%",
+            color: "#64748b",
+            cursor: "pointer",
+            flexShrink: 0
+          }}><X size={14} /></button>
       </div>
       <div style={{ marginTop: 14 }}>
         {IMPORT_HELP_ITEMS.map((item) => (
@@ -6101,19 +7003,49 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
   const duplicateCount = draftLeads.filter((l) => l._duplicate).length;
 
   return (
-    <div onClick={requestClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.45)", backdropFilter: "blur(8px)", zIndex: 120, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "4vh 16px", overflowY: "auto", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: "white", borderRadius: 22, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 80px -20px rgba(20,20,26,0.4)", overflow: "hidden" }}>
+    <div onClick={requestClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 120,
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      padding: "4vh 16px",
+      overflowY: "auto",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 720,
+          borderRadius: 22,
+          overflow: "hidden"
+        }}>
         <div style={{ padding: "18px 22px", borderBottom: "1px solid #f1f2f5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 800, color: "#14141a" }}>Importar leads com IA</div>
             <div style={{ fontSize: 13.5, color: "#9a9aa3" }}>Excel, CSV ou texto colado - a IA organiza tudo pra você conferir</div>
           </div>
           <button
+            className="lgb"
             onClick={requestClose}
             disabled={step === "loading"}
             title={step === "loading" ? "Aguarde o processamento terminar" : "Fechar"}
-            style={{ width: 32, height: 32, borderRadius: 9, border: "1px solid #eef0f3", background: "white", color: step === "loading" ? "#d4d6db" : "#64748b", cursor: step === "loading" ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          ><X size={16} /></button>
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: step === "loading" ? "#d4d6db" : "#64748b",
+              cursor: step === "loading" ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: "20px 22px", maxHeight: "70vh", overflowY: "auto" }}>
@@ -6137,7 +7069,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                 style={{
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
                   padding: "28px 20px", borderRadius: 16,
-                  border: `2px dashed ${isDragging ? "#6d5ef8" : "#d7d9de"}`,
+                  border: `2px solid ${isDragging ? "#6d5ef8" : "#d7d9de"}`,
                   background: isDragging ? "rgba(109,94,248,0.06)" : "#fafbfc",
                   cursor: "pointer", marginBottom: 16, textAlign: "center", transition: "all 0.15s ease",
                 }}
@@ -6173,7 +7105,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
               <button
                 onClick={() => pastedText.trim() && runImport(pastedText)}
                 disabled={!pastedText.trim()}
-                style={{ marginTop: 12, width: "100%", padding: "12px 0", borderRadius: 12, border: "none", cursor: pastedText.trim() ? "pointer" : "not-allowed", fontSize: 14, fontWeight: 700, background: pastedText.trim() ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#eef0f3", color: pastedText.trim() ? "white" : "#b4b6bc", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                style={{ marginTop: 12, width: "100%", padding: "12px 0", borderRadius: 999, border: "none", cursor: pastedText.trim() ? "pointer" : "not-allowed", fontSize: 14, fontWeight: 700, background: pastedText.trim() ? "linear-gradient(180deg, #2a3540, #121a21)" : "#eef0f3", color: pastedText.trim() ? "white" : "#b4b6bc", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
               >
                 <Sparkles size={15} /> Processar texto colado com IA
               </button>
@@ -6252,7 +7184,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                                 key={opt.key}
                                 onClick={() => opt.key === "skip" ? updateDraft(l._tmpId, { _include: false }) : updateDraft(l._tmpId, { _include: true, _dupAction: opt.key })}
                                 style={{
-                                  padding: "4px 9px", borderRadius: 7, cursor: "pointer", fontSize: 12, fontWeight: 700,
+                                  padding: "4px 9px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: 700,
                                   border: `1px solid ${active ? "#b45309" : "rgba(245,166,35,0.35)"}`,
                                   background: active ? "#b45309" : "white", color: active ? "white" : "#b45309",
                                 }}
@@ -6312,7 +7244,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                   <button
                     key={t.key}
                     onClick={() => setImportTags((prev) => active ? prev.filter((k) => k !== t.key) : [...prev, t.key])}
-                    style={{ padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                    style={{ padding: "5px 12px", borderRadius: 999, border: `1.5px solid ${active ? t.color : "rgba(148,163,184,0.3)"}`, background: active ? t.color + "15" : "white", color: active ? t.color : "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                   >
                     {active ? "✓ " : ""}{t.label}
                   </button>
@@ -6325,13 +7257,23 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <button onClick={() => setStep("input")} style={{ padding: "9px 14px", borderRadius: 10, border: "1px solid #e2e4e9", background: "white", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              <button
+                className="lgb"
+                onClick={() => setStep("input")}
+                style={{
+                  padding: "9px 14px",
+                  borderRadius: 999,
+                  color: "#64748b",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}>
                 Voltar
               </button>
               <button
                 onClick={() => { onConfirm(draftLeads.filter((l) => l._include && l.company.trim()).map((l) => ({ ...l, _tags: importTags }))); onClose(); }}
                 disabled={validIncludedCount === 0}
-                style={{ padding: "11px 22px", borderRadius: 11, border: "none", cursor: validIncludedCount ? "pointer" : "not-allowed", fontSize: 13.5, fontWeight: 800, background: validIncludedCount ? "linear-gradient(135deg, #1fa971, #059669)" : "#eef0f3", color: validIncludedCount ? "white" : "#b4b6bc", display: "flex", alignItems: "center", gap: 8 }}
+                style={{ padding: "11px 22px", borderRadius: 999, border: "none", cursor: validIncludedCount ? "pointer" : "not-allowed", fontSize: 13.5, fontWeight: 800, background: validIncludedCount ? "linear-gradient(135deg, #1fa971, #059669)" : "#eef0f3", color: validIncludedCount ? "white" : "#b4b6bc", display: "flex", alignItems: "center", gap: 8 }}
               >
                 <Upload size={14} /> Importar {validIncludedCount} lead{validIncludedCount === 1 ? "" : "s"}
               </button>
@@ -6369,8 +7311,8 @@ const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
   return (
     <div style={{ display: "flex", alignItems: "stretch", gap: 12, marginBottom: 10 }}>
       <div style={{ width: 4, borderRadius: 4, background: cfg.color, flexShrink: 0 }} />
-      <Glass style={{ flex: 1, borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => onOpen(meeting)}>
-        <div style={{ minWidth: 62 }}>
+      <Glass className="mt-row" style={{ flex: 1, minWidth: 0, borderRadius: 20, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => onOpen(meeting)}>
+        <div style={{ minWidth: 52 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{time}</div>
           <div style={{ fontSize: 12, color: "#94a3b8" }}>– {endTime}</div>
         </div>
@@ -6390,14 +7332,14 @@ const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
         </div>
         <button
           onClick={handleAction}
-          style={{ padding: "8px 14px", borderRadius: 10, border: "none", background: cfg.color + "18", color: cfg.color, fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+          style={{ padding: "8px 14px", borderRadius: 999, border: "none", background: cfg.color + "18", color: cfg.color, fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
         >
-          <actionMeta.icon size={13} /> {actionMeta.label}
+          <actionMeta.icon size={13} /> <span className="mt-action-label">{actionMeta.label}</span>
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); const matchedLead = leads.find((l) => l.company && meeting.company && normalizeCompanyName(l.company) === normalizeCompanyName(meeting.company)); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(meeting, matchedLead))}`; }}
           title="Compartilhar essa reunião com outro SDR"
-          style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
+          style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(37,211,102,0.6)" }}
         >
           <Share2 size={14} />
         </button>
@@ -6425,8 +7367,33 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
   };
 
   return (
-    <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(30, 20, 60, 0.4)", backdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(40px) saturate(160%)", borderRadius: 24, border: "1px solid rgba(255,255,255,0.9)", boxShadow: "0 30px 90px -20px rgba(76,29,149,0.35)", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={handleClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 100,
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      padding: "5vh 20px",
+      overflowY: "auto",
+      animation: "fadeIn 0.22s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg lg-strong"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 560,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 24,
+          overflow: "hidden",
+          animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ padding: "22px 26px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", background: `linear-gradient(135deg, ${cfg.color}18, transparent)`, flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: cfg.color + "22", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center" }}><cfg.icon size={18} /></div>
@@ -6435,7 +7402,19 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               <div style={{ fontSize: 13, color: "#94a3b8" }}>{cfg.label}</div>
             </div>
           </div>
-          <button onClick={handleClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={16} /></button>
+          <button
+            className="lgb"
+            onClick={handleClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: "20px 26px", flex: 1, minHeight: 0, overflowY: "auto" }}>
@@ -6443,9 +7422,17 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             <div style={{ position: "relative" }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Data</span>
               <button
-                type="button" onClick={() => { setDateOpen((v) => !v); setTimeOpen(false); }}
-                style={{ ...inputStyle, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "white", textAlign: "left" }}
-              >
+                className="lgb"
+                type="button"
+                onClick={() => { setDateOpen((v) => !v); setTimeOpen(false); }}
+                style={{
+                  ...inputStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  textAlign: "left"
+                }}>
                 <CalendarIcon size={14} color="#6d5ef8" />
                 {new Date(draft.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
               </button>
@@ -6466,9 +7453,17 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             <div style={{ position: "relative" }}>
               <span style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Horário</span>
               <button
-                type="button" onClick={() => { setTimeOpen((v) => !v); setDateOpen(false); }}
-                style={{ ...inputStyle, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "white", textAlign: "left" }}
-              >
+                className="lgb"
+                type="button"
+                onClick={() => { setTimeOpen((v) => !v); setDateOpen(false); }}
+                style={{
+                  ...inputStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  textAlign: "left"
+                }}>
                 <Clock size={14} color="#6d5ef8" />
                 {draft.date.slice(11, 16)}
               </button>
@@ -6486,10 +7481,10 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           <div style={{ marginBottom: 16 }}>
             <LabelWithHint hint="Escolha uma das duas opções - o campo certo aparece conforme a escolha">Local da reunião</LabelWithHint>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-              <button onClick={() => update({ locationType: "online" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, border: `1px solid ${draft.locationType !== "presencial" ? "#6366f1" : "rgba(148,163,184,0.25)"}`, background: draft.locationType !== "presencial" ? "rgba(99,102,241,0.1)" : "white", color: draft.locationType !== "presencial" ? "#4f46e5" : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <button onClick={() => update({ locationType: "online" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType !== "presencial" ? "#6366f1" : "rgba(148,163,184,0.25)"}`, background: draft.locationType !== "presencial" ? "rgba(99,102,241,0.1)" : "white", color: draft.locationType !== "presencial" ? "#4f46e5" : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Video size={13} /> Online
               </button>
-              <button onClick={() => update({ locationType: "presencial" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, border: `1px solid ${draft.locationType === "presencial" ? "#f59e0b" : "rgba(148,163,184,0.25)"}`, background: draft.locationType === "presencial" ? "rgba(245,158,11,0.1)" : "white", color: draft.locationType === "presencial" ? "#b45309" : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <button onClick={() => update({ locationType: "presencial" })} style={{ flex: 1, padding: "8px 10px", borderRadius: 999, border: `1px solid ${draft.locationType === "presencial" ? "#f59e0b" : "rgba(148,163,184,0.25)"}`, background: draft.locationType === "presencial" ? "rgba(245,158,11,0.1)" : "white", color: draft.locationType === "presencial" ? "#b45309" : "#64748b", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Users2 size={13} /> Presencial
               </button>
             </div>
@@ -6502,7 +7497,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
                   type="button"
                   onClick={() => window.open("https://meet.google.com/new", "_blank")}
                   title="Abre o Google Meet numa aba nova pra criar uma sala - depois é só colar o link aqui"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 14px", borderRadius: 12, border: "1.5px solid #6366f1", background: "rgba(99,102,241,0.08)", color: "#4f46e5", fontSize: 13.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 14px", borderRadius: 999, border: "1.5px solid #6366f1", background: "rgba(99,102,241,0.08)", color: "#4f46e5", fontSize: 13.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
                 >
                   <Video size={13} /> Gerar Meet
                 </button>
@@ -6516,7 +7511,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               {Object.entries(MEETING_TYPES).map(([key, t]) => {
                 const active = draft.type === key;
                 return (
-                  <button key={key} onClick={() => update({ type: key })} style={{ padding: "7px 11px", borderRadius: 9, border: `1px solid ${active ? t.color : "rgba(148,163,184,0.25)"}`, background: active ? t.color + "18" : "white", color: active ? t.color : "#64748b", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                  <button key={key} onClick={() => update({ type: key })} style={{ padding: "7px 11px", borderRadius: 999, border: `1px solid ${active ? t.color : "rgba(148,163,184,0.25)"}`, background: active ? t.color + "18" : "white", color: active ? t.color : "#64748b", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
                     <t.icon size={12} /> {t.label}
                   </button>
                 );
@@ -6540,7 +7535,20 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
                 const matches = leads.filter((l) => !q || l.company.toLowerCase().includes(q)).slice(0, 30);
                 if (matches.length === 0) return null;
                 return (
-                  <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: 4, maxHeight: 220, overflowY: "auto", background: "white", border: "1px solid rgba(148,163,184,0.25)", borderRadius: 12, boxShadow: "0 12px 30px -10px rgba(15,23,42,0.25)", zIndex: 20 }}>
+                  <div
+                    className="lg-soft"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      marginTop: 4,
+                      maxHeight: 220,
+                      overflowY: "auto",
+                      borderRadius: 12,
+                      boxShadow: "0 12px 30px -10px rgba(15,23,42,0.25)",
+                      zIndex: 20
+                    }}>
                     {matches.map((l) => (
                       <div
                         key={l.id}
@@ -6567,13 +7575,28 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: 0.5 }}>Nosso lado</span>
-                <select value={draft.ourAttendee} onChange={(e) => update({ ourAttendee: e.target.value })} style={{ ...selectStyle, marginTop: 6, background: "white" }}>
+                <select
+                  className="lg-field"
+                  value={draft.ourAttendee}
+                  onChange={(e) => update({ ourAttendee: e.target.value })}
+                  style={{
+                    ...selectStyle,
+                    marginTop: 6
+                  }}>
                   {sdrs.map((s) => <option key={s.name}>{s.name}</option>)}
                 </select>
               </div>
               <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#b45309", textTransform: "uppercase", letterSpacing: 0.5 }}>Lado do cliente</span>
-                <input value={draft.theirAttendee || ""} onChange={(e) => update({ theirAttendee: e.target.value })} placeholder="Nome / cargo" style={{ ...inputStyle, marginTop: 6, background: "white" }} />
+                <input
+                  className="lg-field"
+                  value={draft.theirAttendee || ""}
+                  onChange={(e) => update({ theirAttendee: e.target.value })}
+                  placeholder="Nome / cargo"
+                  style={{
+                    ...inputStyle,
+                    marginTop: 6
+                  }} />
               </div>
             </div>
           </div>
@@ -6583,21 +7606,21 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#64748b" }}>Confirmar exclusão?</span>
-              <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "#ef4444", color: "white", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
-              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 13.5, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 999, border: "none", background: "#ef4444", color: "white", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 13.5, cursor: "pointer" }}>Cancelar</button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 10, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir</button>
+            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir</button>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               onClick={() => { const matchedLead = leads.find((l) => l.company && draft.company && normalizeCompanyName(l.company) === normalizeCompanyName(draft.company)); window.location.href = `https://wa.me/?text=${encodeURIComponent(buildMeetingShareMessage(draft, matchedLead))}`; }}
               title="Compartilhar essa reunião com outro SDR"
-              style={{ width: 42, height: 42, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
+              style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "linear-gradient(135deg, #25d366, #1eb356)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 8px 20px -8px rgba(37,211,102,0.55)" }}
             >
               <Share2 size={17} />
             </button>
-            <button onClick={() => { onSave(draft); onClose(); }} style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}>Salvar reunião</button>
+            <button onClick={() => { onSave(draft); onClose(); }} style={{ padding: "10px 22px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}>Salvar reunião</button>
           </div>
         </div>
       </div>
@@ -6636,11 +7659,45 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
   const totalPending = items.reduce((sum, it) => sum + it.count, 0);
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,10,40,0.4)", backdropFilter: "blur(6px)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "82vh", overflowY: "auto", background: "white", borderRadius: "24px 24px 0 0", padding: 22, animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)" }}>
+    <div onClick={onClose} style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(16, 22, 34, 0.26)",
+      backdropFilter: "blur(12px) saturate(140%)",
+      zIndex: 300,
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      animation: "fadeIn 0.2s ease",
+      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    }}>
+      <div
+        className="lg"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          maxHeight: "82vh",
+          overflowY: "auto",
+          borderRadius: "24px 24px 0 0",
+          padding: 22,
+          animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)"
+        }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <h2 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 19, fontWeight: 800, margin: 0, color: "#14141a" }}>Notificações</h2>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #eef0f3", background: "white", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={16} /></button>
+          <button
+            className="lgb"
+            onClick={onClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              color: "#64748b",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}><X size={16} /></button>
         </div>
         <div style={{ fontSize: 14, color: "#9a9aa3", marginBottom: 18 }}>
           {totalPending === 0 ? "Tudo em dia por aqui." : `${totalPending} coisa${totalPending === 1 ? "" : "s"} pedindo atenção`}
@@ -6654,10 +7711,17 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {items.filter((it) => it.count > 0).map((it) => (
               <div
+                className="lg"
                 key={it.key}
                 onClick={() => onNavigate(it.view)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", borderRadius: 16, background: "#f8fafc", border: "1px solid #eef0f3", cursor: "pointer" }}
-              >
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "13px 14px",
+                  borderRadius: 22,
+                  cursor: "pointer"
+                }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: it.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <it.icon size={18} color={it.color} />
                 </div>
@@ -7797,7 +8861,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.08); } }
@@ -7830,6 +8894,68 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           100% { transform: translateY(100vh) rotate(var(--rot)); opacity: 0.3; }
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* ═══════════ LIQUID GLASS (mesma linguagem do Prisma) ═══════════ */
+        :root {
+          --lg-font: "Urbanist", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+          --g1: rgba(255,255,255,0.56); --g2: rgba(255,255,255,0.2);
+          --edge: rgba(255,255,255,0.95); --edge2: rgba(255,255,255,0.20);
+          --shade: rgba(36,56,74,0.30); --ink: #101a23; --ink2: #3c4a56; --ink3: #6b7985;
+          --btn: #15202a; --lime: #d7fa3c;
+        }
+        .lg-app { background: #e3e9f1; letter-spacing: 0.003em; -webkit-font-smoothing: antialiased; }
+        .lg-app button, .lg-app input, .lg-app select, .lg-app textarea { font-family: inherit; }
+        .lg-mesh { position: fixed; inset: -12%; z-index: 0; pointer-events: none; filter: blur(64px) saturate(150%); }
+        .lg-mesh i { position: absolute; border-radius: 50%; opacity: 0.95; animation: lgDrift 28s ease-in-out infinite; }
+        .lg-mesh i:nth-child(1) { width: 62vw; height: 62vw; left: -6%; top: -8%; background: #9cc6ee; }
+        .lg-mesh i:nth-child(2) { width: 54vw; height: 54vw; right: -8%; top: 4%; background: #cbbdf0; animation-delay: -7s; }
+        .lg-mesh i:nth-child(3) { width: 58vw; height: 58vw; left: 8%; bottom: -14%; background: #b9e8d2; animation-delay: -14s; }
+        .lg-mesh i:nth-child(4) { width: 44vw; height: 44vw; right: 6%; bottom: 2%; background: #f1cbba; animation-delay: -21s; }
+        @keyframes lgDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(4%, -3%) scale(1.06); } 66% { transform: translate(-3%, 4%) scale(0.95); } }
+        .lg-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.07; mix-blend-mode: overlay;
+          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+        @media (prefers-reduced-motion: reduce) { .lg-mesh i { animation: none; } }
+
+        /* Superfície de vidro: preenchimento translúcido + desfoque + borda especular */
+        .lg { position: relative; isolation: isolate;
+          background: linear-gradient(150deg, var(--g1), var(--g2));
+          backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 26px 50px -32px var(--shade), 0 2px 10px -6px var(--shade); }
+        .lg::after, .lg-rim::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
+          background: linear-gradient(155deg, var(--edge), var(--edge2) 34%, transparent 58%, var(--edge2) 82%, var(--edge));
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+        .lg-rim { position: relative; }
+        .lg-rim::after { opacity: 0.55; }
+        .lg-strong { background: linear-gradient(160deg, rgba(250,252,254,0.9), rgba(240,245,250,0.8));
+          backdrop-filter: blur(40px) saturate(185%); -webkit-backdrop-filter: blur(40px) saturate(185%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 40px 90px -40px rgba(24,40,56,0.45), 0 2px 12px -6px var(--shade); }
+        .lg-soft { background: rgba(255,255,255,0.46); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.65), inset 0 1px 0 rgba(255,255,255,0.85); }
+        .leads-grid .lg, .leads-grid-list .lg { backdrop-filter: blur(16px) saturate(175%); -webkit-backdrop-filter: blur(16px) saturate(175%); }
+
+        /* Botões */
+        .lgb, .lg-primary { border: 0; }
+        .lgb { background: linear-gradient(160deg, rgba(255,255,255,0.74), rgba(255,255,255,0.38));
+          backdrop-filter: blur(16px) saturate(170%); -webkit-backdrop-filter: blur(16px) saturate(170%);
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), inset 0 1px 0 #fff, 0 8px 18px -12px var(--shade);
+          transition: transform 0.25s cubic-bezier(.2,.9,.2,1), background 0.25s ease, box-shadow 0.25s ease; }
+        .lgb:hover { background: rgba(255,255,255,0.9); }
+        .lg-primary { position: relative; overflow: hidden; isolation: isolate; color: #f3f7f9;
+          background: linear-gradient(180deg, #2a3540 0%, #121a21 100%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 0 0 1px rgba(255,255,255,0.06), 0 14px 28px -14px rgba(16,26,35,0.6);
+          transition: transform 0.25s cubic-bezier(.2,.9,.2,1), box-shadow 0.25s ease; }
+        .lg-primary::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; z-index: -1; pointer-events: none;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent); transform: translateX(-130%); animation: lgSweep 5s ease-in-out infinite; }
+        @keyframes lgSweep { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(330%); } }
+        .lg-primary:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 18px 34px -14px rgba(16,26,35,0.7); }
+        .lgb:active, .lg-primary:active { transform: scale(0.97); }
+        .lg-primary:disabled, .lgb:disabled { opacity: 0.5; }
+        .lg-field { background: rgba(255,255,255,0.5); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75), inset 0 1px 2px rgba(16,26,35,0.06); }
+
+        /* Menu inferior flutuante */
+        .lg-dock { position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); max-width: 460px; margin: 0 auto;
+          display: flex; justify-content: space-around; padding: 7px 8px; border-radius: 32px; z-index: 90; }
+        .lg-dock-ico { width: 44px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; transition: background 0.35s ease, box-shadow 0.35s ease; }
+        .lg-dock-ico.on { background: var(--lime); box-shadow: 0 0 20px -4px rgba(215,250,60,0.95), inset 0 1px 0 rgba(255,255,255,0.7); }
+        @media (max-width: 480px) { .mt-row { gap: 9px !important; padding: 11px 12px !important; } .mt-row .mt-action-label { display: none; } }
         .leads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (min-width: 720px) { .leads-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; } }
         .leads-grid-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -7861,19 +8987,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         }
         button, a, [role="button"] { -webkit-tap-highlight-color: transparent; outline: none; }
         button:focus, button:focus-visible { outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: rgba(99, 102, 241, 0.5) !important; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12); }
+        input:focus, select:focus, textarea:focus { border-color: rgba(79, 174, 224, 0.7) !important; box-shadow: 0 0 0 4px rgba(79, 174, 224, 0.16), inset 0 1px 2px rgba(16,26,35,0.06) !important; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
-        .lead-card:hover { transform: translateY(-3px); box-shadow: 0 1px 0 rgba(255,255,255,0.95) inset, 0 16px 36px -10px rgba(76, 29, 149, 0.22) !important; }
+        .lead-card:hover { transform: translateY(-3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 26px 46px -24px rgba(24,40,56,0.42) !important; }
         .glow-btn { position: relative; overflow: hidden; animation: ctaGlowPulse 2.4s ease-in-out infinite; }
         .glow-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%); background-size: 200% 100%; animation: shimmer 3.5s ease-in-out infinite; }
       `}</style>
 
-      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 35%, #fdf2f8 100%)", fontFamily: '"Open Sans", Arial, sans-serif', color: "#0f172a", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "fixed", top: -150, right: -100, width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.28), transparent 70%)", filter: "blur(50px)", animation: "blob 20s ease-in-out infinite", pointerEvents: "none" }} />
-        <div style={{ position: "fixed", bottom: -120, left: -100, width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(99, 102, 241, 0.22), transparent 70%)", filter: "blur(50px)", animation: "blob 25s ease-in-out infinite reverse", pointerEvents: "none" }} />
-        <div style={{ position: "fixed", top: "35%", left: "55%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(244, 114, 182, 0.2), transparent 70%)", filter: "blur(50px)", animation: "blob 22s ease-in-out infinite", pointerEvents: "none" }} />
+      <div className="lg-app" style={{ minHeight: "100vh", fontFamily: "var(--lg-font)", color: "#101a23", position: "relative", overflow: "hidden" }}>
+        <div className="lg-mesh" aria-hidden="true"><i /><i /><i /><i /></div>
+        <div className="lg-grain" aria-hidden="true" />
 
         <div style={{ position: "relative", maxWidth: 1320, margin: "0 auto", padding: "24px 20px 100px" }}>
 
@@ -7885,15 +9010,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               borderRadius: 26, padding: "20px 22px 24px", marginBottom: 16, position: "relative", overflow: "hidden",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <button onClick={() => setShowMenu(true)} data-tour="menu" style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <button onClick={() => setShowMenu(true)} data-tour="menu" style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Menu size={19} />
                 </button>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <button onClick={() => setShowNotifications(true)} title="Notificações" style={{ width: 44, height: 44, borderRadius: 13, border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                  <button onClick={() => setShowNotifications(true)} title="Notificações" style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: "#232327", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                     <Bell size={18} />
                     {(stats.desatendidos.length + stats.hotNoContact.length + stats.weekList.length) > 0 && <span style={{ position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: DARK.lime, border: "2px solid " + DARK.card }} />}
                   </button>
-                  <button onClick={() => setShowSdrManager(true)} title={isOwner ? "Gerenciar SDRs" : "Seu perfil"} style={{ width: 44, height: 44, borderRadius: "50%", background: (sdrs.find((s) => s.name === currentUserName) || sdrs[0])?.avatarUrl ? "transparent" : "linear-gradient(135deg, #6366f1, #8b5cf6)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15, padding: 0, overflow: "hidden" }}>
+                  <button onClick={() => setShowSdrManager(true)} title={isOwner ? "Gerenciar SDRs" : "Seu perfil"} style={{ width: 44, height: 44, borderRadius: "50%", background: (sdrs.find((s) => s.name === currentUserName) || sdrs[0])?.avatarUrl ? "transparent" : "linear-gradient(180deg, #2a3540, #121a21)", border: `2px solid ${DARK.lime}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 15, padding: 0, overflow: "hidden" }}>
                     {(() => {
                       const me = sdrs.find((s) => s.name === currentUserName) || sdrs[0];
                       return me?.avatarUrl
@@ -7907,10 +9032,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 24, fontWeight: 800, letterSpacing: -0.5, margin: 0, color: "white", lineHeight: 1.15, marginBottom: workspaceName ? 3 : 16 }}>Visão geral do funil</h1>
               {workspaceName && <div style={{ fontSize: 13.5, fontWeight: 400, color: "rgba(255,255,255,0.55)", marginBottom: 16 }}>{workspaceName}</div>}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={createLead} data-tour="new-lead" className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "none", background: DARK.lime, color: "#14141a", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
+                <button onClick={createLead} data-tour="new-lead" className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 999, border: "none", background: DARK.lime, color: "#14141a", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}>
                   <Plus size={13} /> Novo lead
                 </button>
-                <button onClick={() => setShowImportModal(true)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+                <button onClick={() => setShowImportModal(true)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 999, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
                   <Upload size={13} /> Importar leads
                 </button>
               </div>
@@ -7923,9 +9048,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               {/* KPI cards */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 12 }}>
                 <div
+                  className="lg"
                   onClick={() => { clearFilters(); scrollToGrid(); }}
-                  style={{ borderRadius: 20, padding: "16px 18px", cursor: "pointer", backgroundImage: `linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.7)), url(${BG_GREEN_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3" }}
-                >
+                  style={{
+                    borderRadius: 20,
+                    padding: "16px 18px",
+                    cursor: "pointer"
+                  }}>
                   <HexIcon icon={Users} color="#d7fa3c" grad="linear-gradient(160deg, #e7ffa0, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" pulse />
                   <div style={{ fontSize: 14, color: "#6b6b75", fontWeight: 600, marginTop: 10, marginBottom: 3 }}>Total de leads</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 30, fontWeight: 800, color: "#14141a" }}>{stats.total}</div>
@@ -7953,7 +9082,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 13.5, color: "#6366f1", fontWeight: 600 }}>
                   <SlidersHorizontal size={13} />
                   Filtro rápido: somente em contato
-                  <button onClick={() => setQuickStage(null)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 7, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#6366f1", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => setQuickStage(null)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 999, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#6366f1", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                     <X size={11} /> limpar
                   </button>
                 </div>
@@ -8152,9 +9281,13 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               {/* Linha de campos pequenos: Conquistados, Reuniões agendadas, Negociações antigas, Super lead */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
                 <div
+                  className="lg"
                   onClick={() => setView("conquistados")}
-                  style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.65)), url(${BG_LAVENDER_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}
-                >
+                  style={{
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    cursor: "pointer"
+                  }}>
                   <HexIcon icon={CheckImgIcon} color="#6d5ef8" grad="linear-gradient(160deg, #a79bfc, #6d5ef8)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 13, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Conquistados</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.vendidas}</div>
@@ -8169,13 +9302,28 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   </div>
                 </div>
 
-                <div onClick={() => setView("desatendidos")} style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.6)), url(${BG_PINK_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}>
+                <div
+                  className="lg"
+                  onClick={() => setView("desatendidos")}
+                  style={{
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    cursor: "pointer"
+                  }}>
                   <HexIcon icon={NegociacoesRedIcon} color="#e2483f" grad="linear-gradient(160deg, #f88a80, #e2483f)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 13, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Negociações antigas</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.desatendidos.length}</div>
                 </div>
 
-                <div onClick={() => { setSuperOnly((v) => !v); scrollToGrid(); }} style={{ borderRadius: 16, padding: "12px 14px", backgroundImage: `linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.6)), url(${BG_ORANGE_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: `1px solid ${superOnly ? "#f5c94c" : "#eef0f3"}`, cursor: "pointer" }}>
+                <div
+                  className="lg"
+                  onClick={() => { setSuperOnly((v) => !v); scrollToGrid(); }}
+                  style={{
+                    borderRadius: 16,
+                    padding: "12px 14px",
+                    border: `1px solid ${superOnly ? "#f5c94c" : "#eef0f3"}`,
+                    cursor: "pointer"
+                  }}>
                   <HexIcon icon={StarImgIcon} color="#f5c518" grad="linear-gradient(160deg, #ffe27a, #f5c518)" size={30} iconSize={13} pulse />
                   <div style={{ fontSize: 13, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Super lead</div>
                   <div style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.superLeads.length}</div>
@@ -8217,7 +9365,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 13.5, color: "#6366f1", fontWeight: 600, flexWrap: "wrap" }}>
                   <SlidersHorizontal size={13} />
                   Filtro rápido: {[quickStage === "ativo" && "somente em contato", superOnly && "somente super atenção"].filter(Boolean).join(" · ")}
-                  <button onClick={() => { setQuickStage(null); setSuperOnly(false); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 7, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#6366f1", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => { setQuickStage(null); setSuperOnly(false); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 999, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#6366f1", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                     <X size={11} /> limpar
                   </button>
                 </div>
@@ -8270,7 +9418,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 const avgPerDay = Math.ceil(remaining / daysLeftInWeek);
 
                 return (
-                  <div data-tour="week-card" style={{ borderRadius: 22, overflow: "hidden", marginBottom: 20, boxShadow: "0 8px 28px -14px rgba(20,20,26,0.18)" }}>
+                  <div data-tour="week-card" className="lg" style={{ borderRadius: 26, overflow: "hidden", marginBottom: 20 }}>
                     {/* Topo: hero lima com imagem real de fundo */}
                     <div
                       onClick={() => { setWeekSectionFilter("all"); setView("semana"); }}
@@ -8290,7 +9438,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             <div style={{ fontSize: 13.5, fontWeight: 600, opacity: 0.75 }}>{weekSdrFilter === "all" ? "Foque nos leads da sua lista" : `Lista de ${weekSdrFilter}`}</div>
                           </div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setWeekSectionFilter("all"); setView("semana"); }} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 12, border: "none", background: "#14141a", color: DARK.lime, fontSize: 13, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                        <button onClick={(e) => { e.stopPropagation(); setWeekSectionFilter("all"); setView("semana"); }} className="glow-btn lg-primary" style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                          padding: "10px 18px",
+                          borderRadius: 999,
+                          color: DARK.lime,
+                          fontSize: 13,
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          flexShrink: 0
+                        }}>
                           Ver lista <ChevronRight size={14} />
                         </button>
                       </div>
@@ -8340,7 +9499,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
 
                     {/* Baixo: progresso + estatísticas + alerta, fundo branco */}
-                    <div style={{ background: "white", padding: "22px 24px" }}>
+                    <div style={{ background: "rgba(255,255,255,0.18)", padding: "22px 24px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
                         <span style={{ fontSize: 15, fontWeight: 800, color: "#14141a" }}>Seu progresso semanal</span>
                         <button
@@ -8474,7 +9633,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               <div style={{ fontSize: 13, fontWeight: 600, color: "#6b6b75" }}>para bater a meta semanal</div>
                             </div>
                           </div>
-                          <button onClick={() => setView("semana")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 12, border: "1px solid #eef0f3", background: "white", color: "#14141a", fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                          <button
+                            className="lgb"
+                            onClick={() => setView("semana")}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 7,
+                              padding: "10px 16px",
+                              borderRadius: 999,
+                              color: "#14141a",
+                              fontSize: 14,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              flexShrink: 0
+                            }}>
                             <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
                           </button>
                         </div>
@@ -8489,7 +9662,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               <div style={{ fontSize: 13, fontWeight: 600, color: "#6b6b75" }}>continue assim até o fim da semana</div>
                             </div>
                           </div>
-                          <button onClick={() => setView("semana")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 12, border: "1px solid #eef0f3", background: "white", color: "#14141a", fontSize: 14, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                          <button
+                            className="lgb"
+                            onClick={() => setView("semana")}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 7,
+                              padding: "10px 16px",
+                              borderRadius: 999,
+                              color: "#14141a",
+                              fontSize: 14,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              flexShrink: 0
+                            }}>
                             <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
                           </button>
                         </div>
@@ -8500,12 +9687,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               })()}
 
               {/* Busca - destacada, separada dos filtros */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
-                padding: "13px 16px", borderRadius: 14,
-                background: "white", border: "1.5px solid #dcdfe6",
-                boxShadow: "0 2px 8px -4px rgba(20,20,26,0.08)",
-              }}>
+              <div
+                className="lg"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 12,
+                  padding: "13px 16px",
+                  borderRadius: 22,
+                  border: "1.5px solid #dcdfe6"
+                }}>
                 <Search size={18} style={{ color: "#6d5ef8", flexShrink: 0 }} />
                 <input
                   value={search}
@@ -8531,13 +9723,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <Chip active={whatsappOnly} onClick={() => setWhatsappOnly((v) => !v)} color="#16a34a" count={stats.withWhatsapp}><MessageCircle size={13} style={{ marginRight: -2 }} /> Com WhatsApp</Chip>
               </Glass>
 
-              <div style={{
-                borderRadius: 20, padding: "14px 18px", marginBottom: 20, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap",
-                background: "rgba(255, 255, 255, 0.6)",
-                backdropFilter: "blur(20px) saturate(150%)", WebkitBackdropFilter: "blur(20px) saturate(150%)",
-                border: "1.5px solid #a8dc2e",
-                boxShadow: "0 8px 20px -12px rgba(127, 197, 21, 0.35)",
-              }}>
+              <div
+                className="lg lg-strong"
+                style={{
+                  borderRadius: 20,
+                  padding: "14px 18px",
+                  marginBottom: 20,
+                  display: "flex",
+                  gap: 14,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  border: "1.5px solid #a8dc2e"
+                }}>
                 {isOwner && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
@@ -8548,7 +9745,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <Chip key={s.name} active={ownerFilter === s.name} onClick={() => setOwnerFilter(s.name)} color={s.color}>{s.name}</Chip>
                         ))}
                       </div>
-                      <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 9, border: "1.5px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 13, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
+                      <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 999, border: "1.5px solid rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 13, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
                         <Plus size={12} /> SDR
                       </button>
                     </div>
@@ -8564,7 +9761,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   </div>
                 </div>
                 <div style={{ flex: 1 }} />
-                {hasActiveFilters && <button onClick={clearFilters} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 9, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13.5, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}><X size={12} /> Limpar filtros</button>}
+                {hasActiveFilters && <button
+                  className="lgb"
+                  onClick={clearFilters}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "6px 11px",
+                    borderRadius: 999,
+                    color: "#64748b",
+                    fontSize: 13.5,
+                    fontWeight: 400,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap"
+                  }}><X size={12} /> Limpar filtros</button>}
                 <div style={{ fontSize: 13.5, color: "#64748b", fontWeight: 600 }}>{filtered.length} de {leads.length} leads</div>
               </div>
 
@@ -8661,14 +9872,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <button
                     onClick={() => setLeadsViewMode("grid")}
                     title="Visualização dupla"
-                    style={{ width: 32, height: 28, borderRadius: 8, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "grid" ? "white" : "transparent", color: leadsViewMode === "grid" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "grid" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
+                    style={{ width: 32, height: 28, borderRadius: 999, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "grid" ? "white" : "transparent", color: leadsViewMode === "grid" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "grid" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
                   >
                     <LayoutGrid size={14} />
                   </button>
                   <button
                     onClick={() => setLeadsViewMode("list")}
                     title="Visualização em lista"
-                    style={{ width: 32, height: 28, borderRadius: 8, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "list" ? "white" : "transparent", color: leadsViewMode === "list" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "list" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
+                    style={{ width: 32, height: 28, borderRadius: 999, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: leadsViewMode === "list" ? "white" : "transparent", color: leadsViewMode === "list" ? "#14141a" : "#94a3b8", boxShadow: leadsViewMode === "list" ? "0 2px 6px -2px rgba(15,23,42,0.2)" : "none" }}
                   >
                     <ListIcon size={14} />
                   </button>
@@ -8695,7 +9906,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "desatendidos" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 500, margin: 0, color: "#0f172a" }}>Negociações antigas</h1>
                   <div style={{ fontSize: 13, color: "#8b5cf6", fontWeight: 600 }}>{desatendidosFiltered.length} de {leads.length} leads precisam de retorno</div>
@@ -8725,7 +9948,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "semana" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div style={{ flex: 1 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 26, fontWeight: 800, margin: 0, color: "#0f172a", lineHeight: 1.15 }}>Abordar essa semana</h1>
                   <div style={{ fontSize: 13, color: "#059669", fontWeight: 600 }}>{weekFiltered.list.length} pendentes · {weekFiltered.done} já feitos{weekSdrFilter !== "all" ? ` · ${weekSdrFilter}` : ""}</div>
@@ -8733,7 +9968,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <button
                   onClick={() => setShowWeekHistory(true)}
                   title="Ver histórico de semanas e meses anteriores"
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 12, border: "1px solid rgba(109,94,248,0.25)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 13.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 999, border: "1px solid rgba(109,94,248,0.25)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 13.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
                 >
                   <ClipboardList size={13} /> Histórico
                 </button>
@@ -8844,14 +10079,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       const via = WEEK_VIA_CONFIG[lead.weekDoneVia] || WEEK_VIA_CONFIG.manual;
                       return (
                         <div
+                          className="lg"
                           key={lead.id}
                           onClick={() => setSelected(lead)}
                           style={{
-                            display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", cursor: "pointer",
-                            background: "white", borderRadius: 16, border: `1px solid ${via.color}25`,
-                            boxShadow: `0 2px 10px -6px ${via.color}30`,
-                          }}
-                        >
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "12px 14px",
+                            cursor: "pointer",
+                            borderRadius: 22,
+                            border: `1px solid ${via.color}25`,
+                            boxShadow: `0 2px 10px -6px ${via.color}30`
+                          }}>
                           <div style={{ width: 34, height: 34, borderRadius: "50%", background: via.color + "18", color: via.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <via.icon size={15} />
                           </div>
@@ -8865,7 +10105,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleWeekDone(lead.id); }}
                             title="Reabrir - voltar para a lista de pendentes"
-                            style={{ fontSize: 12.5, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", border: "none", borderRadius: 9, padding: "7px 11px", cursor: "pointer", flexShrink: 0 }}
+                            style={{ fontSize: 12.5, fontWeight: 700, color: "#6d5ef8", background: "rgba(109,94,248,0.1)", border: "none", borderRadius: 999, padding: "7px 11px", cursor: "pointer", flexShrink: 0 }}
                           >
                             Reabrir
                           </button>
@@ -8883,15 +10123,40 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             <>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                  <button
+                    className="lgb"
+                    onClick={() => setView("dashboard")}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      color: "#64748b",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}><ArrowLeft size={18} /></button>
                   <div>
                     <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 500, margin: 0, color: "#0f172a" }}>Agenda comercial</h1>
                     <div style={{ fontSize: 13, color: "#8b5cf6", fontWeight: 600, textTransform: "capitalize" }}>{agendaDate.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}</div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={createMeeting} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 12, border: "1px solid rgba(148,163,184,0.25)", background: "white", color: "#6366f1", fontSize: 14, fontWeight: 700, cursor: "pointer" }}><Plus size={14} /> Nova reunião</button>
-                  <button onClick={shareAgenda} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}><Share2 size={14} /> Compartilhar agenda</button>
+                  <button
+                    className="lgb"
+                    onClick={createMeeting}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 7,
+                      padding: "10px 16px",
+                      borderRadius: 999,
+                      color: "#6366f1",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}><Plus size={14} /> Nova reunião</button>
+                  <button onClick={shareAgenda} className="glow-btn" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px -8px rgba(99,102,241,0.5)" }}><Share2 size={14} /> Compartilhar agenda</button>
                 </div>
               </div>
 
@@ -8943,7 +10208,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textTransform: "capitalize" }}>{isToday ? agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : `${agendaDate.toLocaleDateString("pt-BR", { weekday: "long" })} • ${agendaDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}`}</span>
                       </div>
                       {agendaTypeFilter && (
-                        <button onClick={() => setAgendaTypeFilter(null)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                        <button
+                          className="lgb"
+                          onClick={() => setAgendaTypeFilter(null)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "5px 10px",
+                            borderRadius: 20,
+                            color: "#64748b",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: "pointer"
+                          }}>
                           <X size={11} /> {MEETING_TYPES[agendaTypeFilter]?.label || agendaTypeFilter}
                         </button>
                       )}
@@ -8997,7 +10275,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "conquistados" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div style={{ flex: 1, minWidth: 160 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Conquistados</h1>
                   <div style={{ fontSize: 13, color: "#1fa971", fontWeight: 700 }}>
@@ -9006,10 +10296,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     {wonTotalMonthly > 0 && <> · {formatBRL(wonTotalMonthly)}<span style={{ fontWeight: 600 }}>/mês</span> recorrente</>}
                   </div>
                 </div>
-                <button onClick={createWonLeadExternal} title="Adicionar cliente que já fechou fora do Funnio" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "1.5px solid #1fa971", background: "rgba(31,169,113,0.08)", color: "#1fa971", fontSize: 13.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                <button onClick={createWonLeadExternal} title="Adicionar cliente que já fechou fora do Funnio" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 999, border: "1.5px solid #1fa971", background: "rgba(31,169,113,0.08)", color: "#1fa971", fontSize: 13.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                   <Plus size={13} /> Cliente conquistado
                 </button>
-                <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 11, border: "none", background: "linear-gradient(135deg, #6d5ef8, #8b7bfa)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
+                <button onClick={() => setView("comissoes")} title="Configurar regras de comissão" style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>
                   <DollarSign size={13} /> Comissões
                 </button>
               </div>
@@ -9042,94 +10332,94 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     // a lista está ordenada com ativos primeiro e concluídos agrupados no fim.
                     const showCompletedDivider = lead.workCompleted && (idx === 0 || !wonLeads[idx - 1].workCompleted);
                     return (
-                    <React.Fragment key={lead.id}>
-                    {showCompletedDivider && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "8px 0 2px" }}>
-                        <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
-                        <span style={{ fontSize: 12.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, whiteSpace: "nowrap" }}>Trabalhos concluídos</span>
-                        <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
-                      </div>
-                    )}
-                    <Glass
-                      onClick={() => setSelected(lead)}
-                      style={{ borderRadius: 16, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", opacity: lead.workCompleted ? 0.55 : 1, filter: lead.workCompleted ? "grayscale(0.7)" : "none" }}
-                    >
-                      <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(31,169,113,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <CheckImgIcon size={18} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 160 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                          <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.company}</div>
-                          {lead.workCompleted && (
-                            <span style={{ fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(100,116,139,0.15)", color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}>
-                              <CheckCircle2 size={10} /> Trabalho concluído
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
-                          <OwnerAvatar name={lead.owner || "Todos"} size={16} />
-                          <span style={{ fontSize: 13, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
-                          <span style={{
-                            fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6,
-                            background: lead.dealType === "mensal" ? "rgba(109,94,248,0.12)" : "rgba(148,163,184,0.15)",
-                            color: lead.dealType === "mensal" ? "#6d5ef8" : "#64748b",
-                          }}>
-                            {lead.dealType === "mensal" ? "Fee mensal" : "Pagamento único"}
-                          </span>
-                          <span style={{ fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(31,169,113,0.12)", color: "#1fa971" }}>
-                            {CONTRACT_PERIOD_OPTIONS.find((p) => p.key === (lead.contractPeriod || "mensal"))?.label || "Mensal"}
-                          </span>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setCommissionEditLead(lead); }}
-                            title="Editar comissão deste contrato"
+                      <React.Fragment key={lead.id}>
+                        {showCompletedDivider && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "8px 0 2px" }}>
+                            <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
+                            <span style={{ fontSize: 12.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, whiteSpace: "nowrap" }}>Trabalhos concluídos</span>
+                            <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
+                          </div>
+                        )}
+                        <Glass
+                          onClick={() => setSelected(lead)}
+                          style={{ borderRadius: 16, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", opacity: lead.workCompleted ? 0.55 : 1, filter: lead.workCompleted ? "grayscale(0.7)" : "none" }}
+                        >
+                          <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(31,169,113,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <CheckImgIcon size={18} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 160 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                              <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.company}</div>
+                              {lead.workCompleted && (
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(100,116,139,0.15)", color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}>
+                                  <CheckCircle2 size={10} /> Trabalho concluído
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
+                              <OwnerAvatar name={lead.owner || "Todos"} size={16} />
+                              <span style={{ fontSize: 13, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
+                              <span style={{
+                                fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6,
+                                background: lead.dealType === "mensal" ? "rgba(109,94,248,0.12)" : "rgba(148,163,184,0.15)",
+                                color: lead.dealType === "mensal" ? "#6d5ef8" : "#64748b",
+                              }}>
+                                {lead.dealType === "mensal" ? "Fee mensal" : "Pagamento único"}
+                              </span>
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6, background: "rgba(31,169,113,0.12)", color: "#1fa971" }}>
+                                {CONTRACT_PERIOD_OPTIONS.find((p) => p.key === (lead.contractPeriod || "mensal"))?.label || "Mensal"}
+                              </span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setCommissionEditLead(lead); }}
+                                title="Editar comissão deste contrato"
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 999, border: "none", cursor: "pointer",
+                                  background: commission > 0 ? "rgba(251,191,36,0.15)" : "rgba(148,163,184,0.15)",
+                                  color: commission > 0 ? "#b8860b" : "#64748b",
+                                }}
+                              >
+                                💰 {commission > 0
+                                  ? <>{commissionDetails.pct !== null ? `${commissionDetails.pct.toFixed(1).replace(/\.0$/, "")}% · ` : ""}{formatBRL(commission)}</>
+                                  : "Definir comissão"}
+                                {commissionDetails.isOverride && <span style={{ fontStyle: "italic" }}>(personalizada)</span>}
+                                <Pencil size={9} />
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600 }}>Data de fechamento</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>{lead.wonDate ? formatDateFull(lead.wonDate) : "não informada"}</div>
+                          </div>
+                          <div style={{ textAlign: "right", minWidth: 100 }}>
+                            <div style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600 }}>Valor do contrato</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: "#1fa971" }}>{formatBRL(getDealValue(lead))}{lead.dealType === "mensal" && <span style={{ fontSize: 12.5, fontWeight: 600 }}>/mês</span>}</div>
+                          </div>
+                          <select
+                            value={lead.workCompleted ? "concluido" : "ativo"}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => { const wantsCompleted = e.target.value === "concluido"; if (wantsCompleted !== lead.workCompleted) toggleWorkCompleted(lead.id); }}
+                            title="Status do trabalho pós-venda"
                             style={{
-                              display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6, border: "none", cursor: "pointer",
-                              background: commission > 0 ? "rgba(251,191,36,0.15)" : "rgba(148,163,184,0.15)",
-                              color: commission > 0 ? "#b8860b" : "#64748b",
+                              padding: "7px 10px", borderRadius: 9, cursor: "pointer", flexShrink: 0,
+                              border: `1.5px solid ${lead.workCompleted ? "rgba(100,116,139,0.3)" : "#1fa971"}`,
+                              background: lead.workCompleted ? "white" : "rgba(31,169,113,0.08)",
+                              color: lead.workCompleted ? "#64748b" : "#1fa971",
+                              fontSize: 12.5, fontWeight: 700, fontFamily: "inherit", outline: "none",
                             }}
                           >
-                            💰 {commission > 0
-                              ? <>{commissionDetails.pct !== null ? `${commissionDetails.pct.toFixed(1).replace(/\.0$/, "")}% · ` : ""}{formatBRL(commission)}</>
-                              : "Definir comissão"}
-                            {commissionDetails.isOverride && <span style={{ fontStyle: "italic" }}>(personalizada)</span>}
-                            <Pencil size={9} />
+                            <option value="ativo">Trabalho: Ativo</option>
+                            <option value="concluido">Trabalho: Concluído</option>
+                          </select>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleSuperAttention(lead.id); }}
+                            title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
+                            style={{ border: "none", background: "transparent", cursor: "pointer", padding: 2, opacity: lead.superAttention ? 1 : 0.3 }}
+                          >
+                            <StarImgIcon size={16} />
                           </button>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600 }}>Data de fechamento</div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#14141a" }}>{lead.wonDate ? formatDateFull(lead.wonDate) : "não informada"}</div>
-                      </div>
-                      <div style={{ textAlign: "right", minWidth: 100 }}>
-                        <div style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600 }}>Valor do contrato</div>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: "#1fa971" }}>{formatBRL(getDealValue(lead))}{lead.dealType === "mensal" && <span style={{ fontSize: 12.5, fontWeight: 600 }}>/mês</span>}</div>
-                      </div>
-                      <select
-                        value={lead.workCompleted ? "concluido" : "ativo"}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => { const wantsCompleted = e.target.value === "concluido"; if (wantsCompleted !== lead.workCompleted) toggleWorkCompleted(lead.id); }}
-                        title="Status do trabalho pós-venda"
-                        style={{
-                          padding: "7px 10px", borderRadius: 9, cursor: "pointer", flexShrink: 0,
-                          border: `1.5px solid ${lead.workCompleted ? "rgba(100,116,139,0.3)" : "#1fa971"}`,
-                          background: lead.workCompleted ? "white" : "rgba(31,169,113,0.08)",
-                          color: lead.workCompleted ? "#64748b" : "#1fa971",
-                          fontSize: 12.5, fontWeight: 700, fontFamily: "inherit", outline: "none",
-                        }}
-                      >
-                        <option value="ativo">Trabalho: Ativo</option>
-                        <option value="concluido">Trabalho: Concluído</option>
-                      </select>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleSuperAttention(lead.id); }}
-                        title={lead.superAttention ? "Remover marcação de Super lead" : "Marcar como Super lead"}
-                        style={{ border: "none", background: "transparent", cursor: "pointer", padding: 2, opacity: lead.superAttention ? 1 : 0.3 }}
-                      >
-                        <StarImgIcon size={16} />
-                      </button>
-                      <ChevronRight size={16} color="#c4c4cc" />
-                    </Glass>
-                    </React.Fragment>
+                          <ChevronRight size={16} color="#c4c4cc" />
+                        </Glass>
+                      </React.Fragment>
                     );
                   })}
                 </div>
@@ -9148,7 +10438,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
             return (
               <>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                  <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                  <button
+                    className="lgb"
+                    onClick={() => setView("dashboard")}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      color: "#64748b",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}><ArrowLeft size={18} /></button>
                   <div>
                     <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Próximas ações</h1>
                     <div style={{ fontSize: 13, color: "#9a9aa3" }}>Lembretes com base na "Próxima ação" de cada lead</div>
@@ -9257,7 +10559,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "comissoes" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                <button onClick={() => setView("conquistados")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("conquistados")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Comissões</h1>
                   <div style={{ fontSize: 13, color: "#9a9aa3" }}>{isOwner ? "Faixas por volume, valor e tipo de serviço" : "Só o gestor do funil pode alterar as comissões"}</div>
@@ -9311,7 +10625,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "assistente" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}><ArrowLeft size={18} /></button>
                 <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(215,250,60,0.4)" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 17, fontWeight: 800, margin: 0, color: "#14141a" }}>Olá, sou o gestor IA do seu Funnio</h1>
@@ -9322,10 +10649,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
                 {chatMessages.length > 0 && (
                   <button
+                    className="lgb"
                     onClick={() => { setChatMessages([]); setChatError(""); }}
                     title="Começar uma conversa nova"
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", borderRadius: 10, border: "1px solid #eef0f3", background: "white", color: "#64748b", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}
-                  >
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 10px",
+                      borderRadius: 999,
+                      color: "#64748b",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      flexShrink: 0
+                    }}>
                     <Sparkles size={12} /> Nova
                   </button>
                 )}
@@ -9345,10 +10683,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {chatMessages.length === 0 && (
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
                     <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, marginTop: 2 }} />
-                    <div style={{
-                      maxWidth: "85%", padding: "13px 16px", borderRadius: "4px 16px 16px 16px",
-                      background: "white", border: "1px solid #eef0f3", boxShadow: "0 2px 8px -4px rgba(20,20,26,0.08)",
-                    }}>
+                    <div
+                      className="lg-soft"
+                      style={{
+                        maxWidth: "85%",
+                        padding: "13px 16px",
+                        borderRadius: "4px 16px 16px 16px",
+                        boxShadow: "0 2px 8px -4px rgba(20,20,26,0.08)"
+                      }}>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: "#14141a", marginBottom: 6 }}>Oi! Pergunte qualquer coisa sobre seu funil 👋</div>
                       <div style={{ fontSize: 14, color: "#6b6b75", lineHeight: 1.5, marginBottom: 12 }}>
                         Já sei quais leads estão parados, quais estão quentes sem retorno, o que tem marcado pra semana e as reuniões que vêm por aí. Não precisa me explicar nada, é só perguntar.
@@ -9361,10 +10703,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           "Quem eu deveria priorizar hoje?",
                         ].map((suggestion) => (
                           <button
+                            className="lgb"
                             key={suggestion}
                             onClick={() => sendChatMessage(suggestion)}
-                            style={{ textAlign: "left", padding: "9px 13px", borderRadius: 10, border: "1px solid #eef0f3", background: "#fafbfc", color: "#14141a", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-                          >
+                            style={{
+                              textAlign: "left",
+                              padding: "9px 13px",
+                              borderRadius: 999,
+                              color: "#14141a",
+                              fontSize: 14,
+                              fontWeight: 600,
+                              cursor: "pointer"
+                            }}>
                             {suggestion}
                           </button>
                         ))}
@@ -9405,7 +10755,15 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {chatLoading && (
                   <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-end", gap: 8, marginTop: 12 }}>
                     <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0 }} />
-                    <div style={{ padding: "12px 16px", borderRadius: "4px 16px 16px 16px", background: "white", border: "1px solid #eef0f3", display: "flex", alignItems: "center", gap: 4 }}>
+                    <div
+                      className="lg-soft"
+                      style={{
+                        padding: "12px 16px",
+                        borderRadius: "4px 16px 16px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4
+                      }}>
                       {[0, 1, 2].map((d) => (
                         <span key={d} style={{ width: 6, height: 6, borderRadius: "50%", background: "#c4c4cc", animation: `typingDot 1.1s ease-in-out ${d * 0.15}s infinite` }} />
                       ))}
@@ -9434,11 +10792,21 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         "Resumo das negociações antigas",
                       ].map((suggestion) => (
                         <button
+                          className="lgb"
                           key={suggestion}
                           onClick={() => sendChatMessage(suggestion)}
                           disabled={chatLoading}
-                          style={{ flexShrink: 0, whiteSpace: "nowrap", padding: "7px 13px", borderRadius: 20, border: "1px solid #e2e4e9", background: "white", color: "#6d5ef8", fontSize: 13, fontWeight: 500, cursor: chatLoading ? "default" : "pointer", opacity: chatLoading ? 0.5 : 1, boxShadow: "0 4px 14px -6px rgba(20,20,26,0.15)" }}
-                        >
+                          style={{
+                            flexShrink: 0,
+                            whiteSpace: "nowrap",
+                            padding: "7px 13px",
+                            borderRadius: 20,
+                            color: "#6d5ef8",
+                            fontSize: 13,
+                            fontWeight: 500,
+                            cursor: chatLoading ? "default" : "pointer",
+                            opacity: chatLoading ? 0.5 : 1
+                          }}>
                           {suggestion}
                         </button>
                       ))}
@@ -9447,18 +10815,30 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
                   <div style={{ display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(245,243,255,0.95)", backdropFilter: "blur(10px)", padding: "8px", borderRadius: 20, boxShadow: "0 10px 30px -10px rgba(20,20,26,0.25)" }}>
                     <textarea
+                      className="lg-field"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(chatInput); } }}
                       placeholder="Escreva uma mensagem..."
                       disabled={chatLoading}
                       rows={2}
-                      style={{ flex: 1, padding: "14px 16px", borderRadius: 16, border: "1.5px solid #dcdfe6", background: "white", fontSize: 14, outline: "none", color: "#14141a", resize: "none", fontFamily: "inherit", lineHeight: 1.4, maxHeight: 110 }}
-                    />
+                      style={{
+                        flex: 1,
+                        padding: "14px 16px",
+                        borderRadius: 16,
+                        border: "1.5px solid #dcdfe6",
+                        fontSize: 14,
+                        outline: "none",
+                        color: "#14141a",
+                        resize: "none",
+                        fontFamily: "inherit",
+                        lineHeight: 1.4,
+                        maxHeight: 110
+                      }} />
                     <button
                       onClick={() => sendChatMessage(chatInput)}
                       disabled={!chatInput.trim() || chatLoading}
-                      style={{ width: 52, height: 52, borderRadius: 16, border: "none", background: chatInput.trim() && !chatLoading ? "linear-gradient(135deg, #6d5ef8, #8b7bfa)" : "#eef0f3", color: chatInput.trim() && !chatLoading ? "white" : "#b4b6bc", cursor: chatInput.trim() && !chatLoading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                      style={{ width: 52, height: 52, borderRadius: "50%", border: "none", background: chatInput.trim() && !chatLoading ? "linear-gradient(180deg, #2a3540, #121a21)" : "#eef0f3", color: chatInput.trim() && !chatLoading ? "white" : "#b4b6bc", cursor: chatInput.trim() && !chatLoading ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -9472,7 +10852,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "metas" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Configurar metas</h1>
                   <div style={{ fontSize: 13, color: "#9a9aa3" }}>{isOwner ? "Ative só as metas que quiser acompanhar - cada uma gera badges automáticas" : "Só o gestor do funil pode alterar as metas"}</div>
@@ -9547,7 +10939,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                   key={p.key}
                                   onClick={() => updateCfg({ period: p.key })}
                                   style={{
-                                    padding: "8px 14px", borderRadius: 9,
+                                    padding: "8px 14px", borderRadius: 999,
                                     border: `1.5px solid ${cfg.period === p.key ? metric.color : "rgba(148,163,184,0.3)"}`,
                                     background: cfg.period === p.key ? metric.color + "15" : "white",
                                     color: cfg.period === p.key ? metric.color : "#64748b",
@@ -9644,7 +11036,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                 metrics: active ? prev.metrics.filter((k) => k !== metricKey) : [...prev.metrics, metricKey],
                               }))}
                               style={{
-                                padding: "6px 11px", borderRadius: 8,
+                                padding: "6px 11px", borderRadius: 999,
                                 border: `1.5px solid ${active ? metric.color : "rgba(148,163,184,0.3)"}`,
                                 background: active ? metric.color + "15" : "white",
                                 color: active ? metric.color : "#64748b",
@@ -9680,7 +11072,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           {view === "conquistas" && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                <button onClick={() => setView("dashboard")} style={{ width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ArrowLeft size={18} /></button>
+                <button
+                  className="lgb"
+                  onClick={() => setView("dashboard")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    color: "#64748b",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: '"Open Sans", Arial, sans-serif', fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Conquistas</h1>
                   <div style={{ fontSize: 13, color: "#9a9aa3" }}>{earnedBadges.length} badge{earnedBadges.length === 1 ? "" : "s"} conquistada{earnedBadges.length === 1 ? "" : "s"} no total</div>
@@ -9697,7 +11101,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     ))}
                   </>
                 )}
-                <button onClick={() => setView("metas")} style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#6d5ef8", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 16px -6px rgba(109,94,248,0.6)" }}>
+                <button onClick={() => setView("metas")} style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 999, border: "none", background: "#6d5ef8", color: "white", fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 16px -6px rgba(109,94,248,0.6)" }}>
                   <Settings2 size={13} /> Configurar metas
                 </button>
               </Glass>
@@ -9950,10 +11354,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
                       return (
                         <div
+                          className="lg-soft"
                           key={ev.id}
                           onClick={() => lead && setSelected(lead)}
-                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 12, background: "white", border: `1px solid ${cfg.color}22`, cursor: lead ? "pointer" : "default" }}
-                        >
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "9px 10px",
+                            borderRadius: 12,
+                            border: `1px solid ${cfg.color}22`,
+                            cursor: lead ? "pointer" : "default"
+                          }}>
                           <div style={{ width: 28, height: 28, borderRadius: "50%", background: cfg.color + "18", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <cfg.icon size={13} />
                           </div>
@@ -9975,10 +11387,20 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a" }}>Receita</div>
                   {!revenueGoalEnabled && isOwner && (
                     <button
+                      className="lgb"
                       onClick={() => setRevenueGoalEnabled(true)}
                       title="Ativa a meta de receita e a visão de mês/ano"
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 8, border: "1px dashed rgba(148,163,184,0.4)", background: "white", color: "#64748b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-                    >
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        color: "#64748b",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}>
                       <Target size={11} /> Ativar meta
                     </button>
                   )}
@@ -9999,17 +11421,26 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <button
                           onClick={() => { if (isOwner) setEditingRevenueGoal(true); }}
                           title={isOwner ? "Clique para definir a meta de receita" : "Só o gestor do funil pode alterar a meta"}
-                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 7, border: "1px dashed rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 14, fontWeight: 700, cursor: isOwner ? "pointer" : "default" }}
+                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 999, border: "1px solid rgba(109,94,248,0.4)", background: "rgba(109,94,248,0.08)", color: "#6d5ef8", fontSize: 14, fontWeight: 700, cursor: isOwner ? "pointer" : "default" }}
                         >
                           {formatBRL(revenueGoal)} {isOwner ? <Pencil size={11} /> : <Lock size={11} />}
                         </button>
                       )}
                       {isOwner && (
                         <button
+                          className="lgb"
                           onClick={() => setRevenueGoalEnabled(false)}
                           title="Fechar a meta de receita"
-                          style={{ width: 22, height: 22, borderRadius: 7, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                        >
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            color: "#94a3b8",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}>
                           <X size={11} />
                         </button>
                       )}
@@ -10094,7 +11525,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   })}
                   <button
                     onClick={() => setShowSdrManager(true)}
-                    style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 9, border: "1px dashed rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
                   >
                     <Pencil size={12} /> Gerenciar SDRs
                   </button>
@@ -10334,15 +11765,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         {/* ── BOTÃO FLUTUANTE: MINHAS LISTAS (WhatsApp + E-mail + Ligação, consolidado num só) ── */}
         {(waSendList.length + emailSendList.length + callSendList.length) > 0 && view !== "assistente" && (
           <button
+            className="lg-primary"
             onClick={() => setShowListsPicker(true)}
             title="Minhas listas de envio"
             style={{
-              position: "fixed", right: 84, bottom: "calc(90px + env(safe-area-inset-bottom))", width: 50, height: 50, borderRadius: "50%",
-              border: "none", background: "linear-gradient(135deg, #6d5ef8, #4c3fd6)", color: "white",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              boxShadow: "0 10px 26px -8px rgba(109,94,248,0.6)", zIndex: 85, animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}
-          >
+              position: "fixed",
+              right: 84,
+              bottom: "calc(90px + env(safe-area-inset-bottom))",
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 85,
+              animation: "popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)"
+            }}>
             <Send size={19} />
             <span style={{ position: "absolute", top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: "#f59e0b", color: "white", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px", border: "2px solid white" }}>
               {waSendList.length + emailSendList.length + callSendList.length}
@@ -10352,25 +11791,64 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
         {showListsPicker && (
           <div onClick={() => setShowListsPicker(false)} style={{ position: "fixed", inset: 0, background: "rgba(20,20,26,0.4)", zIndex: 170, display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
-            <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, background: "white", borderRadius: "20px 20px 0 0", padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", animation: "slideUp 0.25s ease" }}>
+            <div
+              className="lg"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                borderRadius: "20px 20px 0 0",
+                padding: "18px 18px calc(18px + env(safe-area-inset-bottom))",
+                animation: "slideUp 0.25s ease"
+              }}>
               <div style={{ fontSize: 14, fontWeight: 800, color: "#14141a", marginBottom: 14 }}>Minhas listas de envio</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {waSendList.length > 0 && (
-                  <button onClick={() => { setShowListsPicker(false); setShowWaSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                  <button
+                    className="lgb"
+                    onClick={() => { setShowListsPicker(false); setShowWaSendScreen(true); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 14px",
+                      borderRadius: 999,
+                      cursor: "pointer"
+                    }}>
                     <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(37,211,102,0.15)", color: "#128c4a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><MessageCircle size={16} /></div>
                     <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>WhatsApp</div>
                     <span style={{ fontSize: 12.5, fontWeight: 800, color: "white", background: "#25d366", padding: "3px 9px", borderRadius: 20 }}>{waSendList.length}</span>
                   </button>
                 )}
                 {emailSendList.length > 0 && (
-                  <button onClick={() => { setShowListsPicker(false); setShowEmailSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                  <button
+                    className="lgb"
+                    onClick={() => { setShowListsPicker(false); setShowEmailSendScreen(true); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 14px",
+                      borderRadius: 999,
+                      cursor: "pointer"
+                    }}>
                     <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(59,130,246,0.15)", color: "#1d4ed8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Mail size={16} /></div>
                     <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>E-mail</div>
                     <span style={{ fontSize: 12.5, fontWeight: 800, color: "white", background: "#3b82f6", padding: "3px 9px", borderRadius: 20 }}>{emailSendList.length}</span>
                   </button>
                 )}
                 {callSendList.length > 0 && (
-                  <button onClick={() => { setShowListsPicker(false); setShowCallSendScreen(true); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: "1.5px solid #eef0f3", background: "white", cursor: "pointer" }}>
+                  <button
+                    className="lgb"
+                    onClick={() => { setShowListsPicker(false); setShowCallSendScreen(true); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 14px",
+                      borderRadius: 999,
+                      cursor: "pointer"
+                    }}>
                     <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(124,58,237,0.15)", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Phone size={16} /></div>
                     <div style={{ flex: 1, textAlign: "left", fontSize: 13.5, fontWeight: 700, color: "#14141a" }}>Ligação</div>
                     <span style={{ fontSize: 12.5, fontWeight: 800, color: "white", background: "#7c3aed", padding: "3px 9px", borderRadius: 20 }}>{callSendList.length}</span>
@@ -10404,7 +11882,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         )}
 
         {/* ── BARRA DE NAVEGAÇÃO INFERIOR FIXA ── */}
-        <div data-tour="bottom-nav" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #eef0f3", padding: "10px 12px calc(10px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around", zIndex: 90, boxShadow: "0 -8px 24px -12px rgba(20,20,26,0.12)" }}>
+        <div data-tour="bottom-nav" className="lg lg-strong lg-dock">
           {[
             { key: "dashboard", label: "Home", icon: HomeIcon },
             { key: "leads-tab", label: "Leads", icon: Users },
@@ -10416,19 +11894,19 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <button
                 key={t.key}
                 onClick={() => { if (t.key === "leads-tab") { setView("dashboard"); scrollToGrid(); } else setView(t.key); }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, border: "none", background: "transparent", cursor: "pointer", padding: "4px 14px", borderRadius: 12 }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, border: "none", background: "transparent", cursor: "pointer", padding: "4px 14px", borderRadius: 999 }}
               >
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: active ? DARK.limeSoft : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <t.icon size={18} color={active ? "#8fae0e" : "#9a9aa3"} strokeWidth={2.2} />
+                <div className={active ? "lg-dock-ico on" : "lg-dock-ico"}>
+                  <t.icon size={18} color={active ? "#101a23" : "#5d6b77"} strokeWidth={2.2} />
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: active ? "#14141a" : "#9a9aa3" }}>{t.label}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: active ? "#101a23" : "#5d6b77" }}>{t.label}</span>
               </button>
             );
           })}
         </div>
 
         {toast && (
-          <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#0f172a", color: "white", padding: "12px 20px", borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: "0 12px 32px -8px rgba(0,0,0,0.4)", zIndex: 200, animation: "toastIn 0.25s ease", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "rgba(16,22,30,0.82)", backdropFilter: "blur(20px) saturate(160%)", WebkitBackdropFilter: "blur(20px) saturate(160%)", color: "white", padding: "12px 20px", borderRadius: 999, fontSize: 13, fontWeight: 600, boxShadow: "0 12px 32px -8px rgba(0,0,0,0.4)", zIndex: 200, animation: "toastIn 0.25s ease", display: "flex", alignItems: "center", gap: 8 }}>
             <Sparkles size={14} /> {toast}
           </div>
         )}
