@@ -1503,11 +1503,16 @@ const addDaysISO = (days) => {
 // `channel`/`onPickChannel` são opcionais e deixam o SDR marcar como pretende retornar.
 // Calendário compacto pro lembrete de retorno - troca o input nativo (que renderiza esquisito
 // e inconsistente entre navegadores/celulares) por um seletor de data com a cara do app.
+// Datas no fuso LOCAL de quem está usando. Antes o app recortava a string ISO (que é UTC,
+// 3h à frente de Brasília) e o horário/dia escolhidos saíam deslocados ao salvar a reunião.
+const localYMD = (v) => { const d = v instanceof Date ? v : new Date(v); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const localHM = (v) => { const d = v instanceof Date ? v : new Date(v); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+
 const MiniCalendar = ({ value, onSelect }) => {
   const initial = value ? new Date(value) : new Date();
   const [viewMonth, setViewMonth] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
-  const selectedISO = value ? value.slice(0, 10) : null;
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const selectedISO = value ? localYMD(value) : null;
+  const todayISO = localYMD(new Date());
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
   const startWeekday = new Date(year, month, 1).getDay();
@@ -4244,8 +4249,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <label style={{ ...labelStyle, marginBottom: 4 }}>Data de fechamento</label>
                 <input
                   type="date"
-                  value={draft.wonDate ? draft.wonDate.slice(0, 10) : ""}
-                  onChange={(e) => update({ wonDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  value={draft.wonDate ? localYMD(draft.wonDate) : ""}
+                  onChange={(e) => update({ wonDate: e.target.value ? new Date(`${e.target.value}T12:00`).toISOString() : null })}
                   style={inputStyle}
                 />
               </div>
@@ -4503,8 +4508,8 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 type="date"
-                value={draft.lastContact ? draft.lastContact.slice(0, 10) : ""}
-                onChange={(e) => update({ lastContact: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                value={draft.lastContact ? localYMD(draft.lastContact) : ""}
+                onChange={(e) => update({ lastContact: e.target.value ? new Date(`${e.target.value}T12:00`).toISOString() : null })}
                 style={{ ...inputStyle, flex: 1 }}
               />
               <button
@@ -7441,7 +7446,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
                   <MiniCalendar
                     value={draft.date}
                     onSelect={(iso) => {
-                      const time = draft.date.slice(11, 16);
+                      const time = localHM(draft.date);
                       const picked = new Date(iso);
                       update({ date: new Date(`${picked.getFullYear()}-${String(picked.getMonth() + 1).padStart(2, "0")}-${String(picked.getDate()).padStart(2, "0")}T${time}`).toISOString() });
                       setDateOpen(false);
@@ -7465,13 +7470,13 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
                   textAlign: "left"
                 }}>
                 <Clock size={14} color="#6d5ef8" />
-                {draft.date.slice(11, 16)}
+                {localHM(draft.date)}
               </button>
               {timeOpen && (
                 <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 30, width: 170 }}>
                   <MiniTimePicker
-                    value={draft.date.slice(11, 16)}
-                    onSelect={(t) => { const day = draft.date.slice(0, 10); update({ date: new Date(`${day}T${t}`).toISOString() }); }}
+                    value={localHM(draft.date)}
+                    onSelect={(t) => { const day = localYMD(draft.date); update({ date: new Date(`${day}T${t}`).toISOString() }); }}
                   />
                 </div>
               )}
