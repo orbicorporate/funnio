@@ -128,8 +128,8 @@ const ACTIVITY_CONFIG = {
   whatsapp: { label: "Contato via WhatsApp", color: "#25d366", icon: MessageCircle },
   email: { label: "Contato via Email", color: "#3b82f6", icon: Mail },
   phone: { label: "Contato via Telefone", color: "#f59e0b", icon: Phone },
-  bulk: { label: "Atualização em massa", color: "#94a3b8", icon: Upload },
-  note: { label: "Anotação", color: "#94a3b8", icon: FileText },
+  bulk: { label: "Atualização em massa", color: "#64748b", icon: Upload },
+  note: { label: "Anotação", color: "#64748b", icon: FileText },
 };
 const classifyActivityNote = (text) => {
   const t = text || "";
@@ -261,7 +261,7 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
           <div style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{step.title}</div>
           <div style={{ fontSize: 15.5, color: "#5c5c66", lineHeight: 1.5, marginBottom: 16 }}>{step.text}</div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <button onClick={onSkip} style={{ border: "none", background: "transparent", color: "#9a9aa3", fontSize: 14.5, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}>Pular tour</button>
+            <button onClick={onSkip} style={{ border: "none", background: "transparent", color: "#6b7280", fontSize: 14.5, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}>Pular tour</button>
             <div style={{ display: "flex", gap: 8 }}>
               {!isFirst && <button
                 className="lgb"
@@ -963,8 +963,8 @@ const ProgressDots = ({ total, done, max = 6 }) => {
   );
 };
 
-const labelStyle = { display: "block", fontSize: 14, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6 };
-const hintStyle = { display: "block", fontSize: 14.5, fontWeight: 400, color: "#94a3b8", marginTop: 2, marginBottom: 8 };
+const labelStyle = { display: "block", fontSize: 14, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6 };
+const hintStyle = { display: "block", fontSize: 14.5, fontWeight: 400, color: "#64748b", marginTop: 2, marginBottom: 8 };
 const LabelWithHint = ({ children, hint }) => (
   <>
     <label style={{ ...labelStyle, marginBottom: hint ? 2 : 6 }}>{children}</label>
@@ -980,8 +980,8 @@ const SecIcon = ({ icon: Icon, color }) => (
 );
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: 14,
-  border: "1px solid rgba(255, 255, 255, 0.75)", background: "rgba(255, 255, 255, 0.5)",
-  boxShadow: "inset 0 1px 2px rgba(16, 26, 35, 0.06), 0 1px 0 rgba(255,255,255,0.6)",
+  border: "1px solid #cfd6df", background: "#ffffff",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
   fontSize: 15.5, color: "#101a23", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
 };
 const selectStyle = {
@@ -1027,7 +1027,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
           animation: "slideUp 0.25s ease"
         }}>
         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a" }}>Adicionar a uma lista de envio</div>
-        <div style={{ fontSize: 15, color: "#94a3b8", marginBottom: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company} - escolha o canal</div>
+        <div style={{ fontSize: 15, color: "#64748b", marginBottom: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company} - escolha o canal</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {rows.map((r) => (
             <button
@@ -1044,7 +1044,7 @@ const ChannelPickerPopup = ({ lead, inWaList, inEmailList, inCallList, onClose, 
               </div>
               <div style={{ flex: 1, textAlign: "left" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>{r.label}</div>
-                <div style={{ fontSize: 14, color: "#94a3b8" }}>{r.has ? (r.active ? "Já está na fila - toque pra remover" : "Adicionar à fila") : "Sem dado cadastrado"}</div>
+                <div style={{ fontSize: 14, color: "#64748b" }}>{r.has ? (r.active ? "Já está na fila - toque pra remover" : "Adicionar à fila") : "Sem dado cadastrado"}</div>
               </div>
               {r.active && <Check size={16} color={r.color} />}
             </button>
@@ -1454,14 +1454,12 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 120,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -1482,14 +1480,14 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
               width: 30,
               height: 30,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}><X size={15} /></button>
         </div>
-        <div style={{ fontSize: 14.5, color: "#94a3b8", marginBottom: 16 }}>Toque na seta pra abrir, ou no quadradinho pra copiar.</div>
+        <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 16 }}>Toque na seta pra abrir, ou no quadradinho pra copiar.</div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {rows.map((r) => (
@@ -1498,7 +1496,7 @@ const QuickContactModal = ({ lead, onClose, onDispatch }) => {
                 <r.icon size={15} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.3 }}>{r.label}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.3 }}>{r.label}</div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: r.value ? "#0f172a" : "#c4c4cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {r.value || "não cadastrado"}
                 </div>
@@ -1779,7 +1777,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a" }}>Quando você quer ser lembrado de retornar?</div>
         {!required && (
-          <button onClick={() => setOpen(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(148,163,184,0.12)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={13} /></button>
+          <button onClick={() => setOpen(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(148,163,184,0.12)", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={13} /></button>
         )}
       </div>
 
@@ -1802,7 +1800,7 @@ const ReminderCalendarPicker = ({ date, onPick, channel, onPickChannel, required
 
       {onPickChannel && (
         <>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Como retornar (opcional)</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Como retornar (opcional)</div>
           <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
             {RETURN_CHANNELS.map((c) => {
               const active = channel === c.key;
@@ -1853,14 +1851,12 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 170,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -1875,7 +1871,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 700, color: "#0f172a" }}>Resumo do contato</div>
-            <div style={{ fontSize: 15, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
+            <div style={{ fontSize: 15, color: "#64748b", marginTop: 2 }}>{lead.company}</div>
           </div>
           <button
             className="lgb"
@@ -1884,7 +1880,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
               width: 30,
               height: 30,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -1892,7 +1888,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
               flexShrink: 0
             }}><X size={15} /></button>
         </div>
-        <div style={{ fontSize: 14.5, color: "#94a3b8", marginBottom: 14 }}>Antes de marcar como feito, escreva o que aconteceu no contato - mesmo que tenha sido sem retorno.</div>
+        <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 14 }}>Antes de marcar como feito, escreva o que aconteceu no contato - mesmo que tenha sido sem retorno.</div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {WEEK_DONE_QUICK_SUMMARIES.map((s) => (
@@ -1916,7 +1912,7 @@ const WeekDoneSummaryModal = ({ lead, onClose, onConfirm }) => {
         />
 
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 14.5, color: "#94a3b8", marginBottom: 6 }}>Próxima ação: Retornar</div>
+          <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 6 }}>Próxima ação: Retornar</div>
           <ReminderCalendarPicker date={reminderDate} onPick={setReminderDate} channel={reminderChannel} onPickChannel={setReminderChannel} required forceOpenKey={attempt} />
         </div>
 
@@ -2073,7 +2069,7 @@ const SCRIPT_LIBRARY = [
     template: "Olá, {nome}. Faz algum tempo desde nossa última conversa e fiquei curioso pra saber como evoluiu aquela frente na {empresa}.\n\nChegaram a avançar?",
   },
   {
-    key: "coringa", title: "Coringa (serve pra qualquer um)", color: "#64748b", icon: Rocket,
+    key: "coringa", title: "Coringa (serve pra qualquer um)", color: "#475569", icon: Rocket,
     template: "Oi, {nome}! Lembrei da nossa conversa esses dias e fiquei curioso pra saber como as coisas evoluíram por aí.\n\nComo está a {empresa}?",
   },
   {
@@ -2182,14 +2178,12 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 160,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
         <div style={{ background: "linear-gradient(180deg, #2a3540, #121a21)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
@@ -2231,7 +2225,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
 
               {/* Scripts criados pelo time aparecem primeiro */}
               {userScripts.length > 0 && (
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
               )}
               {userScripts.map((s) => {
                 const filled = fillScriptTemplate(s.template, lead);
@@ -2250,7 +2244,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0ea5e9", marginBottom: 3 }}>{s.title}</div>
-                        <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                        <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.45 }}>{filled}</div>
                       </div>
                     </button>
                     <div style={{ display: "flex", gap: 8, padding: "0 14px 11px", alignItems: "center" }}>
@@ -2271,7 +2265,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
               })}
 
               {visibleSuggestions.length > 0 && (
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
               )}
               {visibleSuggestions.map((s) => {
                 const filled = fillScriptTemplate(effectiveTemplate(s), lead);
@@ -2311,7 +2305,7 @@ const ScriptPickerModal = ({ lead, initialMessage, onClose, onSelect, onNoScript
                             whiteSpace: "nowrap"
                           }}>editado</span>}
                         </div>
-                        <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.45 }}>{filled}</div>
+                        <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.45 }}>{filled}</div>
                       </div>
                     </button>
                     <button
@@ -2526,7 +2520,7 @@ const CALL_SCRIPT_LIBRARY = [
     template: "Oi, {nome}. Vou ser bem breve.\n\nMeu nome é (seu nome), da Nume Company.\n\nTemos 18 anos de experiência em marketing e já trabalhamos com marcas como Harley-Davidson, Cielo e BYD, além de outras empresas nacionais e globais.\n\nMas eu não queria usar a ligação para te vender alguma coisa.\n\nMinha proposta é mais simples: nosso time faz uma leitura da presença digital da {empresa}, demanda no Google, comportamento nas redes e possíveis oportunidades de aquisição.\n\nApresentamos isso em uma conversa rápida e vocês ficam com os insights.\n\nSe enxergarem valor, aí podemos conversar sobre próximos passos.",
   },
   {
-    key: "curta", title: "Versão curta e direta", color: "#64748b", icon: Rocket,
+    key: "curta", title: "Versão curta e direta", color: "#475569", icon: Rocket,
     template: "Oi, {nome}. Aqui é (seu nome), da Nume.\n\nPosso te tomar 30 segundos?\n\nEstamos estudando algumas empresas do {segmento} e acredito que conseguimos trazer uma leitura interessante para a {empresa} sobre demanda no Google, comportamento do público nas redes e oportunidades de aquisição.\n\nNosso time prepara essa análise antes de qualquer proposta.\n\nEu te mostro os dados, vocês ficam com os insights e, se fizer sentido, continuamos a conversa.\n\nVale marcarmos 20 minutos?",
   },
   {
@@ -2616,14 +2610,12 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 160,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", background: "#f4f5f7", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.4,0,0.2,1)" }}>
         <div style={{ background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", padding: "18px 22px", color: "white", flexShrink: 0 }}>
@@ -2664,7 +2656,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
               )}
 
               {userScripts.length > 0 && (
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Seus scripts</div>
               )}
               {userScripts.map((s) => {
                 const filledSubject = fillScriptTemplate(s.subject || "", lead);
@@ -2683,9 +2675,9 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                         <Mail size={14} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#9a9aa3" }}>{s.title} · Seu script</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#6b7280" }}>{s.title} · Seu script</div>
                         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{filledSubject || "(sem assunto)"}</div>
-                        <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.45, marginTop: 3, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{filledBody}</div>
+                        <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.45, marginTop: 3, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{filledBody}</div>
                       </div>
                     </button>
                     <div style={{ display: "flex", gap: 8, padding: "0 14px 11px", alignItems: "center" }}>
@@ -2706,7 +2698,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
               })}
 
               {visibleSuggestions.length > 0 && (
-                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 }}>Sugestões</div>
               )}
               {visibleSuggestions.map((s) => {
                 const filledSubject = fillScriptTemplate(effectiveSubject(s), lead);
@@ -2737,7 +2729,7 @@ const EmailScriptPickerModal = ({ lead, initialSubject, initialBody, onClose, on
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 2 }}>{s.caseTitle}</div>
                         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a", marginBottom: 3 }}>{filledSubject}</div>
-                        <div style={{ fontSize: 14.5, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{filledBody}</div>
+                        <div style={{ fontSize: 14.5, color: "#475569", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{filledBody}</div>
                       </div>
                     </button>
                     <button
@@ -2896,7 +2888,7 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
       <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
               <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
               <div style={{ fontSize: 15.5, fontWeight: 600 }}>Nada nesse período</div>
               <div style={{ fontSize: 15.5, marginTop: 4 }}>Tenta um intervalo maior, ou marque leads como concluídos na Lista da Semana.</div>
@@ -2918,7 +2910,7 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
 
               {grouped.map(([day, items]) => (
                 <div key={day} style={{ marginBottom: 18 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>{day}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8 }}>{day}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {items.map((h) => {
                       const cfg = WEEK_VIA_CONFIG[h.via] || WEEK_VIA_CONFIG.manual;
@@ -2942,7 +2934,7 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 14.5, fontWeight: 700, color: "#0f172a" }}>{h.company}</div>
-                            <div style={{ fontSize: 14, color: "#94a3b8" }}>{h.owner} · {cfg.label}</div>
+                            <div style={{ fontSize: 14, color: "#64748b" }}>{h.owner} · {cfg.label}</div>
                             {(() => {
                               // Última atualização do Histórico de Conversas (linha do tempo) do lead -
                               // a entrada mais recente, manual ou automática. Fallback pro resumo da
@@ -2952,13 +2944,13 @@ const WeekHistoryScreen = ({ history, onClose, onOpenLead, leads }) => {
                               const raw = (lead?.notes?.[0]?.text || h.summary || "").replace(/\s+/g, " ").trim();
                               const info = raw.length > 60 ? raw.slice(0, 60).trim() + "…" : raw;
                               return info ? (
-                                <div style={{ fontSize: 14, color: "#64748b", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                <div style={{ fontSize: 14, color: "#475569", fontStyle: "italic", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   "{info}"
                                 </div>
                               ) : null;
                             })()}
                           </div>
-                          <div style={{ fontSize: 13.5, color: "#94a3b8", flexShrink: 0 }}>{new Date(h.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+                          <div style={{ fontSize: 13.5, color: "#64748b", flexShrink: 0 }}>{new Date(h.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
                         </div>
                       );
                     })}
@@ -3099,7 +3091,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
 
               {tab === "fila" && (
                 leadsInList.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <Send size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Toque no ícone de enviar (✈) num lead pra adicionar aqui.</div>
@@ -3110,7 +3102,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                         marginTop: 18,
                         padding: "10px 20px",
                         borderRadius: 999,
-                        color: "#64748b",
+                        color: "#475569",
                         fontSize: 15.5,
                         fontWeight: 700,
                         cursor: "pointer"
@@ -3142,7 +3134,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                              <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#94a3b8", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
+                              <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#64748b", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
                             </div>
                             <div style={{ fontSize: 14, color: lead.whatsapp ? "#94a3b8" : "#b45309" }}>{lead.whatsapp || "sem WhatsApp cadastrado"}</div>
                           </div>
@@ -3168,7 +3160,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
 
               {tab === "historico" && (
                 history.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Nenhum envio ainda</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Toda mensagem enviada pela fila fica registrada aqui.</div>
@@ -3191,9 +3183,9 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
                             <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
-                            <div style={{ fontSize: 13.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                            <div style={{ fontSize: 13.5, color: "#64748b", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
                           </div>
-                          <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.message}</div>
+                          <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.message}</div>
                         </div>
                       </div>
                     ))}
@@ -3243,7 +3235,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
                     flex: 1,
                     padding: "13px 0",
                     borderRadius: 999,
-                    color: "#64748b",
+                    color: "#475569",
                     fontSize: 15,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -3256,11 +3248,11 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
                 {idx > 0 && (
-                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                     ← Voltar pro anterior
                   </button>
                 )}
-                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                   Sair da fila
                 </button>
               </div>
@@ -3271,7 +3263,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
             <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
               <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
-              <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 24 }}>
+              <div style={{ fontSize: 14.5, color: "#475569", marginBottom: 24 }}>
                 {sentCount} mensage{sentCount === 1 ? "m aberta" : "ns abertas"} no WhatsApp{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
               <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #25d366, #128c4a)", color: "white", fontSize: 15, fontWeight: 800, cursor: "pointer" }}>
@@ -3307,7 +3299,7 @@ const WaSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, on
               style={{
                 padding: "13px 18px",
                 borderRadius: 999,
-                color: "#64748b",
+                color: "#475569",
                 fontSize: 14.5,
                 fontWeight: 700,
                 cursor: "pointer"
@@ -3453,7 +3445,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
 
               {tab === "fila" && (
                 leadsInList.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <Mail size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Toque no ícone de e-mail num lead pra adicionar aqui.</div>
@@ -3464,7 +3456,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                         marginTop: 18,
                         padding: "10px 20px",
                         borderRadius: 999,
-                        color: "#64748b",
+                        color: "#475569",
                         fontSize: 15.5,
                         fontWeight: 700,
                         cursor: "pointer"
@@ -3496,7 +3488,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                              <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#94a3b8", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
+                              <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#64748b", background: "#f1f5f9", padding: "1.5px 6px", borderRadius: 20, letterSpacing: 0.3 }}>NÃO ENVIADO AINDA</span>
                             </div>
                             <div style={{ fontSize: 14, color: lead.email ? "#94a3b8" : "#b45309", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.emailSubject || lead.email || "sem e-mail cadastrado"}</div>
                           </div>
@@ -3522,7 +3514,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
 
               {tab === "historico" && (
                 history.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Nenhum envio ainda</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Todo e-mail enviado pela fila fica registrado aqui.</div>
@@ -3545,10 +3537,10 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
                             <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
-                            <div style={{ fontSize: 13.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                            <div style={{ fontSize: 13.5, color: "#64748b", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
                           </div>
                           <div style={{ fontSize: 15, fontWeight: 700, color: "#1d4ed8", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.subject}</div>
-                          <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.body}</div>
+                          <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{h.body}</div>
                         </div>
                       </div>
                     ))}
@@ -3600,7 +3592,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
                     flex: 1,
                     padding: "13px 0",
                     borderRadius: 999,
-                    color: "#64748b",
+                    color: "#475569",
                     fontSize: 15,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -3613,11 +3605,11 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
                 {idx > 0 && (
-                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                     ← Voltar pro anterior
                   </button>
                 )}
-                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                   Sair da fila
                 </button>
               </div>
@@ -3628,7 +3620,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
             <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
               <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Envio concluído!</div>
-              <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 24 }}>
+              <div style={{ fontSize: 14.5, color: "#475569", marginBottom: 24 }}>
                 {sentCount} e-mail{sentCount === 1 ? " aberto" : "s abertos"} no seu app de e-mail{skippedCount > 0 ? `, ${skippedCount} pulado${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
               <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(135deg, #3b82f6, #0ea5e9)", color: "white", fontSize: 15, fontWeight: 800, cursor: "pointer" }}>
@@ -3664,7 +3656,7 @@ const EmailSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear,
               style={{
                 padding: "13px 18px",
                 borderRadius: 999,
-                color: "#64748b",
+                color: "#475569",
                 fontSize: 14.5,
                 fontWeight: 700,
                 cursor: "pointer"
@@ -3783,7 +3775,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
 
               {tab === "fila" ? (
                 leadsInList.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <Phone size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Fila vazia</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Toque no avião num lead e escolha "Ligação" pra adicionar aqui.</div>
@@ -3794,7 +3786,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                         marginTop: 18,
                         padding: "10px 20px",
                         borderRadius: 999,
-                        color: "#64748b",
+                        color: "#475569",
                         fontSize: 15.5,
                         fontWeight: 700,
                         cursor: "pointer"
@@ -3842,7 +3834,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                 )
               ) : (
                 history.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
                     <ClipboardList size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
                     <div style={{ fontSize: 15.5, fontWeight: 600 }}>Nenhuma ligação ainda</div>
                     <div style={{ fontSize: 15.5, marginTop: 4 }}>Toda ligação feita pela fila fica registrada aqui.</div>
@@ -3865,9 +3857,9 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                             <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.company}</div>
-                            <div style={{ fontSize: 13.5, color: "#94a3b8", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
+                            <div style={{ fontSize: 13.5, color: "#64748b", flexShrink: 0 }}>{formatDateFull(h.date)}</div>
                           </div>
-                          <div style={{ fontSize: 15, color: "#64748b" }}>{h.phone}</div>
+                          <div style={{ fontSize: 15, color: "#475569" }}>{h.phone}</div>
                         </div>
                       </div>
                     ))}
@@ -3891,7 +3883,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                 <OwnerAvatar name={currentLead.company} size={56} />
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginTop: 12 }}>{currentLead.company}</div>
                 <div style={{ fontSize: 15.5, color: "#7c3aed", fontWeight: 700, marginTop: 2 }}>{currentLead.phone}</div>
-                {currentLead.contactName && <div style={{ fontSize: 15, color: "#94a3b8", marginTop: 4 }}>Falar com {currentLead.contactName}{currentLead.role ? ` (${currentLead.role})` : ""}</div>}
+                {currentLead.contactName && <div style={{ fontSize: 15, color: "#64748b", marginTop: 4 }}>Falar com {currentLead.contactName}{currentLead.role ? ` (${currentLead.role})` : ""}</div>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
@@ -3901,7 +3893,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
                     flex: 1,
                     padding: "13px 0",
                     borderRadius: 999,
-                    color: "#64748b",
+                    color: "#475569",
                     fontSize: 15,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -3914,11 +3906,11 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 10, justifyContent: "center" }}>
                 {idx > 0 && (
-                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => setIdx((i) => i - 1)} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                     ← Voltar pro anterior
                   </button>
                 )}
-                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
+                <button onClick={() => setMode("list")} style={{ padding: "8px 0", border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                   Sair da fila
                 </button>
               </div>
@@ -3929,7 +3921,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
             <div style={{ textAlign: "center", padding: "60px 20px", animation: "celebrate 0.6s ease-out" }}>
               <div style={{ fontSize: 46, marginBottom: 12 }}>🎉</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 6 }}>Rodada concluída!</div>
-              <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 24 }}>
+              <div style={{ fontSize: 14.5, color: "#475569", marginBottom: 24 }}>
                 {calledCount} ligação{calledCount === 1 ? "" : "ões"} feita{calledCount === 1 ? "" : "s"}{skippedCount > 0 ? `, ${skippedCount} pulada${skippedCount === 1 ? "" : "s"}` : ""}.
               </div>
               <button onClick={onClose} style={{ padding: "12px 28px", borderRadius: 999, border: "none", background: "linear-gradient(180deg, #2a3540, #121a21)", color: "white", fontSize: 15, fontWeight: 800, cursor: "pointer" }}>
@@ -3949,7 +3941,7 @@ const CallSendListScreen = ({ leadsInList, history, onClose, onRemove, onClear, 
               style={{
                 padding: "13px 18px",
                 borderRadius: 999,
-                color: "#64748b",
+                color: "#475569",
                 fontSize: 14.5,
                 fontWeight: 700,
                 cursor: "pointer"
@@ -3984,7 +3976,6 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
     <div style={{
       position: "relative", padding: "18px 20px 18px 22px", borderRadius: 18,
       background: lead.weekDone ? "rgba(240, 253, 244, 0.7)" : "rgba(255, 255, 255, 0.68)",
-      backdropFilter: "blur(18px) saturate(150%)", WebkitBackdropFilter: "blur(18px) saturate(150%)",
       border: "1px solid rgba(255, 255, 255, 0.85)",
       borderLeft: `4px solid ${ownerColor}`,
       boxShadow: "0 4px 20px -10px rgba(76, 29, 149, 0.15)",
@@ -3995,7 +3986,7 @@ const DesatendidoCard = ({ lead, onOpen, onQuickContact, onToggleWeekDone, onTog
           <OwnerAvatar name={lead.owner || "Todos"} size={38} />
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 19, fontWeight: 500, color: "#0f172a" }}>{lead.company}</div>
-            <div style={{ fontSize: 15, color: "#94a3b8", fontWeight: 500 }}>SDR: {lead.owner || "Todos"}</div>
+            <div style={{ fontSize: 15, color: "#64748b", fontWeight: 500 }}>SDR: {lead.owner || "Todos"}</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -4159,7 +4150,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
   };
 
   return (
-    <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(16, 22, 34, 0.26)", backdropFilter: "blur(12px) saturate(140%)", WebkitBackdropFilter: "blur(12px) saturate(140%)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
+    <div onClick={handleClose} style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.45)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "5vh 20px", overflowY: "auto", animation: "fadeIn 0.22s ease" }}>
       <div
         className="lg lg-strong"
         onClick={(e) => e.stopPropagation()}
@@ -4182,7 +4173,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, position: "relative" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: "#94a3b8", marginBottom: 4 }}>Empresa</div>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: "#64748b", marginBottom: 4 }}>Empresa</div>
               <input value={draft.company} onChange={(e) => update({ company: e.target.value })} style={{ fontFamily: "inherit", fontSize: 26, fontWeight: 500, color: "#0f172a", border: "none", background: "transparent", outline: "none", width: "100%", letterSpacing: -0.5, padding: 0, marginBottom: 6 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -4218,7 +4209,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 width: 36,
                 height: 36,
                 borderRadius: "50%",
-                color: "#64748b",
+                color: "#475569",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -4228,7 +4219,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 14, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>Lista da semana</span>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Lista da semana</span>
             {[{ key: "hoje", label: "Hoje" }, { key: "semana", label: "Esta semana" }].map((t) => {
               const active = draft.weekTag === t.key;
               return (
@@ -4242,7 +4233,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               );
             })}
             {draft.weekTag && (
-              <button onClick={() => { const updated = { ...draft, weekTag: null }; setDraft(updated); onSetWeekTag(draft.id, null); }} style={{ padding: "5px 9px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              <button onClick={() => { const updated = { ...draft, weekTag: null }; setDraft(updated); onSetWeekTag(draft.id, null); }} style={{ padding: "5px 9px", borderRadius: 999, border: "none", background: "transparent", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 remover
               </button>
             )}
@@ -4346,7 +4337,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
             return (
               <div style={{ marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>Progresso no funil</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Progresso no funil</span>
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: "#6d5ef8" }}>{currentIdx + 1} / {HAPPY_PATH.length}</span>
                 </div>
                 <div style={{ height: 8, borderRadius: 6, background: "rgba(148,163,184,0.15)", overflow: "hidden", position: "relative" }}>
@@ -4508,7 +4499,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
                   <label style={{ ...labelStyle, marginBottom: 0 }}>
                     <SecIcon icon={UserPlus} color="#6d5ef8" />Outros contatos / informações extras
-                    <div style={{ fontWeight: 500, color: "#94a3b8", textTransform: "none", letterSpacing: 0, marginTop: 2, fontSize: 14 }}>Segundo telefone, outro decisor, e-mail alternativo etc.</div>
+                    <div style={{ fontWeight: 500, color: "#64748b", textTransform: "none", letterSpacing: 0, marginTop: 2, fontSize: 14 }}>Segundo telefone, outro decisor, e-mail alternativo etc.</div>
                   </label>
                   <button type="button" onClick={() => setShowExtraContacts(false)} title="Recolher" style={{ width: 24, height: 24, borderRadius: "50%", border: "none", background: "rgba(109,94,248,0.12)", color: "#6d5ef8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <ChevronRight size={13} style={{ transform: "rotate(90deg)" }} />
@@ -4620,7 +4611,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
 
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}><SecIcon icon={MessageCircle} color="#f59e0b" />Resumo (aparece no card da lista)</label>
-            <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 6, marginTop: -4 }}>
+            <div style={{ fontSize: 14, color: "#64748b", marginBottom: 6, marginTop: -4 }}>
               Um resumo curto pra bater o olho na lista. Pra registrar cada conversa com data, use o histórico mais abaixo.
             </div>
             <textarea value={draft.feedback || ""} onChange={(e) => update({ feedback: e.target.value })} placeholder="Ex: esperando aprovação do orçamento..." style={{ ...inputStyle, minHeight: 60, resize: "vertical", fontFamily: "inherit" }} />
@@ -4643,7 +4634,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
                 <CheckCircle2 size={14} /> Marcar hoje
               </button>
               {draft.lastContact && (
-                <button onClick={() => update({ lastContact: null })} title="Remover data" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <button onClick={() => update({ lastContact: null })} title="Remover data" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#475569", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <X size={13} />
                 </button>
               )}
@@ -4653,7 +4644,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           <div style={{ marginBottom: 18 }} ref={nextActionSectionRef}>
             <label style={labelStyle}><SecIcon icon={CalendarIcon} color="#22c55e" />Próxima ação</label>
             <div style={{ marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "#94a3b8", marginBottom: 3, display: "block" }}>Quando (lembrete de push)</span>
+              <span style={{ fontSize: 13, color: "#64748b", marginBottom: 3, display: "block" }}>Quando (lembrete de push)</span>
               <ReminderCalendarPicker
                 date={draft.nextAction?.date || null}
                 onPick={(date) => update({ nextAction: { ...draft.nextAction, date, description: draft.nextAction?.description || "Retornar" } })}
@@ -4664,7 +4655,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               />
             </div>
             <div style={{ minWidth: 0 }}>
-              <span style={{ fontSize: 13, color: "#94a3b8", marginBottom: 3, display: "block" }}>O que fazer</span>
+              <span style={{ fontSize: 13, color: "#64748b", marginBottom: 3, display: "block" }}>O que fazer</span>
               <input value={draft.nextAction?.description || ""} onChange={(e) => update({ nextAction: { ...draft.nextAction, date: draft.nextAction?.date || new Date().toISOString(), description: e.target.value } })} placeholder="Ex: ligar para confirmar reunião" style={{ ...inputStyle, minWidth: 0, height: 42 }} />
             </div>
             <button
@@ -4679,7 +4670,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
           <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, background: draft.weekDone ? "rgba(220, 252, 231, 0.6)" : "rgba(241, 245, 249, 0.6)" }}>
             <div>
               <div style={{ fontSize: 15.5, fontWeight: 700, color: draft.weekDone ? "#16a34a" : "#64748b" }}>Ação desta semana</div>
-              <div style={{ fontSize: 14, color: "#94a3b8" }}>Marcado como feito conta na meta semanal do time</div>
+              <div style={{ fontSize: 14, color: "#64748b" }}>Marcado como feito conta na meta semanal do time</div>
             </div>
             <button onClick={() => update({ weekDone: !draft.weekDone })} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 15, background: draft.weekDone ? "linear-gradient(135deg, #22c55e, #16a34a)" : "rgba(203, 213, 225, 0.5)", color: draft.weekDone ? "white" : "#64748b" }}>
               <CheckCircle2 size={14} /> {draft.weekDone ? "Feito" : "Marcar"}
@@ -4694,7 +4685,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               <button onClick={addNote} disabled={!newNote.trim()} style={{ padding: "0 18px", borderRadius: 999, border: "none", background: newNote.trim() ? "#0f172a" : "rgba(148,163,184,0.3)", color: "white", fontSize: 14.5, fontWeight: 600, cursor: newNote.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}>Adicionar</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
-              {(draft.notes || []).length === 0 && <div style={{ fontSize: 14.5, color: "#94a3b8", padding: "16px 0", textAlign: "center" }}>Nenhuma anotação ainda.</div>}
+              {(draft.notes || []).length === 0 && <div style={{ fontSize: 14.5, color: "#64748b", padding: "16px 0", textAlign: "center" }}>Nenhuma anotação ainda.</div>}
               {(draft.notes || []).map((note, idx) => {
                 const isAuto = /^Contato via/.test(note.text);
                 const dotColor = isAuto ? "#6d5ef8" : "#f59e0b";
@@ -4719,12 +4710,12 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
         <div style={{ padding: "16px 28px", borderTop: "1px solid rgba(148, 163, 184, 0.15)", background: "rgba(248, 250, 252, 0.5)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 14.5, color: "#64748b" }}>Confirmar exclusão?</span>
+              <span style={{ fontSize: 14.5, color: "#475569" }}>Confirmar exclusão?</span>
               <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 999, border: "none", background: "#ef4444", color: "white", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
-              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 15, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#475569", fontSize: 15, cursor: "pointer" }}>Cancelar</button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 14.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
+            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#64748b", fontSize: 14.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir lead</button>
           )}
           {nextActionAttempt > 0 && draft.stage !== "Conquistado" && draft.stage !== "Perdida" && !draft.nextAction?.date && (
             <span style={{ fontSize: 14.5, color: "#d97706", fontWeight: 700, marginRight: 8 }}>Defina o lembrete de retorno acima antes de salvar</span>
@@ -4796,7 +4787,7 @@ const MonthGrid = ({ selectedDate, onSelect, meetings }) => {
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
-        {WEEKDAY_LABELS.slice(1).concat(WEEKDAY_LABELS[0]).map((d) => <div key={d} style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#94a3b8" }}>{d}</div>)}
+        {WEEKDAY_LABELS.slice(1).concat(WEEKDAY_LABELS[0]).map((d) => <div key={d} style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#64748b" }}>{d}</div>)}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {cells.map((day, i) => {
@@ -4824,7 +4815,7 @@ const MonthGrid = ({ selectedDate, onSelect, meetings }) => {
   );
 };
 
-const navBtnStyle = { width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "rgba(255,255,255,0.6)", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" };
+const navBtnStyle = { width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(148,163,184,0.25)", background: "rgba(255,255,255,0.6)", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" };
 
 // Modal para criar/editar/remover SDRs (Giovani, Pedro, +)
 // Pop-up animado que aparece quando um SDR conquista uma badge nova
@@ -4909,15 +4900,13 @@ const BadgePopup = ({ badge, onClose }) => {
       <div style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(16, 22, 34, 0.26)",
-        backdropFilter: "blur(12px) saturate(140%)",
+        background: "rgba(15, 23, 42, 0.45)",
         zIndex: 200,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
-        animation: "fadeIn 0.2s ease",
-        WebkitBackdropFilter: "blur(12px) saturate(140%)"
+        animation: "fadeIn 0.2s ease"
       }} onClick={onClose}>
         <div
           className="lg"
@@ -4948,8 +4937,8 @@ const BadgePopup = ({ badge, onClose }) => {
           </div>
           <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: tier.color, marginBottom: 6 }}>{tier.label} conquistada!</div>
           <div style={{ fontFamily: "inherit", fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{badge.sdrName}</div>
-          <div style={{ fontSize: 15, color: "#6b6b75", marginBottom: 4 }}>{metric.label}</div>
-          <div style={{ fontSize: 15.5, color: "#9a9aa3", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.value} de {badge.target} · Meta {(PERIOD_OPTIONS.find((p) => p.key === badge.period)?.label || "").toLowerCase()}</div>
+          <div style={{ fontSize: 15, color: "#4b5563", marginBottom: 4 }}>{metric.label}</div>
+          <div style={{ fontSize: 15.5, color: "#6b7280", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.value} de {badge.target} · Meta {(PERIOD_OPTIONS.find((p) => p.key === badge.period)?.label || "").toLowerCase()}</div>
           {badge.reward > 0 && (
             <div style={{
               display: "inline-flex",
@@ -4986,15 +4975,13 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
     <div style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 200,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }} onClick={onClose}>
       <div
         className="lg"
@@ -5026,7 +5013,7 @@ const WeekApproachBadgePopup = ({ badge, onClose }) => (
         </div>
         <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#8fae0e", marginBottom: 6 }}>Meta semanal batida!</div>
         <div style={{ fontFamily: "inherit", fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>Abordagens da semana</div>
-        <div style={{ fontSize: 15.5, color: "#9a9aa3", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.count} de {badge.target} leads abordados</div>
+        <div style={{ fontSize: 15.5, color: "#6b7280", marginBottom: badge.reward > 0 ? 10 : 20 }}>{badge.count} de {badge.target} leads abordados</div>
         {badge.reward > 0 && (
           <div style={{
             display: "inline-flex",
@@ -5071,15 +5058,13 @@ const AllGoalsRewardPopup = ({ badge, onClose }) => (
     <div style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 200,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }} onClick={onClose}>
       <div
         className="lg"
@@ -5111,7 +5096,7 @@ const AllGoalsRewardPopup = ({ badge, onClose }) => (
         </div>
         <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#16a34a", marginBottom: 6 }}>Todas as metas batidas!</div>
         <div style={{ fontFamily: "inherit", fontSize: 21, fontWeight: 800, color: "#14141a", marginBottom: 6 }}>{badge.sdrName}</div>
-        <div style={{ fontSize: 15.5, color: "#9a9aa3", marginBottom: 10 }}>
+        <div style={{ fontSize: 15.5, color: "#6b7280", marginBottom: 10 }}>
           {badge.metrics.map((k) => METRIC_DEFS[k]?.shortLabel).filter(Boolean).join(" · ")}
         </div>
         <div style={{
@@ -5166,14 +5151,12 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 165,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -5188,7 +5171,7 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 700, color: "#0f172a" }}>Compartilhe essa conquista!</div>
-            <div style={{ fontSize: 15, color: "#94a3b8", marginTop: 2 }}>{gestorName ? `Manda pro ${gestorName} saber que você bateu a meta` : "Manda pro seu gestor saber que você bateu a meta"}</div>
+            <div style={{ fontSize: 15, color: "#64748b", marginTop: 2 }}>{gestorName ? `Manda pro ${gestorName} saber que você bateu a meta` : "Manda pro seu gestor saber que você bateu a meta"}</div>
           </div>
           <button
             className="lgb"
@@ -5197,7 +5180,7 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
               width: 30,
               height: 30,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -5227,7 +5210,7 @@ const ShareAchievementModal = ({ achievement, gestorName, onClose }) => {
         >
           <MessageCircle size={16} /> Compartilhar por WhatsApp
         </a>
-        <button onClick={onClose} style={{ width: "100%", padding: "10px 0", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 15.5, fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={onClose} style={{ width: "100%", padding: "10px 0", borderRadius: 999, border: "none", background: "transparent", color: "#64748b", fontSize: 15.5, fontWeight: 600, cursor: "pointer" }}>
           Agora não
         </button>
       </div>
@@ -5248,7 +5231,7 @@ const CommissionBucketCard = ({ title, subtitle, icon: Icon, color, bucket, onTo
           </div>
           <div>
             <div style={{ fontSize: 16.5, fontWeight: 800, color: "#14141a" }}>{title}</div>
-            <div style={{ fontSize: 15, color: "#9a9aa3" }}>{bucket.enabled ? subtitle : "Desativado"}</div>
+            <div style={{ fontSize: 15, color: "#6b7280" }}>{bucket.enabled ? subtitle : "Desativado"}</div>
           </div>
         </div>
         <ToggleSwitch on={bucket.enabled} onClick={onToggleEnabled} activeColor={color} disabled={!isOwner} />
@@ -5326,14 +5309,12 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 170,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -5348,7 +5329,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 700, color: "#0f172a" }}>Comissão deste contrato</div>
-            <div style={{ fontSize: 15, color: "#94a3b8", marginTop: 2 }}>{lead.company}</div>
+            <div style={{ fontSize: 15, color: "#64748b", marginTop: 2 }}>{lead.company}</div>
           </div>
           <button
             className="lgb"
@@ -5357,7 +5338,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
               width: 30,
               height: 30,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -5373,7 +5354,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
           >
             <div>
               <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>Regra automática</div>
-              <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>Calculada pela faixa configurada em Comissões</div>
+              <div style={{ fontSize: 14.5, color: "#6b7280" }}>Calculada pela faixa configurada em Comissões</div>
             </div>
             <div style={{ fontSize: 15.5, fontWeight: 800, color: "#b8860b" }}>{formatBRL(autoValue)}</div>
           </button>
@@ -5383,7 +5364,7 @@ const CommissionEditModal = ({ lead, autoValue, onSave, onClose }) => {
           >
             <div>
               <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>Valor personalizado</div>
-              <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>Pra contratos que fogem da regra padrão</div>
+              <div style={{ fontSize: 14.5, color: "#6b7280" }}>Pra contratos que fogem da regra padrão</div>
             </div>
             <Pencil size={15} color="#6d5ef8" />
           </button>
@@ -5441,9 +5422,9 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
 
   const editBtn = (color) => ({ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 9, border: `1.5px solid ${color}55`, background: "white", color, fontSize: 14.5, fontWeight: 700, cursor: "pointer", flexShrink: 0 });
   const saveBtn = (grad, ok) => ({ display: "flex", alignItems: "center", gap: 5, padding: "9px 16px", borderRadius: 10, border: "none", background: ok ? grad : "rgba(148,163,184,0.3)", color: "white", fontSize: 15.5, fontWeight: 800, cursor: ok ? "pointer" : "not-allowed" });
-  const cancelBtn = { padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#64748b", fontSize: 15.5, fontWeight: 700, cursor: "pointer" };
+  const cancelBtn = { padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(148,163,184,0.3)", background: "white", color: "#475569", fontSize: 15.5, fontWeight: 700, cursor: "pointer" };
   const dangerBtn = { padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(220,38,38,0.25)", background: "white", color: "#dc2626", fontSize: 15, fontWeight: 700, cursor: "pointer" };
-  const sectionLabel = { fontSize: 13.5, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: -2 };
+  const sectionLabel = { fontSize: 13.5, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: -2 };
 
   return (
     <>
@@ -5455,7 +5436,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
             width: 40,
             height: 40,
             borderRadius: "50%",
-            color: "#64748b",
+            color: "#475569",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -5463,7 +5444,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
           }}><ArrowLeft size={18} /></button>
         <div>
           <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Scripts</h1>
-          <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>Crie os seus, edite os padrões - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos em cada envio</div>
+          <div style={{ fontSize: 14.5, color: "#6b7280" }}>Crie os seus, edite os padrões - <strong>{"{nome}"}</strong> e <strong>{"{empresa}"}</strong> são preenchidos em cada envio</div>
         </div>
       </div>
 
@@ -5540,7 +5521,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: "#0ea5e9" }}>{s.title}</div>
-                      {!isEditing && <div style={{ fontSize: 15.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
+                      {!isEditing && <div style={{ fontSize: 15.5, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditUserWa(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5585,7 +5566,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                           whiteSpace: "nowrap"
                         }}>editado</span>}
                       </div>
-                      {!isEditing && <div style={{ fontSize: 15.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
+                      {!isEditing && <div style={{ fontSize: 15.5, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditWa(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5625,9 +5606,9 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                       <Mail size={16} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#9a9aa3" }}>{s.title} · Seu script</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#6b7280" }}>{s.title} · Seu script</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{s.subject || "(sem assunto)"}</div>
-                      {!isEditing && <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s.body}</div>}
+                      {!isEditing && <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s.body}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditUserEmail(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5664,7 +5645,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                       <s.icon size={16} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#9a9aa3" }}>{s.caseTitle} · {s.category}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#6b7280" }}>{s.caseTitle} · {s.category}</div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: s.color, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
                         {effSubject}
                         {isCustomized && <span style={{
@@ -5677,7 +5658,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                           whiteSpace: "nowrap"
                         }}>editado</span>}
                       </div>
-                      {!isEditing && <div style={{ fontSize: 15, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{effBody}</div>}
+                      {!isEditing && <div style={{ fontSize: 15, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{effBody}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditEmail(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5732,7 +5713,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                   </React.Fragment>
                 ))}
               </div>
-              <div style={{ fontSize: 14.5, color: "#64748b", lineHeight: 1.55, fontStyle: "italic" }}>
+              <div style={{ fontSize: 14.5, color: "#475569", lineHeight: 1.55, fontStyle: "italic" }}>
                 Ex.: "Como vocês estão gerando novos leads hoje?" → ouvir → "Pergunto porque conseguimos cruzar isso com dados de busca e comportamento digital do mercado, e normalmente aparecem oportunidades interessantes." → pausa → "Posso pedir pro nosso time preparar essa leitura e te apresentar numa conversa rápida?"
               </div>
             </Glass>
@@ -5748,7 +5729,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: "#0ea5e9" }}>{s.title}</div>
-                      {!isEditing && <div style={{ fontSize: 15.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
+                      {!isEditing && <div style={{ fontSize: 15.5, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{s.template}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditUserCall(s)} style={editBtn("#0ea5e9")}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5793,7 +5774,7 @@ const ScriptsPage = ({ onBack, customWaScripts, customEmailScripts, onSaveWa, on
                           whiteSpace: "nowrap"
                         }}>editado</span>}
                       </div>
-                      {!isEditing && <div style={{ fontSize: 15.5, color: "#64748b", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
+                      {!isEditing && <div style={{ fontSize: 15.5, color: "#475569", lineHeight: 1.5, marginTop: 5, whiteSpace: "pre-wrap" }}>{effective}</div>}
                     </div>
                     {!isEditing && <button onClick={() => startEditCall(s)} style={editBtn(s.color)}><Pencil size={12} /> Editar</button>}
                   </div>
@@ -5844,12 +5825,10 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
   <div onClick={onClose} style={{
     position: "fixed",
     inset: 0,
-    background: "rgba(16, 22, 34, 0.26)",
-    backdropFilter: "blur(12px) saturate(140%)",
+    background: "rgba(15, 23, 42, 0.45)",
     zIndex: 150,
     display: "flex",
-    animation: "fadeIn 0.15s ease",
-    WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    animation: "fadeIn 0.15s ease"
   }}>
     <div
       className="lg lg-strong"
@@ -5872,14 +5851,14 @@ const MenuPanel = ({ view, onNavigate, onClose, onManageSdrs, onImport, onNewLea
               width: 30,
               height: 30,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}><X size={14} /></button>
         </div>
-        {workspaceName && <div style={{ fontSize: 14.5, color: "#9a9aa3", marginTop: 2 }}>{workspaceName}</div>}
+        {workspaceName && <div style={{ fontSize: 14.5, color: "#6b7280", marginTop: 2 }}>{workspaceName}</div>}
       </div>
 
       <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -6015,15 +5994,13 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 110,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg lg-strong"
@@ -6045,14 +6022,14 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                 width: 30,
                 height: 30,
                 borderRadius: "50%",
-                color: "#64748b",
+                color: "#475569",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center"
               }}><X size={15} /></button>
           </div>
-          <div style={{ fontSize: 14.5, color: "#9a9aa3", marginTop: 4 }}>
+          <div style={{ fontSize: 14.5, color: "#6b7280", marginTop: 4 }}>
             {isOwner ? "Nomes usados pra atribuir leads. O selo verde mostra quem também tem login de verdade no funil." : "Sua foto de perfil no funil."}
           </div>
         </div>
@@ -6106,7 +6083,7 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                       </div>
                       {!hasLogin && <div style={{ fontSize: 13.5, color: "#b4b6bc" }}>apenas nome, sem acesso ao funil</div>}
                       {isOwner && linkedMember && (
-                        <button onClick={() => onLinkAuth(s.name, null)} style={{ border: "none", background: "transparent", padding: 0, fontSize: 12.5, color: "#94a3b8", cursor: "pointer", textDecoration: "underline" }}>
+                        <button onClick={() => onLinkAuth(s.name, null)} style={{ border: "none", background: "transparent", padding: 0, fontSize: 12.5, color: "#64748b", cursor: "pointer", textDecoration: "underline" }}>
                           desvincular de {linkedMember.display_name}
                         </button>
                       )}
@@ -6157,7 +6134,7 @@ const SdrManager = ({ sdrs, leads, meetings, onAdd, onRemove, onUpdateAvatar, on
                           style={{
                             padding: "0 12px",
                             borderRadius: 999,
-                            color: "#64748b",
+                            color: "#475569",
                             fontSize: 15,
                             cursor: "pointer"
                           }}>Cancelar</button>
@@ -6513,15 +6490,13 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 130,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg lg-strong"
@@ -6538,7 +6513,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Atualizar telefones em massa</div>
-            <div style={{ fontSize: 15, color: "#64748b", marginTop: 2 }}>Cole uma lista de "empresa + WhatsApp", ou suba um Excel/CSV com essas duas colunas. O app casa pelo nome da empresa com os leads que já existem.</div>
+            <div style={{ fontSize: 15, color: "#475569", marginTop: 2 }}>Cole uma lista de "empresa + WhatsApp", ou suba um Excel/CSV com essas duas colunas. O app casa pelo nome da empresa com os leads que já existem.</div>
           </div>
           <button
             className="lgb"
@@ -6547,7 +6522,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -6568,7 +6543,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
           </button>
           {fileError && <div style={{ fontSize: 15, color: "#dc2626", marginBottom: 10 }}>{fileError}</div>}
 
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Ou cole aqui (uma empresa por linha)</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>Ou cole aqui (uma empresa por linha)</div>
           <textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
@@ -6606,7 +6581,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
                       <div style={{ fontSize: 15.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.company}</div>
                       {!m.lead && <div style={{ fontSize: 13.5, color: "#dc2626" }}>nenhum lead com esse nome</div>}
                     </div>
-                    <div style={{ fontSize: 14.5, color: "#64748b", flexShrink: 0 }}>{m.phoneDigits}</div>
+                    <div style={{ fontSize: 14.5, color: "#475569", flexShrink: 0 }}>{m.phoneDigits}</div>
                   </div>
                 ))}
               </div>
@@ -6621,7 +6596,7 @@ const BulkPhoneModal = ({ leads, onClose, onApply }) => {
             style={{
               padding: "10px 18px",
               borderRadius: 999,
-              color: "#64748b",
+              color: "#475569",
               fontSize: 14.5,
               fontWeight: 600,
               cursor: "pointer"
@@ -6746,15 +6721,13 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 130,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: 20,
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg lg-strong"
@@ -6771,7 +6744,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
         <div style={{ padding: "20px 24px 14px", borderBottom: "1px solid rgba(148,163,184,0.15)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Gerenciar leads em massa</div>
-            <div style={{ fontSize: 15, color: "#64748b", marginTop: 2 }}>Filtre por data, responsável, estágio ou lote de importação, selecione e exclua ou edite vários de uma vez.</div>
+            <div style={{ fontSize: 15, color: "#475569", marginTop: 2 }}>Filtre por data, responsável, estágio ou lote de importação, selecione e exclua ou edite vários de uma vez.</div>
           </div>
           <button
             className="lgb"
@@ -6780,7 +6753,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -6793,7 +6766,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
           {ownerCounts.length > 0 && (
             <div style={{ marginBottom: 18, background: "rgba(109,94,248,0.06)", border: "1px solid rgba(109,94,248,0.2)", borderRadius: 14, padding: 14 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#6d5ef8", textTransform: "uppercase", marginBottom: 2 }}>Reatribuir por SDR</div>
-              <div style={{ fontSize: 14.5, color: "#64748b", marginBottom: 10 }}>Move todos os leads de um responsável pra outro (ou pra "Todos") de uma vez, sem precisar filtrar um por um.</div>
+              <div style={{ fontSize: 14.5, color: "#475569", marginBottom: 10 }}>Move todos os leads de um responsável pra outro (ou pra "Todos") de uma vez, sem precisar filtrar um por um.</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {ownerCounts.map((row) => (
                   <div
@@ -6809,7 +6782,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
                     }}>
                     <OwnerAvatar name={row.label} size={26} />
                     <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{row.label}</div>
-                    <div style={{ fontSize: 14, color: "#94a3b8" }}>{row.count} lead{row.count === 1 ? "" : "s"}</div>
+                    <div style={{ fontSize: 14, color: "#64748b" }}>{row.count} lead{row.count === 1 ? "" : "s"}</div>
                     <div style={{ flex: 1, minWidth: 8 }} />
                     <select
                       value={reassignTarget[row.key] ?? "__none__"}
@@ -6834,7 +6807,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
           )}
           {importBatches.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Importações recentes</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>Importações recentes</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {importBatches.slice(0, 8).map((b) => (
                   <button
@@ -6855,14 +6828,14 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
           )}
 
           <div style={{ opacity: selectedBatch ? 0.4 : 1, pointerEvents: selectedBatch ? "none" : "auto", transition: "opacity 0.15s ease" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Ou filtre manualmente</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>Ou filtre manualmente</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
               <div>
-                <div style={{ fontSize: 13.5, color: "#94a3b8", marginBottom: 3 }}>Criado de</div>
+                <div style={{ fontSize: 13.5, color: "#64748b", marginBottom: 3 }}>Criado de</div>
                 <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
               </div>
               <div>
-                <div style={{ fontSize: 13.5, color: "#94a3b8", marginBottom: 3 }}>até</div>
+                <div style={{ fontSize: 13.5, color: "#64748b", marginBottom: 3 }}>até</div>
                 <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
               </div>
               <select value={ownerF} onChange={(e) => setOwnerF(e.target.value)} style={selectStyle}>
@@ -6880,35 +6853,35 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
           </div>
 
           {(selectedBatch || dateFrom || dateTo || ownerF !== "all" || stageF !== "all" || sectorF || searchF) && (
-            <button onClick={clearFilters} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 14.5, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 14 }}>Limpar filtros</button>
+            <button onClick={clearFilters} style={{ border: "none", background: "transparent", color: "#64748b", fontSize: 14.5, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: 14 }}>Limpar filtros</button>
           )}
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4, marginBottom: 8 }}>
-            <span style={{ fontSize: 15, color: "#64748b", fontWeight: 600 }}>{filtered.length} lead{filtered.length === 1 ? "" : "s"} no filtro · {selectedCount} selecionado{selectedCount === 1 ? "" : "s"}</span>
+            <span style={{ fontSize: 15, color: "#475569", fontWeight: 600 }}>{filtered.length} lead{filtered.length === 1 ? "" : "s"} no filtro · {selectedCount} selecionado{selectedCount === 1 ? "" : "s"}</span>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={selectAllFiltered} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Selecionar todos</button>
-              <button onClick={clearSelection} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Limpar seleção</button>
+              <button onClick={clearSelection} style={{ border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Limpar seleção</button>
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto", marginBottom: 16 }}>
             {filtered.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "24px 10px", color: "#94a3b8", fontSize: 15.5 }}>Nenhum lead com esse filtro.</div>
+              <div style={{ textAlign: "center", padding: "24px 10px", color: "#64748b", fontSize: 15.5 }}>Nenhum lead com esse filtro.</div>
             ) : filtered.map((l) => (
               <div key={l.id} onClick={() => toggleOne(l.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: selectedIds.has(l.id) ? "rgba(109,94,248,0.08)" : "#fafbfc", border: `1px solid ${selectedIds.has(l.id) ? "rgba(109,94,248,0.3)" : "#eef0f3"}`, cursor: "pointer" }}>
                 <input type="checkbox" checked={selectedIds.has(l.id)} onChange={() => toggleOne(l.id)} onClick={(e) => e.stopPropagation()} style={{ width: 15, height: 15, cursor: "pointer", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15.5, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.company}</div>
-                  <div style={{ fontSize: 13.5, color: "#94a3b8" }}>{l.owner || "Todos"} · {l.stage}{l.sector ? ` · ${l.sector}` : ""}</div>
+                  <div style={{ fontSize: 13.5, color: "#64748b" }}>{l.owner || "Todos"} · {l.stage}{l.sector ? ` · ${l.sector}` : ""}</div>
                 </div>
-                <div style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0 }}>{l.createdAt ? formatDateShort(l.createdAt) : "-"}</div>
+                <div style={{ fontSize: 13, color: "#64748b", flexShrink: 0 }}>{l.createdAt ? formatDateShort(l.createdAt) : "-"}</div>
               </div>
             ))}
           </div>
 
           {selectedCount > 0 && (
             <div style={{ borderTop: "1px solid #f1f2f5", paddingTop: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 8 }}>Ajustar os {selectedCount} selecionados</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 8 }}>Ajustar os {selectedCount} selecionados</div>
               <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
                 <select value={bulkOwner} onChange={(e) => setBulkOwner(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 160 }}>
                   <option value="">Mudar responsável para...</option>
@@ -6935,7 +6908,7 @@ const BulkManageModal = ({ leads, sdrs, onClose, onDelete, onBulkEdit }) => {
             style={{
               padding: "10px 18px",
               borderRadius: 999,
-              color: "#64748b",
+              color: "#475569",
               fontSize: 14.5,
               fontWeight: 600,
               cursor: "pointer"
@@ -6971,14 +6944,12 @@ const ImportHelpPanel = ({ onClose }) => (
   <div onClick={onClose} style={{
     position: "fixed",
     inset: 0,
-    background: "rgba(16, 22, 34, 0.26)",
-    backdropFilter: "blur(12px) saturate(140%)",
+    background: "rgba(15, 23, 42, 0.45)",
     zIndex: 140,
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "center",
-    animation: "fadeIn 0.15s ease",
-    WebkitBackdropFilter: "blur(12px) saturate(140%)"
+    animation: "fadeIn 0.15s ease"
   }}>
     <div
       className="lg"
@@ -6995,7 +6966,7 @@ const ImportHelpPanel = ({ onClose }) => (
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
         <div>
           <div style={{ fontSize: 17.5, fontWeight: 800, color: "#14141a" }}>A extração não ficou boa?</div>
-          <div style={{ fontSize: 15.5, color: "#9a9aa3", marginTop: 2 }}>Motivos mais comuns e como resolver cada um</div>
+          <div style={{ fontSize: 15.5, color: "#6b7280", marginTop: 2 }}>Motivos mais comuns e como resolver cada um</div>
         </div>
         <button
           className="lgb"
@@ -7004,7 +6975,7 @@ const ImportHelpPanel = ({ onClose }) => (
             width: 30,
             height: 30,
             borderRadius: "50%",
-            color: "#64748b",
+            color: "#475569",
             cursor: "pointer",
             flexShrink: 0
           }}><X size={14} /></button>
@@ -7017,7 +6988,7 @@ const ImportHelpPanel = ({ onClose }) => (
             </div>
             <div>
               <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a", marginBottom: 3 }}>{item.title}</div>
-              <div style={{ fontSize: 15, color: "#6b6b75", lineHeight: 1.5 }}>{item.text}</div>
+              <div style={{ fontSize: 15, color: "#4b5563", lineHeight: 1.5 }}>{item.text}</div>
             </div>
           </div>
         ))}
@@ -7229,16 +7200,14 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
     <div onClick={requestClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 120,
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "center",
       padding: "4vh 16px",
       overflowY: "auto",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -7252,7 +7221,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
         <div style={{ padding: "18px 22px", borderBottom: "1px solid #f1f2f5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: "inherit", fontSize: 19, fontWeight: 800, color: "#14141a" }}>Importar leads com IA</div>
-            <div style={{ fontSize: 15, color: "#9a9aa3" }}>Excel, CSV ou texto colado - a IA organiza tudo pra você conferir</div>
+            <div style={{ fontSize: 15, color: "#6b7280" }}>Excel, CSV ou texto colado - a IA organiza tudo pra você conferir</div>
           </div>
           <button
             className="lgb"
@@ -7299,7 +7268,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
               >
                 <FileUp size={26} color="#6d5ef8" />
                 <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{isDragging ? "Solte o arquivo aqui" : (fileName || "Clique ou arraste um arquivo aqui")}</div>
-                <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>.xlsx, .xls ou .csv - lido direto, sem depender da IA pra extrair a tabela</div>
+                <div style={{ fontSize: 14.5, color: "#6b7280" }}>.xlsx, .xls ou .csv - lido direto, sem depender da IA pra extrair a tabela</div>
                 <input
                   id="import-file-input"
                   type="file"
@@ -7312,11 +7281,11 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
 
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <div style={{ flex: 1, height: 1, background: "#f1f2f5" }} />
-                <span style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 700 }}>OU COLE TEXTO</span>
+                <span style={{ fontSize: 14, color: "#6b7280", fontWeight: 700 }}>OU COLE TEXTO</span>
                 <div style={{ flex: 1, height: 1, background: "#f1f2f5" }} />
               </div>
 
-              <div style={{ marginBottom: 6, fontSize: 15, color: "#6b6b75", display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ marginBottom: 6, fontSize: 15, color: "#4b5563", display: "flex", alignItems: "center", gap: 6 }}>
                 <ClipboardPaste size={13} /> Copie o texto de um PDF, email ou lista qualquer e cole aqui:
               </div>
               <textarea
@@ -7339,7 +7308,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
             <div style={{ padding: "50px 20px", textAlign: "center" }}>
               <Loader2 size={30} color="#6d5ef8" style={{ animation: "spin 1s linear infinite" }} />
               <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a", marginTop: 14 }}>Lendo e organizando seus leads...</div>
-              <div style={{ fontSize: 15.5, color: "#9a9aa3", marginTop: 4 }}>
+              <div style={{ fontSize: 15.5, color: "#6b7280", marginTop: 4 }}>
                 {progress && progress.total > 1
                   ? `Processando lote ${Math.min(progress.done + 1, progress.total)} de ${progress.total}`
                   : "A IA está identificando empresa, contato e estágio de cada linha"}
@@ -7374,13 +7343,13 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
               )}
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontSize: 15, color: "#64748b", fontWeight: 600 }}>{draftLeads.length} lead{draftLeads.length === 1 ? "" : "s"} encontrado{draftLeads.length === 1 ? "" : "s"}</span>
+                <span style={{ fontSize: 15, color: "#475569", fontWeight: 600 }}>{draftLeads.length} lead{draftLeads.length === 1 ? "" : "s"} encontrado{draftLeads.length === 1 ? "" : "s"}</span>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                   <button onClick={() => setShowImportHelp(true)} style={{ display: "flex", alignItems: "center", gap: 5, border: "none", background: "transparent", color: "#6d5ef8", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
                     <AlertCircle size={12} /> Não ficou bom? Entenda
                   </button>
                   <button onClick={() => toggleAll(true)} style={{ border: "none", background: "transparent", color: "#6d5ef8", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Marcar todos</button>
-                  <button onClick={() => toggleAll(false)} style={{ border: "none", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Desmarcar todos</button>
+                  <button onClick={() => toggleAll(false)} style={{ border: "none", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Desmarcar todos</button>
                 </div>
               </div>
 
@@ -7431,7 +7400,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                       <select value={l.stage} onChange={(e) => updateDraft(l._tmpId, { stage: e.target.value })} style={selectStyle}>
                         {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
-                      {l.feedback && <div style={{ gridColumn: "1 / -1", fontSize: 14.5, color: "#9a9aa3", fontStyle: "italic" }}>"{l.feedback}"</div>}
+                      {l.feedback && <div style={{ gridColumn: "1 / -1", fontSize: 14.5, color: "#6b7280", fontStyle: "italic" }}>"{l.feedback}"</div>}
                       {l.extraContacts && (
                         <div style={{ gridColumn: "1 / -1" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "#6d5ef8", marginBottom: 3 }}>
@@ -7460,7 +7429,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
           <div style={{ padding: "14px 22px", borderTop: "1px solid #f1f2f5", background: "#fafbfc" }}>
             {/* Etiquetas aplicadas a todos os leads deste import - ex: lista de quem já tem fornecedor */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.5 }}>Etiquetar todos:</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Etiquetar todos:</span>
               {TAG_OPTIONS.map((t) => {
                 const active = importTags.includes(t.key);
                 return (
@@ -7486,7 +7455,7 @@ const ImportModal = ({ sdrs, existingLeads, onClose, onConfirm }) => {
                 style={{
                   padding: "9px 14px",
                   borderRadius: 999,
-                  color: "#64748b",
+                  color: "#475569",
                   fontSize: 15.5,
                   fontWeight: 600,
                   cursor: "pointer"
@@ -7537,7 +7506,7 @@ const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
       <Glass className="mt-row" style={{ flex: 1, minWidth: 0, borderRadius: 20, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={() => onOpen(meeting)}>
         <div style={{ minWidth: 52 }}>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: "#0f172a" }}>{time}</div>
-          <div style={{ fontSize: 13.5, color: "#94a3b8" }}>– {endTime}</div>
+          <div style={{ fontSize: 13.5, color: "#64748b" }}>– {endTime}</div>
         </div>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: cfg.color + "18", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon size={16} />
@@ -7546,7 +7515,7 @@ const MeetingListItem = ({ meeting, onOpen, leads = [] }) => {
           <div style={{ fontSize: 15, fontWeight: 700, color: cfg.color }}>{cfg.label}</div>
           <div style={{ fontSize: 14.5, color: "#334155", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{meeting.company}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, color: "#94a3b8" }}>SDR: {meeting.owner}</span>
+            <span style={{ fontSize: 14, color: "#64748b" }}>SDR: {meeting.owner}</span>
             <span style={{ fontSize: 13, color: "#cbd5e1" }}>·</span>
             <span style={{ fontSize: 13.5, fontWeight: 700, color: meeting.locationType === "presencial" ? "#b45309" : "#4f46e5", display: "inline-flex", alignItems: "center", gap: 3 }}>
               {meeting.locationType === "presencial" ? <><Users2 size={10} /> Presencial</> : <><Video size={10} /> Online</>}
@@ -7593,16 +7562,14 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
     <div onClick={handleClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 100,
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "center",
       padding: "5vh 20px",
       overflowY: "auto",
-      animation: "fadeIn 0.22s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.22s ease"
     }}>
       <div
         className="lg lg-strong"
@@ -7622,7 +7589,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: cfg.color + "22", color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center" }}><cfg.icon size={18} /></div>
             <div>
               <div style={{ fontFamily: "inherit", fontSize: 18, fontWeight: 500, color: "#0f172a" }}>{draft.company}</div>
-              <div style={{ fontSize: 14.5, color: "#94a3b8" }}>{cfg.label}</div>
+              <div style={{ fontSize: 14.5, color: "#64748b" }}>{cfg.label}</div>
             </div>
           </div>
           <button
@@ -7632,7 +7599,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -7643,7 +7610,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
         <div style={{ padding: "20px 26px", flex: 1, minHeight: 0, overflowY: "auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
             <div style={{ position: "relative" }}>
-              <span style={{ fontSize: 13, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Data</span>
+              <span style={{ fontSize: 13, color: "#64748b", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Data</span>
               <button
                 className="lgb"
                 type="button"
@@ -7674,7 +7641,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
               )}
             </div>
             <div style={{ position: "relative" }}>
-              <span style={{ fontSize: 13, color: "#94a3b8", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Horário</span>
+              <span style={{ fontSize: 13, color: "#64748b", marginBottom: 3, display: "block", fontWeight: 700, textTransform: "uppercase" }}>Horário</span>
               <button
                 className="lgb"
                 type="button"
@@ -7785,7 +7752,7 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
                 );
               })()}
             </div>
-            <div style={{ fontSize: 13.5, color: "#94a3b8", marginTop: 4 }}>Não achou o lead? Pode digitar o nome da empresa livremente.</div>
+            <div style={{ fontSize: 13.5, color: "#64748b", marginTop: 4 }}>Não achou o lead? Pode digitar o nome da empresa livremente.</div>
           </div>
 
           <div style={{ marginBottom: 16 }}>
@@ -7828,12 +7795,12 @@ const MeetingDetail = ({ meeting, leads, onClose, onSave, onDelete, sdrs }) => {
         <div style={{ padding: "16px 26px", borderTop: "1px solid rgba(148,163,184,0.15)", background: "rgba(248,250,252,0.6)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           {confirmDelete ? (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 14.5, color: "#64748b" }}>Confirmar exclusão?</span>
+              <span style={{ fontSize: 14.5, color: "#475569" }}>Confirmar exclusão?</span>
               <button onClick={() => onDelete(draft.id)} style={{ padding: "6px 12px", borderRadius: 999, border: "none", background: "#ef4444", color: "white", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Sim, excluir</button>
-              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#64748b", fontSize: 15, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.25)", background: "transparent", color: "#475569", fontSize: 15, cursor: "pointer" }}>Cancelar</button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#94a3b8", fontSize: 14.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir</button>
+            <button onClick={() => setConfirmDelete(true)} style={{ padding: "8px 12px", borderRadius: 999, border: "none", background: "transparent", color: "#64748b", fontSize: 14.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><Trash2 size={14} /> Excluir</button>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
@@ -7885,14 +7852,12 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
     <div onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(16, 22, 34, 0.26)",
-      backdropFilter: "blur(12px) saturate(140%)",
+      background: "rgba(15, 23, 42, 0.45)",
       zIndex: 300,
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      animation: "fadeIn 0.2s ease",
-      WebkitBackdropFilter: "blur(12px) saturate(140%)"
+      animation: "fadeIn 0.2s ease"
     }}>
       <div
         className="lg"
@@ -7915,19 +7880,19 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              color: "#64748b",
+              color: "#475569",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}><X size={16} /></button>
         </div>
-        <div style={{ fontSize: 15.5, color: "#9a9aa3", marginBottom: 18 }}>
+        <div style={{ fontSize: 15.5, color: "#6b7280", marginBottom: 18 }}>
           {totalPending === 0 ? "Tudo em dia por aqui." : `${totalPending} coisa${totalPending === 1 ? "" : "s"} pedindo atenção`}
         </div>
 
         {items.filter((it) => it.count > 0).length === 0 ? (
-          <div style={{ textAlign: "center", padding: "30px 10px", color: "#9a9aa3", fontSize: 14.5 }}>
+          <div style={{ textAlign: "center", padding: "30px 10px", color: "#6b7280", fontSize: 14.5 }}>
             🎉 Sem pendências agora. Funil em dia!
           </div>
         ) : (
@@ -7953,7 +7918,7 @@ const NotificationsPanel = ({ stats, onClose, onNavigate }) => {
                     <span style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>{it.title}</span>
                     <span style={{ fontSize: 13.5, fontWeight: 800, color: "white", background: it.color, padding: "1px 7px", borderRadius: 10 }}>{it.count}</span>
                   </div>
-                  <div style={{ fontSize: 14.5, color: "#9a9aa3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.desc}</div>
+                  <div style={{ fontSize: 14.5, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.desc}</div>
                 </div>
                 <ChevronRight size={16} color="#c4c4cc" style={{ flexShrink: 0 }} />
               </div>
@@ -9117,36 +9082,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           100% { transform: translateY(100vh) rotate(var(--rot)); opacity: 0.3; }
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        /* ═══════════ LIQUID GLASS (mesma linguagem do Prisma) ═══════════ */
+        /* ═══════════ VISUAL SÓLIDO (sem vidro): superfícies brancas, bordas visíveis, contraste alto ═══════════ */
         :root {
           --lg-font: "Urbanist", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
-          --g1: rgba(255,255,255,0.78); --g2: rgba(255,255,255,0.5);
-          --edge: rgba(255,255,255,0.95); --edge2: rgba(255,255,255,0.20);
-          --shade: rgba(36,56,74,0.16); --ink: #101a23; --ink2: #3c4a56; --ink3: #6b7985;
-          --btn: #15202a; --lime: #d7fa3c;
+          --ink: #0f172a; --ink2: #334155; --ink3: #475569;
+          --line: #dde3ea; --line2: #cfd6df; --btn: #14181f; --lime: #d7fa3c;
         }
-        .lg-app { background: #f3f6fa; letter-spacing: 0.003em; -webkit-font-smoothing: antialiased; }
+        .lg-app { background: #f1f4f8; -webkit-font-smoothing: antialiased; }
         .lg-app button, .lg-app input, .lg-app select, .lg-app textarea { font-family: inherit; }
-        .lg-mesh { position: fixed; inset: -12%; z-index: 0; pointer-events: none; filter: blur(80px) saturate(115%); }
-        .lg-mesh i { position: absolute; border-radius: 50%; opacity: 0.5; animation: lgDrift 28s ease-in-out infinite; }
-        .lg-mesh i:nth-child(1) { width: 62vw; height: 62vw; left: -6%; top: -8%; background: #9cc6ee; }
-        .lg-mesh i:nth-child(2) { width: 54vw; height: 54vw; right: -8%; top: 4%; background: #cbbdf0; animation-delay: -7s; }
-        .lg-mesh i:nth-child(3) { width: 58vw; height: 58vw; left: 8%; bottom: -14%; background: #b9e8d2; animation-delay: -14s; }
-        .lg-mesh i:nth-child(4) { width: 44vw; height: 44vw; right: 6%; bottom: 2%; background: #f1cbba; animation-delay: -21s; }
-        @keyframes lgDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(4%, -3%) scale(1.06); } 66% { transform: translate(-3%, 4%) scale(0.95); } }
-        .lg-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; mix-blend-mode: overlay;
-          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
-        @media (prefers-reduced-motion: reduce) { .lg-mesh i { animation: none; } }
+        .lg-mesh, .lg-grain { display: none; }
 
-        /* Superfície de vidro: preenchimento translúcido + desfoque + borda especular */
-        .lg { position: relative; isolation: isolate;
-          background: linear-gradient(150deg, var(--g1), var(--g2));
-          backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 18px 40px -30px var(--shade), 0 1px 3px rgba(36,56,74,0.06); }
-        .lg::after, .lg-rim::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 3;
-          background: linear-gradient(155deg, var(--edge), var(--edge2) 34%, transparent 58%, var(--edge2) 82%, var(--edge));
-          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+        /* Cards e painéis: branco sólido com contorno e sombra leve */
+        .lg { position: relative; background: #ffffff; box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(15,23,42,0.05), 0 6px 16px -10px rgba(15,23,42,0.12); }
         .lg-rim { position: relative; }
+        .lg-strong { background: #ffffff; box-shadow: 0 0 0 1px var(--line), 0 30px 70px -28px rgba(15,23,42,0.4); }
+        .lg-soft { background: #f6f8fb; box-shadow: inset 0 0 0 1px var(--line); }
+        .lg.lc-week { background: #f6f4ff; box-shadow: 0 0 0 2px #7c6df2, 0 6px 16px -10px rgba(109,94,248,0.35); }
+
         .lead-temp-stage { grid-template-columns: 1fr 1fr; }
         @media (max-width: 600px) { .lead-temp-stage { grid-template-columns: 1fr; } }
         .lead-quick button { min-width: 0; white-space: nowrap; justify-content: center; }
@@ -9154,7 +9106,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         @media (max-width: 480px) {
           .lead-quick { gap: 6px !important; }
           .lead-quick button { padding: 10px 6px !important; font-size: 14px !important; gap: 5px !important; }
-          /* painéis/modais: grades de 2 colunas viram 1 coluna no celular (com fonte maior não cabiam) */
+          /* painéis/modais: grades de 2 colunas viram 1 coluna no celular */
           .lg-strong [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
           .lg-strong input, .lg-strong select, .lg-strong textarea { min-width: 0; }
         }
@@ -9164,38 +9116,23 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           .mt-row > :nth-child(2) { display: none !important; }
           .mt-row { gap: 10px !important; }
         }
-        .lg.lc-week { background: linear-gradient(150deg, rgba(246,244,255,0.92), rgba(236,233,255,0.7)); box-shadow: inset 0 0 0 1.5px rgba(109,94,248,0.42), 0 18px 40px -28px rgba(109,94,248,0.45); }
-        .lg-rim::after { opacity: 0.55; }
-        .lg-strong { background: linear-gradient(160deg, rgba(250,252,254,0.9), rgba(240,245,250,0.8));
-          backdrop-filter: blur(40px) saturate(185%); -webkit-backdrop-filter: blur(40px) saturate(185%);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 40px 90px -40px rgba(24,40,56,0.45), 0 2px 12px -6px var(--shade); }
-        .lg-soft { background: rgba(255,255,255,0.46); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.65), inset 0 1px 0 rgba(255,255,255,0.85); }
-        .leads-grid .lg, .leads-grid-list .lg { backdrop-filter: blur(16px) saturate(175%); -webkit-backdrop-filter: blur(16px) saturate(175%); }
 
         /* Botões */
         .lgb, .lg-primary { border: 0; }
-        .lgb { background: linear-gradient(160deg, rgba(255,255,255,0.74), rgba(255,255,255,0.38));
-          backdrop-filter: blur(16px) saturate(170%); -webkit-backdrop-filter: blur(16px) saturate(170%);
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), inset 0 1px 0 #fff, 0 8px 18px -12px var(--shade);
-          transition: transform 0.25s cubic-bezier(.2,.9,.2,1), background 0.25s ease, box-shadow 0.25s ease; }
-        .lgb:hover { background: rgba(255,255,255,0.9); }
-        .lg-primary { position: relative; overflow: hidden; isolation: isolate; color: #f3f7f9;
-          background: linear-gradient(180deg, #2a3540 0%, #121a21 100%);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 0 0 1px rgba(255,255,255,0.06), 0 14px 28px -14px rgba(16,26,35,0.6);
-          transition: transform 0.25s cubic-bezier(.2,.9,.2,1), box-shadow 0.25s ease; }
-        .lg-primary::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; z-index: -1; pointer-events: none;
-          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent); transform: translateX(-130%); animation: lgSweep 5s ease-in-out infinite; }
-        @keyframes lgSweep { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(330%); } }
-        .lg-primary:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 18px 34px -14px rgba(16,26,35,0.7); }
-        .lgb:active, .lg-primary:active { transform: scale(0.97); }
-        .lg-primary:disabled, .lgb:disabled { opacity: 0.5; }
-        .lg-field { background: rgba(255,255,255,0.5); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75), inset 0 1px 2px rgba(16,26,35,0.06); }
+        .lgb { background: #ffffff; color: var(--ink2); box-shadow: 0 0 0 1px var(--line2), 0 1px 2px rgba(15,23,42,0.06); transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+        .lgb:hover { background: #f4f6f9; box-shadow: 0 0 0 1px #b9c2cd, 0 1px 2px rgba(15,23,42,0.08); }
+        .lg-primary { color: #ffffff; background: var(--btn); box-shadow: 0 1px 2px rgba(15,23,42,0.25); transition: background 0.2s ease, transform 0.2s ease; }
+        .lg-primary:hover { background: #000000; }
+        .lgb:active, .lg-primary:active { transform: scale(0.98); }
+        .lg-primary:disabled, .lgb:disabled { opacity: 0.45; }
+        .lg-field { background: #ffffff; box-shadow: inset 0 0 0 1px var(--line2); }
 
-        /* Menu inferior flutuante */
+        /* Menu inferior */
         .lg-dock { position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); max-width: 460px; margin: 0 auto;
-          display: flex; justify-content: space-around; padding: 7px 8px; border-radius: 32px; z-index: 90; }
-        .lg-dock-ico { width: 44px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; transition: background 0.35s ease, box-shadow 0.35s ease; }
-        .lg-dock-ico.on { background: var(--lime); box-shadow: 0 0 20px -4px rgba(215,250,60,0.95), inset 0 1px 0 rgba(255,255,255,0.7); }
+          display: flex; justify-content: space-around; padding: 7px 8px; border-radius: 28px; z-index: 90; background: #ffffff !important;
+          box-shadow: 0 0 0 1px var(--line), 0 12px 30px -12px rgba(15,23,42,0.3) !important; }
+        .lg-dock-ico { width: 44px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease; }
+        .lg-dock-ico.on { background: var(--lime); }
         @media (max-width: 480px) { .mt-row { gap: 9px !important; padding: 11px 12px !important; } .mt-row .mt-action-label { display: none; } }
         .leads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (min-width: 720px) { .leads-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; } }
@@ -9297,10 +9234,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     cursor: "pointer"
                   }}>
                   <HexIcon icon={Users} color="#d7fa3c" grad="linear-gradient(160deg, #e7ffa0, #d7fa3c)" size={38} iconSize={16} iconColor="#14141a" pulse />
-                  <div style={{ fontSize: 15.5, color: "#6b6b75", fontWeight: 600, marginTop: 10, marginBottom: 3 }}>Total de leads</div>
+                  <div style={{ fontSize: 15.5, color: "#4b5563", fontWeight: 600, marginTop: 10, marginBottom: 3 }}>Total de leads</div>
                   <div style={{ fontFamily: "inherit", fontSize: 30, fontWeight: 800, color: "#14141a" }}>{stats.total}</div>
                   <div style={{ height: 5, borderRadius: 3, background: "#eef0f3", marginTop: 8 }}><div style={{ height: "100%", width: "100%", borderRadius: 3, background: DARK.lime }} /></div>
-                  <div style={{ fontSize: 13.5, color: "#9a9aa3", marginTop: 6 }}>toque para ver todos</div>
+                  <div style={{ fontSize: 13.5, color: "#6b7280", marginTop: 6 }}>toque para ver todos</div>
                 </div>
 
                 <div
@@ -9508,7 +9445,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{tip.label}</div>
-                        <div style={{ fontSize: 14, color: "#6b6b75", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontSize: 14, color: "#4b5563", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           <strong style={{ color: tip.color }}>{tip.company}</strong> {tip.phrase}{tip.extra > 0 ? ` · +${tip.extra} outro${tip.extra === 1 ? "" : "s"}` : ""}
                         </div>
                       </div>
@@ -9543,7 +9480,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     cursor: "pointer"
                   }}>
                   <HexIcon icon={CheckImgIcon} color="#6d5ef8" grad="linear-gradient(160deg, #a79bfc, #6d5ef8)" size={30} iconSize={13} pulse />
-                  <div style={{ fontSize: 14.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Conquistados</div>
+                  <div style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 700, marginTop: 8 }}>Conquistados</div>
                   <div style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.vendidas}</div>
                 </div>
 
@@ -9565,7 +9502,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     cursor: "pointer"
                   }}>
                   <HexIcon icon={NegociacoesRedIcon} color="#e2483f" grad="linear-gradient(160deg, #f88a80, #e2483f)" size={30} iconSize={13} pulse />
-                  <div style={{ fontSize: 14.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Negociações antigas</div>
+                  <div style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 700, marginTop: 8 }}>Negociações antigas</div>
                   <div style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.desatendidos.length}</div>
                 </div>
 
@@ -9579,7 +9516,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     cursor: "pointer"
                   }}>
                   <HexIcon icon={StarImgIcon} color="#f5c518" grad="linear-gradient(160deg, #ffe27a, #f5c518)" size={30} iconSize={13} pulse />
-                  <div style={{ fontSize: 14.5, color: "#6b6b75", fontWeight: 700, marginTop: 8 }}>Super lead</div>
+                  <div style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 700, marginTop: 8 }}>Super lead</div>
                   <div style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.superLeads.length}</div>
                 </div>
 
@@ -9590,11 +9527,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(109,94,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Flag size={11} color="#6d5ef8" /></div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: "#6b6b75", fontWeight: 700 }}>Metas</div>
+                      <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Metas</div>
                       <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{Object.values(goalsConfig).filter((c) => c.enabled).length} ativa{Object.values(goalsConfig).filter((c) => c.enabled).length === 1 ? "" : "s"}</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12.5, color: "#9a9aa3", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {almostThereGoals.length > 0
                       ? `${almostThereGoals[0].sdrName} quase batendo ${almostThereGoals[0].metricLabel}`
                       : (METRIC_KEYS.filter((k) => goalsConfig[k].enabled).map((k) => METRIC_DEFS[k].shortLabel).join(" · ") || "nenhuma configurada")}
@@ -9605,11 +9542,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(184,134,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trophy size={11} color="#b8860b" /></div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: "#6b6b75", fontWeight: 700 }}>Conquistas</div>
+                      <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Conquistas</div>
                       <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{earnedBadges.length}</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12.5, color: "#9a9aa3", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {BADGE_TIERS.map((t) => `${t.shortLabel} ${earnedBadges.filter((b) => b.tier === t.key).length}`).join(" · ")}
                   </div>
                 </div>
@@ -9783,7 +9720,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               style={{ width: 60, padding: "3px 6px", borderRadius: 7, border: "1.5px solid #6d5ef8", fontSize: 14.5, fontWeight: 700, color: "#14141a", outline: "none" }}
                             />
                           ) : (
-                            <span style={{ fontSize: 15, color: "#9a9aa3", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                            <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
                               Meta: <span style={{ color: "#6d5ef8", fontWeight: 800 }}>{weeklyGoal} leads</span> {isOwner ? <Pencil size={11} color="#6d5ef8" /> : <Lock size={11} color="#9a9aa3" />}
                             </span>
                           )}
@@ -9791,7 +9728,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
                       {/* Deixa explícito qual semana esses números representam - evita dúvida se o
                           progresso mostrado é da semana atual ou ficou "grudado" de uma semana anterior. */}
-                      <div style={{ fontSize: 14.5, color: "#9a9aa3", fontWeight: 600, marginBottom: 14 }}>
+                      <div style={{ fontSize: 14.5, color: "#6b7280", fontWeight: 600, marginBottom: 14 }}>
                         Semana de {stats.weekStart.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a {new Date(stats.weekEnd.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} - só conta o que foi concluído nesse período
                       </div>
 
@@ -9837,7 +9774,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           </svg>
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                             <span style={{ fontSize: 19, fontWeight: 800, color: "#14141a", lineHeight: 1 }}>{pct}%</span>
-                            <span style={{ fontSize: 12, color: "#9a9aa3", fontWeight: 600 }}>da meta</span>
+                            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>da meta</span>
                           </div>
                         </div>
 
@@ -9856,7 +9793,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           <div>
                             <span style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 800, color: goalMet ? "#059669" : "#8fae0e" }}>{stats.weekDoneCount}</span>
                             <span style={{ fontSize: 15.5, fontWeight: 700, color: "#c4c4cc" }}> / {weeklyGoal}</span>
-                            <span style={{ fontSize: 15, color: "#9a9aa3", fontWeight: 600, marginLeft: 5 }}>leads abordados</span>
+                            <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, marginLeft: 5 }}>leads abordados</span>
                           </div>
                         </div>
                       </div>
@@ -9873,7 +9810,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               </div>
                               <div>
                                 <div><span style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: stat.color }}>{stat.value}</span> <span style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{stat.label}</span></div>
-                                <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{stat.sub}</div>
+                                <div style={{ fontSize: 14.5, color: "#6b7280" }}>{stat.sub}</div>
                               </div>
                             </div>
                           ))}
@@ -9883,7 +9820,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       {stats.weekCompletedStale.length > 0 && (
                         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(148,163,184,0.1)", marginBottom: 18 }}>
                           <Info size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
-                          <span style={{ fontSize: 14.5, color: "#6b6b75", fontWeight: 600 }}>
+                          <span style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 600 }}>
                             {stats.weekCompletedStale.length} lead{stats.weekCompletedStale.length === 1 ? "" : "s"} concluído{stats.weekCompletedStale.length === 1 ? "" : "s"} em semana{stats.weekCompletedStale.length === 1 ? "" : "s"} anterior{stats.weekCompletedStale.length === 1 ? "" : "es"} - não conta mais nesse progresso
                           </span>
                         </div>
@@ -9897,7 +9834,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                             <div>
                               <div style={{ fontSize: 16.5, fontWeight: 800, color: "#e2483f", lineHeight: 1.2 }}>{remaining} lead{remaining === 1 ? "" : "s"} restante{remaining === 1 ? "" : "s"}</div>
-                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#6b6b75" }}>para bater a meta semanal</div>
+                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>para bater a meta semanal</div>
                             </div>
                           </div>
                           <button
@@ -9926,7 +9863,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                             <div>
                               <div style={{ fontSize: 16.5, fontWeight: 800, color: "#059669", lineHeight: 1.2 }}>Meta da semana batida! 🎉</div>
-                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#6b6b75" }}>continue assim até o fim da semana</div>
+                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>continue assim até o fim da semana</div>
                             </div>
                           </div>
                           <button
@@ -9973,7 +9910,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   style={{ border: "none", background: "transparent", outline: "none", fontSize: 16, fontWeight: 500, flex: 1, color: "#14141a" }}
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 22, height: 22, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <button onClick={() => setSearch("")} style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#475569", width: 22, height: 22, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <X size={12} />
                   </button>
                 )}
@@ -10005,14 +9942,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 {isOwner && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
-                      <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
+                      <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                         <Chip active={ownerFilter === "all"} onClick={() => setOwnerFilter("all")} color="#14141a">Todos</Chip>
                         {sdrs.map((s) => (
                           <Chip key={s.name} active={ownerFilter === s.name} onClick={() => setOwnerFilter(s.name)} color={s.color}>{s.name}</Chip>
                         ))}
                       </div>
-                      <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 999, border: "1.5px solid rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 14.5, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
+                      <button onClick={() => setShowSdrManager(true)} title="Criar ou editar SDRs" style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 999, border: "1.5px solid rgba(148,163,184,0.4)", background: "transparent", color: "#64748b", fontSize: 14.5, fontWeight: 400, cursor: "pointer", whiteSpace: "nowrap" }}>
                         <Plus size={12} /> SDR
                       </button>
                     </div>
@@ -10020,7 +9957,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   </>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>
-                  <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Status</span>
+                  <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Status</span>
                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                     <Chip active={statusFilter === "all"} onClick={() => setStatusFilter("all")} color="#14141a">Todos</Chip>
                     <Chip active={statusFilter === "Atendido"} onClick={() => setStatusFilter("Atendido")} color="#e08a1c">Em atendimento</Chip>
@@ -10037,17 +9974,17 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     gap: 5,
                     padding: "6px 11px",
                     borderRadius: 999,
-                    color: "#64748b",
+                    color: "#475569",
                     fontSize: 15,
                     fontWeight: 400,
                     cursor: "pointer",
                     whiteSpace: "nowrap"
                   }}><X size={12} /> Limpar filtros</button>}
-                <div style={{ fontSize: 15, color: "#64748b", fontWeight: 600 }}>{filtered.length} de {leads.length} leads</div>
+                <div style={{ fontSize: 15, color: "#475569", fontWeight: 600 }}>{filtered.length} de {leads.length} leads</div>
               </div>
 
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 20, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Fase da conversa</span>
+                <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Fase da conversa</span>
                 <Chip active={phaseFilter === "all"} onClick={() => setPhaseFilter("all")} color="#0f172a">Todas</Chip>
                 {CONVERSATION_PHASES.map((p) => (
                   <Chip key={p.key} active={phaseFilter === p.key} onClick={() => setPhaseFilter(p.key)} color={p.color} dotColor={p.color} count={leads.filter((l) => (l.phase || "none") === p.key).length}>{p.label}</Chip>
@@ -10059,10 +9996,10 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   onClick={() => setOriginDropdownOpen((v) => !v)}
                   style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
                 >
-                  <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Origem do lead</span>
+                  <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Origem do lead</span>
                   <div style={{ flex: 1 }}>
                     {originFilter === "all" ? (
-                      <span style={{ fontSize: 15.5, color: "#64748b", fontWeight: 600 }}>Todas as origens</span>
+                      <span style={{ fontSize: 15.5, color: "#475569", fontWeight: 600 }}>Todas as origens</span>
                     ) : (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 15.5, fontWeight: 700, color: ORIGIN_BY_KEY[originFilter].color }}>
                         {(() => { const OI = ORIGIN_BY_KEY[originFilter].icon; return <OI size={13} />; })()}
@@ -10071,7 +10008,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     )}
                   </div>
                   {originFilter !== "all" && (
-                    <button onClick={(e) => { e.stopPropagation(); setOriginFilter("all"); }} title="Limpar" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 20, height: 20, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <button onClick={(e) => { e.stopPropagation(); setOriginFilter("all"); }} title="Limpar" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#475569", width: 20, height: 20, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <X size={11} />
                     </button>
                   )}
@@ -10095,16 +10032,16 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   onClick={() => setSectorDropdownOpen((v) => !v)}
                   style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
                 >
-                  <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Setor</span>
+                  <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Setor</span>
                   <div style={{ flex: 1 }}>
                     {sectorFilter === "all" ? (
-                      <span style={{ fontSize: 15.5, color: "#64748b", fontWeight: 600 }}>Todos os setores</span>
+                      <span style={{ fontSize: 15.5, color: "#475569", fontWeight: 600 }}>Todos os setores</span>
                     ) : (
                       <span style={{ fontSize: 15.5, fontWeight: 700, color: "#6d5ef8" }}>{sectorFilter}</span>
                     )}
                   </div>
                   {sectorFilter !== "all" && (
-                    <button onClick={(e) => { e.stopPropagation(); setSectorFilter("all"); }} title="Limpar" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#64748b", width: 20, height: 20, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <button onClick={(e) => { e.stopPropagation(); setSectorFilter("all"); }} title="Limpar" style={{ border: "none", background: "rgba(148,163,184,0.15)", color: "#475569", width: 20, height: 20, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <X size={11} />
                     </button>
                   )}
@@ -10127,7 +10064,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               {/* Filtro por etiqueta - ex: só quem já tem fornecedor */}
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Etiqueta</span>
+                <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, flexShrink: 0 }}>Etiqueta</span>
                 <Chip active={tagFilter === "all"} onClick={() => setTagFilter("all")} color="#0f172a">Todas</Chip>
                 {TAG_OPTIONS.map((t) => (
                   <Chip key={t.key} active={tagFilter === t.key} onClick={() => setTagFilter(tagFilter === t.key ? "all" : t.key)} color={t.color} count={leads.filter((l) => (l.tags || []).includes(t.key)).length}>{t.label}</Chip>
@@ -10157,7 +10094,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <Glass style={{ borderRadius: 18, padding: "60px 20px", textAlign: "center" }}>
                   <Users size={32} style={{ color: "#cbd5e1", marginBottom: 12 }} />
                   <div style={{ fontFamily: "inherit", fontSize: 20, color: "#475569", marginBottom: 4 }}>Nenhum lead encontrado</div>
-                  <div style={{ fontSize: 14.5, color: "#94a3b8" }}>{leads.length === 0 ? "Comece adicionando seu primeiro lead" : "Tente ajustar os filtros"}</div>
+                  <div style={{ fontSize: 14.5, color: "#64748b" }}>{leads.length === 0 ? "Comece adicionando seu primeiro lead" : "Tente ajustar os filtros"}</div>
                 </Glass>
               ) : (
                 <div id="leads-grid" className={leadsViewMode === "list" ? "leads-grid-list" : "leads-grid"}>
@@ -10180,7 +10117,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -10222,7 +10159,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -10298,7 +10235,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                   <CheckCircle2 size={32} style={{ color: "#34d399", marginBottom: 12 }} />
                   <div style={{ fontFamily: "inherit", fontSize: 19, color: "#475569", marginBottom: 6 }}>{weekSdrFilter === "all" ? "Nenhum lead marcado pra semana" : `Nenhum lead pendente de ${weekSdrFilter}`}</div>
-                  <div style={{ fontSize: 14.5, color: "#94a3b8" }}>{weekSdrFilter === "all" ? 'Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"' : "Troque o filtro acima pra ver a lista de outro SDR ou de todos"}</div>
+                  <div style={{ fontSize: 14.5, color: "#64748b" }}>{weekSdrFilter === "all" ? 'Abra um lead na lista principal e adicione a tag "Hoje" ou "Esta semana"' : "Troque o filtro acima pra ver a lista de outro SDR ou de todos"}</div>
                 </Glass>
               ) : (
                 <>
@@ -10398,7 +10335,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                 borderRadius: 999,
                                 whiteSpace: "nowrap"
                               }}>{via.label}</span>
-                              <span style={{ fontSize: 14, color: "#94a3b8" }}>{lead.owner || "Todos"}</span>
+                              <span style={{ fontSize: 14, color: "#64748b" }}>{lead.owner || "Todos"}</span>
                             </div>
                           </div>
                           <button
@@ -10429,7 +10366,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      color: "#64748b",
+                      color: "#475569",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -10487,7 +10424,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     >
                       <div style={{ width: 30, height: 30, borderRadius: 9, background: s.color + "15", color: s.color, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}><s.icon size={14} /></div>
                       <div style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 500, color: "#0f172a" }}>{s.count}</div>
-                      <div style={{ fontSize: 13.5, color: "#94a3b8", fontWeight: 600 }}>{s.label}</div>
+                      <div style={{ fontSize: 13.5, color: "#64748b", fontWeight: 600 }}>{s.label}</div>
                     </Glass>
                   );
                 })}
@@ -10516,7 +10453,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             gap: 5,
                             padding: "5px 10px",
                             borderRadius: 20,
-                            color: "#64748b",
+                            color: "#475569",
                             fontSize: 14.5,
                             fontWeight: 700,
                             cursor: "pointer"
@@ -10581,7 +10518,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -10605,7 +10542,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               {/* Filtro de período por data de fechamento */}
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Fechados em</span>
+                <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Fechados em</span>
                 {[
                   { key: "30", label: "Últimos 30 dias" },
                   { key: "90", label: "Últimos 90 dias" },
@@ -10620,7 +10557,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                   <CheckImgIcon size={32} style={{ marginBottom: 12 }} />
                   <div style={{ fontFamily: "inherit", fontSize: 19, color: "#475569", marginBottom: 6 }}>Nenhum negócio fechado nesse período</div>
-                  <div style={{ fontSize: 14.5, color: "#94a3b8" }}>Tente ajustar o filtro ou feche seu primeiro negócio</div>
+                  <div style={{ fontSize: 14.5, color: "#64748b" }}>Tente ajustar o filtro ou feche seu primeiro negócio</div>
                 </Glass>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -10635,7 +10572,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         {showCompletedDivider && (
                           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "8px 0 2px" }}>
                             <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
-                            <span style={{ fontSize: 14, fontWeight: 800, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.6, whiteSpace: "nowrap" }}>Trabalhos concluídos</span>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.6, whiteSpace: "nowrap" }}>Trabalhos concluídos</span>
                             <div style={{ flex: 1, height: 1, background: "rgba(148,163,184,0.25)" }} />
                           </div>
                         )}
@@ -10668,7 +10605,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
                               <OwnerAvatar name={lead.owner || "Todos"} size={16} />
-                              <span style={{ fontSize: 14.5, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
+                              <span style={{ fontSize: 14.5, color: "#6b7280" }}>{lead.owner || "Todos"}</span>
                               <span style={{
                                 fontSize: 12.5,
                                 fontWeight: 700,
@@ -10709,11 +10646,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             </div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: 13.5, color: "#9a9aa3", fontWeight: 600 }}>Data de fechamento</div>
+                            <div style={{ fontSize: 13.5, color: "#6b7280", fontWeight: 600 }}>Data de fechamento</div>
                             <div style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{lead.wonDate ? formatDateFull(lead.wonDate) : "não informada"}</div>
                           </div>
                           <div style={{ textAlign: "right", minWidth: 100 }}>
-                            <div style={{ fontSize: 13.5, color: "#9a9aa3", fontWeight: 600 }}>Valor do contrato</div>
+                            <div style={{ fontSize: 13.5, color: "#6b7280", fontWeight: 600 }}>Valor do contrato</div>
                             <div style={{ fontSize: 15.5, fontWeight: 800, color: "#1fa971" }}>{formatBRL(getDealValue(lead))}{lead.dealType === "mensal" && <span style={{ fontSize: 14, fontWeight: 600 }}>/mês</span>}</div>
                           </div>
                           <select
@@ -10767,7 +10704,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      color: "#64748b",
+                      color: "#475569",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -10775,7 +10712,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     }}><ArrowLeft size={18} /></button>
                   <div>
                     <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Próximas ações</h1>
-                    <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>Lembretes com base na "Próxima ação" de cada lead</div>
+                    <div style={{ fontSize: 14.5, color: "#6b7280" }}>Lembretes com base na "Próxima ação" de cada lead</div>
                   </div>
                 </div>
 
@@ -10783,7 +10720,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                     <Bell size={32} style={{ color: "#c4c4cc", marginBottom: 12 }} />
                     <div style={{ fontFamily: "inherit", fontSize: 19, color: "#475569", marginBottom: 6 }}>Nenhuma ação agendada</div>
-                    <div style={{ fontSize: 14.5, color: "#94a3b8" }}>Abra um lead e preencha a "Próxima ação" com data - ela aparece aqui como lembrete</div>
+                    <div style={{ fontSize: 14.5, color: "#64748b" }}>Abra um lead e preencha a "Próxima ação" com data - ela aparece aqui como lembrete</div>
                   </Glass>
                 )}
 
@@ -10806,14 +10743,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <Glass key={lead.id} onClick={() => openLeadAtNextAction(lead)} style={{ borderRadius: 16, padding: "13px 15px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${sec.color}` }}>
                           <div style={{ textAlign: "center", flexShrink: 0, minWidth: 40 }}>
                             <div style={{ fontSize: 15.5, fontWeight: 800, color: sec.color, lineHeight: 1 }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { day: "2-digit" })}</div>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase" }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</div>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>{new Date(lead.nextAction.date).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")}</div>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.company}</div>
-                            <div style={{ fontSize: 15, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.nextAction.description || "Sem descrição"}</div>
+                            <div style={{ fontSize: 15, color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.nextAction.description || "Sem descrição"}</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
                               <OwnerAvatar name={lead.owner || "Todos"} size={15} />
-                              <span style={{ fontSize: 13.5, color: "#9a9aa3" }}>{lead.owner || "Todos"}</span>
+                              <span style={{ fontSize: 13.5, color: "#6b7280" }}>{lead.owner || "Todos"}</span>
                               <span style={{
                                 fontSize: 13,
                                 fontWeight: 700,
@@ -10904,7 +10841,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -10912,14 +10849,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Comissões</h1>
-                  <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{isOwner ? "Faixas por volume, valor e tipo de serviço" : "Só o gestor do funil pode alterar as comissões"}</div>
+                  <div style={{ fontSize: 14.5, color: "#6b7280" }}>{isOwner ? "Faixas por volume, valor e tipo de serviço" : "Só o gestor do funil pode alterar as comissões"}</div>
                 </div>
               </div>
 
               {!isOwner && (
                 <Glass style={{ borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
                   <Lock size={16} color="#9a9aa3" />
-                  <div style={{ fontSize: 15, color: "#6b6b75" }}>Você pode ver as regras de comissão, mas só o gestor do funil pode alterá-las.</div>
+                  <div style={{ fontSize: 15, color: "#4b5563" }}>Você pode ver as regras de comissão, mas só o gestor do funil pode alterá-las.</div>
                 </Glass>
               )}
 
@@ -10952,7 +10889,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               <Glass style={{ borderRadius: 16, padding: "14px 18px", marginBottom: 90, display: "flex", alignItems: "center", gap: 10 }}>
                 <DollarSign size={18} color="#b8860b" />
-                <div style={{ fontSize: 15.5, color: "#6b6b75" }}>
+                <div style={{ fontSize: 15.5, color: "#4b5563" }}>
                   A comissão é calculada automaticamente pelo valor de cada negócio fechado e pela faixa em que ele se encaixa, e já aparece direto no card de cada cliente em <strong>Conquistados</strong>.
                 </div>
               </Glass>
@@ -10970,7 +10907,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -10980,7 +10917,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 <img src="/funnio-icon-round.png" alt="Funnio" style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, boxShadow: "0 4px 12px -4px rgba(215,250,60,0.4)" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ fontFamily: "inherit", fontSize: 17.5, fontWeight: 800, margin: 0, color: "#14141a" }}>Olá, sou o gestor IA do seu Funnio</h1>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14.5, color: "#9a9aa3" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14.5, color: "#6b7280" }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1fa971", flexShrink: 0 }} />
                     Online · conhece seu funil em tempo real
                   </div>
@@ -10996,7 +10933,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       gap: 6,
                       padding: "8px 10px",
                       borderRadius: 999,
-                      color: "#64748b",
+                      color: "#475569",
                       fontSize: 14.5,
                       fontWeight: 600,
                       cursor: "pointer",
@@ -11030,7 +10967,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         boxShadow: "0 2px 8px -4px rgba(20,20,26,0.08)"
                       }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a", marginBottom: 6 }}>Oi! Pergunte qualquer coisa sobre seu funil 👋</div>
-                      <div style={{ fontSize: 15.5, color: "#6b6b75", lineHeight: 1.5, marginBottom: 12 }}>
+                      <div style={{ fontSize: 15.5, color: "#4b5563", lineHeight: 1.5, marginBottom: 12 }}>
                         Já sei quais leads estão parados, quais estão quentes sem retorno, o que tem marcado pra semana e as reuniões que vêm por aí. Não precisa me explicar nada, é só perguntar.
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -11151,7 +11088,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(245,243,255,0.95)", backdropFilter: "blur(10px)", padding: "8px", borderRadius: 20, boxShadow: "0 10px 30px -10px rgba(20,20,26,0.25)" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "flex-end", background: "rgba(245,243,255,0.95)", padding: "8px", borderRadius: 20, boxShadow: "0 10px 30px -10px rgba(20,20,26,0.25)" }}>
                     <textarea
                       className="lg-field"
                       value={chatInput}
@@ -11197,7 +11134,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -11205,14 +11142,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Configurar metas</h1>
-                  <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{isOwner ? "Ative só as metas que quiser acompanhar - cada uma gera badges automáticas" : "Só o gestor do funil pode alterar as metas"}</div>
+                  <div style={{ fontSize: 14.5, color: "#6b7280" }}>{isOwner ? "Ative só as metas que quiser acompanhar - cada uma gera badges automáticas" : "Só o gestor do funil pode alterar as metas"}</div>
                 </div>
               </div>
 
               {!isOwner && (
                 <Glass style={{ borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
                   <Lock size={16} color="#9a9aa3" />
-                  <div style={{ fontSize: 15, color: "#6b6b75" }}>Você pode ver as metas ativas, mas só o gestor do funil pode ativar, desativar ou alterar valores.</div>
+                  <div style={{ fontSize: 15, color: "#4b5563" }}>Você pode ver as metas ativas, mas só o gestor do funil pode ativar, desativar ou alterar valores.</div>
                 </Glass>
               )}
 
@@ -11227,7 +11164,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
                       <div>
                         <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>Completar abordagens da semana</div>
-                        <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{weekApproachBadgeEnabled ? `Badge única ao bater a meta de ${weeklyGoal} por semana` : "Desativada"}</div>
+                        <div style={{ fontSize: 14.5, color: "#6b7280" }}>{weekApproachBadgeEnabled ? `Badge única ao bater a meta de ${weeklyGoal} por semana` : "Desativada"}</div>
                       </div>
                     </div>
                     <ToggleSwitch on={weekApproachBadgeEnabled} onClick={() => setWeekApproachBadgeEnabled((v) => !v)} activeColor={DARK.lime} disabled={!isOwner} />
@@ -11261,7 +11198,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           </div>
                           <div>
                             <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{metric.label}</div>
-                            <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{cfg.enabled ? `Meta: ${cfg.target} por ${periodNoun(cfg.period)}${cfg.reward > 0 ? ` · 💰 R$ ${cfg.reward.toLocaleString("pt-BR")}` : ""}` : "Desativada"}</div>
+                            <div style={{ fontSize: 14.5, color: "#6b7280" }}>{cfg.enabled ? `Meta: ${cfg.target} por ${periodNoun(cfg.period)}${cfg.reward > 0 ? ` · 💰 R$ ${cfg.reward.toLocaleString("pt-BR")}` : ""}` : "Desativada"}</div>
                           </div>
                         </div>
                         <ToggleSwitch on={cfg.enabled} onClick={() => updateCfg({ enabled: !cfg.enabled })} activeColor={metric.color} disabled={!isOwner} />
@@ -11320,7 +11257,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               style={{ ...inputStyle, width: 100 }}
                             />
                           </div>
-                          <div style={{ flex: 1, minWidth: 160, fontSize: 14, color: "#9a9aa3", lineHeight: 1.5 }}>
+                          <div style={{ flex: 1, minWidth: 160, fontSize: 14, color: "#6b7280", lineHeight: 1.5 }}>
                             🏅 Badge 50% aos {Math.round(cfg.target * 0.5)} · ⭐ Super Badge aos {cfg.target}{cfg.reward > 0 ? ` (+R$ ${cfg.reward.toLocaleString("pt-BR")})` : ""} · 👑 Badge Lendária aos {Math.round(cfg.target * 1.2)}{cfg.legendaryReward > 0 ? ` (+R$ ${cfg.legendaryReward.toLocaleString("pt-BR")})` : ""}
                           </div>
                         </div>
@@ -11338,7 +11275,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       </div>
                       <div>
                         <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>Prêmio geral (bater todas as metas)</div>
-                        <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>
+                        <div style={{ fontSize: 14.5, color: "#6b7280" }}>
                           {allGoalsReward.enabled
                             ? `R$ ${allGoalsReward.amount.toLocaleString("pt-BR")} ao completar ${allGoalsReward.metrics.length} meta${allGoalsReward.metrics.length === 1 ? "" : "s"} selecionada${allGoalsReward.metrics.length === 1 ? "" : "s"}`
                             : "Desativado"}
@@ -11398,7 +11335,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
 
               <Glass style={{ borderRadius: 16, padding: "14px 18px", marginBottom: 90, display: "flex", alignItems: "center", gap: 10 }}>
                 <Trophy size={18} color="#b8860b" />
-                <div style={{ fontSize: 15.5, color: "#6b6b75" }}>
+                <div style={{ fontSize: 15.5, color: "#4b5563" }}>
                   Toda vez que um SDR chega na metade da meta ele ganha a <strong>Badge 50%</strong>, quando bate a meta ganha a <strong>Super Badge</strong> (e o prêmio em dinheiro, se configurado), e se passar bem além ganha a <strong>Badge Lendária</strong> - tudo automático.{" "}
                   <span onClick={() => setView("conquistas")} style={{ color: "#6d5ef8", fontWeight: 700, cursor: "pointer" }}>Ver conquistas →</span>
                 </div>
@@ -11417,7 +11354,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    color: "#64748b",
+                    color: "#475569",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -11425,14 +11362,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   }}><ArrowLeft size={18} /></button>
                 <div>
                   <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Conquistas</h1>
-                  <div style={{ fontSize: 14.5, color: "#9a9aa3" }}>{earnedBadges.length} badge{earnedBadges.length === 1 ? "" : "s"} conquistada{earnedBadges.length === 1 ? "" : "s"} no total</div>
+                  <div style={{ fontSize: 14.5, color: "#6b7280" }}>{earnedBadges.length} badge{earnedBadges.length === 1 ? "" : "s"} conquistada{earnedBadges.length === 1 ? "" : "s"} no total</div>
                 </div>
               </div>
 
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {isOwner && (
                   <>
-                    <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
+                    <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>SDR</span>
                     <Chip active={achievementsFilterSdr === "all"} onClick={() => setAchievementsFilterSdr("all")} color="#14141a">Todos</Chip>
                     {sdrs.map((s) => (
                       <Chip key={s.name} active={achievementsFilterSdr === s.name} onClick={() => setAchievementsFilterSdr(s.name)} color={s.color}>{s.name}</Chip>
@@ -11508,14 +11445,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               </span>
                             )}
                           </div>
-                          <div style={{ fontSize: 15, color: "#9a9aa3" }}>{metric.description}</div>
+                          <div style={{ fontSize: 15, color: "#6b7280" }}>{metric.description}</div>
                         </div>
                       </div>
                       {periodRangeLabel && (
                         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 15.5, color: metric.color, fontWeight: 800, marginBottom: 14, marginTop: -4, background: metric.color + "12", padding: "7px 12px", borderRadius: 10 }}>
                           <CalendarIcon size={13} />
                           Meta de {periodRangeLabel.range}
-                          <span style={{ fontWeight: 700, color: "#6b6b75", background: "white", padding: "2px 7px", borderRadius: 6 }}>{periodRangeLabel.days} dias</span>
+                          <span style={{ fontWeight: 700, color: "#4b5563", background: "white", padding: "2px 7px", borderRadius: 6 }}>{periodRangeLabel.days} dias</span>
                         </div>
                       )}
                       <div className="ach-grid3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
@@ -11532,7 +11469,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                               )}
                               <div>
                                 <div className="ach-tier-label" style={{ fontSize: 14, fontWeight: 700, color: achieved ? tier.color : "#9a9aa3" }}>{tier.label}</div>
-                                <div className="ach-tier-desc" style={{ fontSize: 12, color: "#9a9aa3", lineHeight: 1.25, marginTop: 1 }}>{tier.description}</div>
+                                <div className="ach-tier-desc" style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.25, marginTop: 1 }}>{tier.description}</div>
                               </div>
                             </div>
                           );
@@ -11559,7 +11496,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                   <span style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{b.sdrName}</span>
                                   <span style={{ fontSize: 14, color: bTier.color, fontWeight: 600 }}>{bTier.label}</span>
                                   <span style={{ flex: 1 }} />
-                                  <span style={{ fontSize: 13.5, color: "#9a9aa3" }}>{PERIOD_OPTIONS.find((p) => p.key === b.period)?.label || b.period} · {formatDateShort(b.earnedAt)}</span>
+                                  <span style={{ fontSize: 13.5, color: "#6b7280" }}>{PERIOD_OPTIONS.find((p) => p.key === b.period)?.label || b.period} · {formatDateShort(b.earnedAt)}</span>
                                 </div>
                               );
                             })}
@@ -11580,7 +11517,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     <Glass style={{ borderRadius: 18, padding: "50px 20px", textAlign: "center" }}>
                       <Trophy size={32} color="#d7d9de" style={{ marginBottom: 12 }} />
                       <div style={{ fontFamily: "inherit", fontSize: 19, color: "#475569", marginBottom: 6 }}>Nenhuma badge conquistada ainda</div>
-                      <div style={{ fontSize: 14.5, color: "#94a3b8" }}>Ative uma meta e comece a bater os números pra desbloquear</div>
+                      <div style={{ fontSize: 14.5, color: "#64748b" }}>Ative uma meta e comece a bater os números pra desbloquear</div>
                     </Glass>
                   );
                 }
@@ -11615,7 +11552,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                                 whiteSpace: "nowrap"
                               }}>Meta não ativa</span>}
                             </div>
-                            <div style={{ fontSize: 15, color: "#9a9aa3" }}>{metric.label} · {b.value}/{b.target} · {formatDateFull(b.earnedAt)}</div>
+                            <div style={{ fontSize: 15, color: "#6b7280" }}>{metric.label} · {b.value}/{b.target} · {formatDateFull(b.earnedAt)}</div>
                           </div>
                         </Glass>
                       );
@@ -11632,12 +11569,12 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 14, fontWeight: 400, letterSpacing: 1.5, textTransform: "uppercase", color: "#6d5ef8", marginBottom: 6 }}>Sales Intelligence · B2B</div>
                 <h1 style={{ fontFamily: "inherit", fontSize: 28, fontWeight: 800, margin: 0, color: "#14141a" }}>Relatórios</h1>
-                <div style={{ fontSize: 14.5, color: "#9a9aa3", marginTop: 4 }}>Calculado automaticamente a partir dos seus leads e reuniões</div>
+                <div style={{ fontSize: 14.5, color: "#6b7280", marginTop: 4 }}>Calculado automaticamente a partir dos seus leads e reuniões</div>
               </div>
 
               {/* Filtro de período */}
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Período</span>
+                <span style={{ fontSize: 14, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>Período</span>
                 {[
                   { key: "7", label: "7 dias" },
                   { key: "30", label: "30 dias" },
@@ -11647,24 +11584,24 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <Chip key={p.key} active={reportPeriod === p.key} onClick={() => setReportPeriod(p.key)} color="#6d5ef8">{p.label}</Chip>
                 ))}
                 <div style={{ flex: 1 }} />
-                <span style={{ fontSize: 14, color: "#9a9aa3" }}>Reuniões e contatos no período · leads e SDR são totais acumulados</span>
+                <span style={{ fontSize: 14, color: "#6b7280" }}>Reuniões e contatos no período · leads e SDR são totais acumulados</span>
               </Glass>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
                 <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 700 }}>Taxa de conversão</div>
+                  <div style={{ fontSize: 14, color: "#6b7280", fontWeight: 700 }}>Taxa de conversão</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{stats.total ? Math.round((stats.vendidas / stats.total) * 100) : 0}%</div>
                 </Glass>
                 <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 700 }}>Ticket médio</div>
+                  <div style={{ fontSize: 14, color: "#6b7280", fontWeight: 700 }}>Ticket médio</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{formatBRL(stats.vendidas ? stats.receita / stats.vendidas : 0)}</div>
                 </Glass>
                 <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 700 }}>Reuniões ({reportStats.label})</div>
+                  <div style={{ fontSize: 14, color: "#6b7280", fontWeight: 700 }}>Reuniões ({reportStats.label})</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.meetingsInPeriod}</div>
                 </Glass>
                 <Glass style={{ borderRadius: 16, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 700 }}>Contatos ({reportStats.label})</div>
+                  <div style={{ fontSize: 14, color: "#6b7280", fontWeight: 700 }}>Contatos ({reportStats.label})</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: "#14141a", marginTop: 4 }}>{reportStats.contactedInPeriod}</div>
                 </Glass>
               </div>
@@ -11700,11 +11637,11 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
               <Glass style={{ borderRadius: 18, padding: "18px 20px", marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                   <div style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a" }}>Atividade da plataforma</div>
-                  <div style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 600 }}>{activityFeed.length} ação{activityFeed.length === 1 ? "" : "ões"}</div>
+                  <div style={{ fontSize: 14, color: "#6b7280", fontWeight: 600 }}>{activityFeed.length} ação{activityFeed.length === 1 ? "" : "ões"}</div>
                 </div>
-                <div style={{ fontSize: 14.5, color: "#9a9aa3", marginBottom: 14 }}>Leads que entraram, contatos, mudanças de estágio e conquistas — {reportStats.label}</div>
+                <div style={{ fontSize: 14.5, color: "#6b7280", marginBottom: 14 }}>Leads que entraram, contatos, mudanças de estágio e conquistas — {reportStats.label}</div>
                 {activityFeed.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "24px 10px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "24px 10px", color: "#64748b" }}>
                     <ClipboardList size={26} color="#cbd5e1" style={{ marginBottom: 8 }} />
                     <div style={{ fontSize: 15.5 }}>Nada por aqui nesse período.</div>
                   </div>
@@ -11741,9 +11678,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.company}</div>
-                            <div style={{ fontSize: 13.5, color: "#9a9aa3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.owner} · {label}</div>
+                            <div style={{ fontSize: 13.5, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.owner} · {label}</div>
                           </div>
-                          <div style={{ fontSize: 13, color: "#9a9aa3", flexShrink: 0 }}>{dateLabel}</div>
+                          <div style={{ fontSize: 13, color: "#6b7280", flexShrink: 0 }}>{dateLabel}</div>
                         </div>
                       );
                     })}
@@ -11766,7 +11703,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         gap: 5,
                         padding: "4px 10px",
                         borderRadius: 999,
-                        color: "#64748b",
+                        color: "#475569",
                         fontSize: 14.5,
                         fontWeight: 700,
                         cursor: "pointer"
@@ -11776,7 +11713,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   )}
                   {revenueGoalEnabled && (
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 14, color: "#9a9aa3", fontWeight: 600 }}>Meta:</span>
+                      <span style={{ fontSize: 14, color: "#6b7280", fontWeight: 600 }}>Meta:</span>
                       {editingRevenueGoal && isOwner ? (
                         <input
                           type="number"
@@ -11818,7 +11755,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                             width: 22,
                             height: 22,
                             borderRadius: "50%",
-                            color: "#94a3b8",
+                            color: "#64748b",
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
@@ -11835,14 +11772,14 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                       <div style={{ background: "rgba(109,94,248,0.06)", border: "1px solid rgba(109,94,248,0.15)", borderRadius: 12, padding: "10px 12px" }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do mês</div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do mês</div>
                         <div style={{ fontSize: 17.5, fontWeight: 800, color: "#6d5ef8", marginTop: 2 }}>{formatBRL(revenueBreakdown.month)}</div>
-                        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginTop: 1 }}>fees ativos + avulsos do mês</div>
+                        <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 1 }}>fees ativos + avulsos do mês</div>
                       </div>
                       <div style={{ background: "rgba(31,169,113,0.06)", border: "1px solid rgba(31,169,113,0.15)", borderRadius: 12, padding: "10px 12px" }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#9a9aa3", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do ano</div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>Receita do ano</div>
                         <div style={{ fontSize: 17.5, fontWeight: 800, color: "#1fa971", marginTop: 2 }}>{formatBRL(revenueBreakdown.year)}</div>
-                        <div style={{ fontSize: 12.5, color: "#9a9aa3", marginTop: 1 }}>avulsos do ano + contratos pelo período</div>
+                        <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 1 }}>avulsos do ano + contratos pelo período</div>
                       </div>
                     </div>
                     <div style={{ height: 8, borderRadius: 4, background: "#eef0f3" }}>
@@ -11853,7 +11790,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         transition: "width 0.3s ease",
                       }} />
                     </div>
-                    <div style={{ fontSize: 14.5, color: "#9a9aa3", marginTop: 6 }}>{Math.round((stats.receita / revenueGoal) * 100)}% da meta de {formatBRL(revenueGoal)}</div>
+                    <div style={{ fontSize: 14.5, color: "#6b7280", marginTop: 6 }}>{Math.round((stats.receita / revenueGoal) * 100)}% da meta de {formatBRL(revenueGoal)}</div>
                   </>
                 )}
               </Glass>
@@ -11871,7 +11808,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                       title={`Ver leads em ${s}`}
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, marginBottom: 4 }}>
-                        <span style={{ color: "#6b6b75", fontWeight: 600 }}>{s}</span>
+                        <span style={{ color: "#4b5563", fontWeight: 600 }}>{s}</span>
                         <span style={{ color: "#14141a", fontWeight: 700 }}>{count}</span>
                       </div>
                       <div style={{ height: 7, borderRadius: 4, background: "#eef0f3" }}>
@@ -11899,7 +11836,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <OwnerAvatar name={s.name} size={32} />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 15, fontWeight: 700, color: "#14141a" }}>{s.name}</div>
-                          <div style={{ fontSize: 14, color: "#9a9aa3" }}>{own.length} leads · {won} conquistados</div>
+                          <div style={{ fontSize: 14, color: "#6b7280" }}>{own.length} leads · {won} conquistados</div>
                         </div>
                         <div style={{ fontSize: 15.5, fontWeight: 800, color: "#1fa971" }}>{formatBRL(revenue)}</div>
                         <ChevronRight size={15} color="#c4c4cc" />
@@ -11908,7 +11845,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   })}
                   <button
                     onClick={() => setShowSdrManager(true)}
-                    style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.4)", background: "transparent", color: "#94a3b8", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(148,163,184,0.4)", background: "transparent", color: "#64748b", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
                   >
                     <Pencil size={12} /> Gerenciar SDRs
                   </button>
@@ -12289,7 +12226,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
         </div>
 
         {toast && (
-          <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "rgba(16,22,30,0.82)", backdropFilter: "blur(20px) saturate(160%)", WebkitBackdropFilter: "blur(20px) saturate(160%)", color: "white", padding: "12px 20px", borderRadius: 999, fontSize: 14.5, fontWeight: 600, boxShadow: "0 12px 32px -8px rgba(0,0,0,0.4)", zIndex: 200, animation: "toastIn 0.25s ease", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "rgba(16,22,30,0.82)", color: "white", padding: "12px 20px", borderRadius: 999, fontSize: 14.5, fontWeight: 600, boxShadow: "0 12px 32px -8px rgba(0,0,0,0.4)", zIndex: 200, animation: "toastIn 0.25s ease", display: "flex", alignItems: "center", gap: 8 }}>
             <Sparkles size={14} /> {toast}
           </div>
         )}
