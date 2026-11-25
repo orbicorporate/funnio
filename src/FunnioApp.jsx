@@ -294,14 +294,14 @@ const TourOverlay = ({ steps, stepIndex, onNext, onPrev, onSkip, onFinish }) => 
 
 // Cores das etiquetas de status/fase, batendo com a tela "Todos os leads"
 const STATUS_PILL = {
-  "Desatendido": { label: "Negociação antiga", bg: "#fde2e2", fg: "#e2483f", darkBg: "#3a1f1f", darkFg: "#ff7a70" },
-  "Atendido": { label: "Em atendimento", bg: "#fdead0", fg: "#e08a1c", darkBg: "#3a2c14", darkFg: "#ffb648" },
+  "Desatendido": { label: "Negociação antiga", bg: "#ffedd5", fg: "#f97316", darkBg: "#3a2414", darkFg: "#fdba74" },
+  "Atendido": { label: "Em atendimento", bg: "#dcfce7", fg: "#16a34a", darkBg: "#14301f", darkFg: "#86efac" },
 };
 const PHASE_PILL = {
   none: { label: "Sem conversa", bg: "#eef0f3", fg: "#8b93a1" },
-  started: { label: "Conversa iniciada", bg: "#d9f5e8", fg: "#1fa971" },
-  meeting: { label: "Reunião feita", bg: "#e6e0fd", fg: "#6d5ef8" },
-  proposal: { label: "Escopo enviado", bg: "#dbeafe", fg: "#3b6fe0" },
+  started: { label: "Conversa iniciada", bg: "#dcfce7", fg: "#16a34a" },
+  meeting: { label: "Reunião feita", bg: "#ffedd5", fg: "#f97316" },
+  proposal: { label: "Escopo enviado", bg: "#fef9c3", fg: "#facc15", ink: "#3d2e00" },
 };
 
 let RESPONSIBLE_COLORS = { Giovani: "#6366f1", Pedro: "#f59e0b" };
@@ -310,9 +310,9 @@ const seedSDRs = [{ name: "Giovani", color: "#6366f1" }, { name: "Pedro", color:
 
 const CONVERSATION_PHASES = [
   { key: "none", label: "Sem conversa", color: "#8b93a1" },
-  { key: "started", label: "Conversa iniciada", color: "#1fa971" },
-  { key: "meeting", label: "Reunião feita", color: "#6d5ef8" },
-  { key: "proposal", label: "Escopo enviado", color: "#3b6fe0" },
+  { key: "started", label: "Conversa iniciada", color: "#16a34a" },
+  { key: "meeting", label: "Reunião feita", color: "#f97316" },
+  { key: "proposal", label: "Escopo enviado", color: "#facc15", ink: "#3d2e00" },
 ];
 const PHASE_BY_KEY = Object.fromEntries(CONVERSATION_PHASES.map((p) => [p.key, p]));
 
@@ -1227,7 +1227,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
               padding: "3.5px 10px",
               borderRadius: 999,
               background: phaseMeta.fg,
-              color: "#ffffff",
+              color: phaseMeta.ink || "#ffffff",
               fontWeight: dark ? 400 : 700,
               whiteSpace: "nowrap"
             }}>
@@ -1297,7 +1297,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkContacted(lead.id); }}
                   title="Marcar como contatado hoje"
-                  style={{ background: dark ? "#c7c7cf" : "#1fa971", color: "#ffffff", fontSize: 12.5, fontWeight: 700, padding: "3.5px 10px", borderRadius: 999, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", border: "none" }}
+                  style={{ background: dark ? "#c7c7cf" : "#facc15", color: "#3d2e00", fontSize: 12.5, fontWeight: 700, padding: "3.5px 10px", borderRadius: 999, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", border: "none" }}
                 >
                   Marcar hoje
                 </button>
@@ -1329,7 +1329,7 @@ const LeadCard = ({ lead, onOpen, onOpenNextAction, onQuickContact, onToggleWeek
           <span className="lc-label" style={{ color: txtLabel, fontWeight: 600 }}>Falar essa semana</span>
           <ToggleSwitch on={isOnWeekList} onClick={() => onToggleWeekFlag(lead.id)} />
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <div className="lc-actions" style={{ display: "flex", gap: 6, flexWrap: "nowrap", justifyContent: "space-between", width: "100%" }}>
           {onOpenChannelPicker && (
             <button
               onClick={() => onOpenChannelPicker(lead)}
@@ -4438,7 +4438,7 @@ const LeadDetail = ({ lead, onClose, onSave, onDelete, onQuickContact, sdrs, onS
               {CONVERSATION_PHASES.map((p) => {
                 const active = (draft.phase || "none") === p.key;
                 return (
-                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 999, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color : "rgba(255,255,255,0.6)", color: active ? "#ffffff" : "#64748b", cursor: "pointer", fontSize: 15, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <button key={p.key} onClick={() => update({ phase: p.key })} style={{ flex: 1, minWidth: 130, padding: "8px 10px", borderRadius: 999, border: `1px solid ${active ? p.color : "rgba(148,163,184,0.25)"}`, background: active ? p.color : "#ffffff", color: active ? (p.ink || "#ffffff") : "#475569", cursor: "pointer", fontSize: 15, fontWeight: active ? 700 : 500, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: p.color }} />{p.label}
                   </button>
                 );
@@ -8007,6 +8007,9 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [sectorFilter, setSectorFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all"); // filtra por etiqueta (ex: já tem fornecedor)
   const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [goalsOpen, setGoalsOpen] = useState(false);
+  const [quickActOpen, setQuickActOpen] = useState(false); // dica do assistente + ações vencendo recolhidas em "Agir rápido" // Metas e Conquistas recolhidas atrás do ícone de troféu // filtros da lista recolhidos num botão "Filtros"
   const [chatMessages, setChatMessages] = useState([]); // [{role:'user'|'assistant', content}]
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -9133,6 +9136,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
           box-shadow: 0 0 0 1px var(--line), 0 12px 30px -12px rgba(15,23,42,0.3) !important; }
         .lg-dock-ico { width: 44px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease; }
         .lg-dock-ico.on { background: var(--lime); }
+        .lc-actions > button { flex: 1 1 0; min-width: 0; max-width: 34px; width: auto !important; height: auto !important; aspect-ratio: 1 / 1; padding: 0 !important; }
+        .lc-actions > button svg { width: 55%; max-width: 15px; height: auto; }
         @media (max-width: 480px) { .mt-row { gap: 9px !important; padding: 11px 12px !important; } .mt-row .mt-action-label { display: none; } }
         .leads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (min-width: 720px) { .leads-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; } }
@@ -9279,195 +9284,227 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 </div>
               )}
 
-              {/* Card de dicas rotativas - sempre mostra a mais relevante primeiro, e "Quero outra
-                  dica" troca pra próxima categoria de alerta que tiver leads pendentes */}
-              {(() => {
-                const buildTip = (id, icon, color, label, list, urgentSortFn, phraseFn, aiQuestionFn, filterFn) => {
-                  if (!list.length) return null;
-                  const sorted = urgentSortFn ? [...list].sort(urgentSortFn) : list;
-                  const top = sorted[0];
-                  const extra = list.length - 1;
-                  return { id, icon, color, label: label(list.length), company: top.company, phrase: phraseFn(top), extra, aiQuestion: aiQuestionFn(list.length), filterFn, count: list.length };
-                };
-                const tips = [
-                  // 1 · Ações combinadas que já venceram - o mais urgente de todos
-                  buildTip(
-                    "overdue", Bell, "#dc2626",
-                    (n) => `${n} próxima${n === 1 ? "" : "s"} aç${n === 1 ? "ão" : "ões"} atrasada${n === 1 ? "" : "s"}`,
-                    nextActions.overdue.map((x) => x.lead),
-                    (a, b) => new Date(a.nextAction.date) - new Date(b.nextAction.date),
-                    (l) => `tinha "${l.nextAction.description || "uma ação"}" marcada pra ${formatDateShort(l.nextAction.date)}`,
-                    (n) => `Tenho ${n} próximas ações atrasadas. Me ajuda a priorizar e resolver hoje?`,
-                    () => setView("acoes"),
-                  ),
-                  // 2 · Quentes esfriando
-                  buildTip(
-                    "hot", Flame, "#6d5ef8",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} quente${n === 1 ? "" : "s"} esfriando`,
-                    stats.hotNoContact,
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
-                    (n) => `Quais desses ${n} leads quentes sem contato eu deveria priorizar hoje?`,
-                    () => { setTempFilter("hot"); },
-                  ),
-                  // 3 · Super leads parados
-                  buildTip(
-                    "super", Star, "#ec4899",
-                    (n) => `${n} super lead${n === 1 ? "" : "s"} sem contato recente`,
-                    stats.superNoContact,
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
-                    (n) => `Meus ${n} super leads sem contato recente, por qual eu começo?`,
-                    () => { setSuperOnly(true); },
-                  ),
-                  // 4 · Ações de hoje
-                  buildTip(
-                    "todayactions", CalendarIcon, "#d97706",
-                    (n) => `${n} aç${n === 1 ? "ão" : "ões"} pra fazer hoje`,
-                    nextActions.todayList.map((x) => x.lead),
-                    null,
-                    (l) => `pede "${l.nextAction.description || "uma ação"}" hoje`,
-                    (n) => `Tenho ${n} ações marcadas pra hoje. Monta um plano rápido pra eu executar?`,
-                    () => setView("acoes"),
-                  ),
-                  // 5 · Lista da semana pendente
-                  buildTip(
-                    "weekpending", Target, "#8fae0e",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} da semana ainda sem abordagem`,
-                    stats.weekList,
-                    null,
-                    () => "está na lista da semana esperando o primeiro toque",
-                    (n) => `Ainda tenho ${n} leads na lista da semana. Qual a melhor ordem de abordagem?`,
-                    () => setView("semana"),
-                  ),
-                  // 6 · Proposta/escopo esfriando
-                  buildTip(
-                    "staleproposal", FileText, "#0ea5e9",
-                    (n) => `${n} proposta${n === 1 ? "" : "s"} sem retorno há 7+ dias`,
-                    leads.filter((l) => (l.stage === "Escopo Enviado" || l.stage === "Proposta") && (daysSince(l.lastContact) ?? 999) >= 7),
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    (l) => { const d = daysSince(l.lastContact); return d === null ? "recebeu proposta e nunca teve follow-up" : `recebeu proposta e está há ${d} dias sem retorno`; },
-                    (n) => `${n} leads com proposta enviada estão sem retorno há mais de uma semana. Como faço o follow-up sem parecer cobrança?`,
-                    () => {},
-                  ),
-                  // 7 · Etiqueta "Já tem fornecedor" parada - hora dos scripts de segunda opinião
-                  buildTip(
-                    "fornecedor", PieChart, "#f97316",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} com fornecedor esperando a 2ª opinião`,
-                    leads.filter((l) => (l.tags || []).includes("fornecedor") && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 7),
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    () => `já tem fornecedor - use os scripts de camada de dados e segunda opinião`,
-                    (n) => `Tenho ${n} leads que já têm fornecedor. Como uso nosso diferencial de dados e SEO pra abordar cada um?`,
-                    () => { setTagFilter("fornecedor"); },
-                  ),
-                  // 8 · Sem próxima ação
-                  buildTip(
-                    "noaction", CalendarIcon, "#f59e0b",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} sem próxima ação definida`,
-                    stats.noNextAction,
-                    null,
-                    () => "está sem nenhum próximo passo agendado",
-                    (n) => `Esses ${n} leads sem próxima ação, o que eu deveria fazer com cada um?`,
-                    () => {},
-                  ),
-                  // 9 · Leads novos nunca tocados
-                  buildTip(
-                    "newnotouch", UserPlus, "#10b981",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} novo${n === 1 ? "" : "s"} sem primeiro contato`,
-                    leads.filter((l) => !l.lastContact && l.stage !== "Conquistado" && l.stage !== "Perdida" && l.createdAt && (Date.now() - new Date(l.createdAt).getTime()) / 86400000 >= 3),
-                    (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-                    (l) => `entrou há ${Math.floor((Date.now() - new Date(l.createdAt).getTime()) / 86400000)} dias e ninguém falou com ele ainda`,
-                    (n) => `${n} leads entraram no funil e nunca receberam o primeiro contato. Qual script usar pra estrear bem?`,
-                    () => {},
-                  ),
-                  // 10 · Negociações antigas pra reativar
-                  buildTip(
-                    "desatendidos", Clock, "#e2483f",
-                    (n) => `${n} negociaç${n === 1 ? "ão" : "ões"} antiga${n === 1 ? "" : "s"} pra reativar`,
-                    leads.filter((l) => l.status === "Desatendido" && l.stage !== "Conquistado" && l.stage !== "Perdida"),
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    (l) => { const d = daysSince(l.lastContact); return d === null ? "esfriou sem nenhum contato registrado" : `está parado há ${d} dias`; },
-                    (n) => `Tenho ${n} negociações antigas. Quais valem reativar primeiro e com qual script?`,
-                    () => setView("desatendidos"),
-                  ),
-                  // 11 · Conquistados sem comissão definida
-                  buildTip(
-                    "nocommission", DollarSign, "#b8860b",
-                    (n) => `${n} contrato${n === 1 ? "" : "s"} sem comissão definida`,
-                    leads.filter((l) => l.stage === "Conquistado" && !l.workCompleted && getCommissionDetails(l, commissionConfig).value === 0),
-                    null,
-                    () => "fechou mas está sem comissão configurada",
-                    (n) => `Fechei ${n} contratos que estão sem comissão definida. O que preciso configurar?`,
-                    () => setView("conquistados"),
-                  ),
-                  // 12 · Frios parados há 30+ dias
-                  buildTip(
-                    "coldlong", Snowflake, "#3b82f6",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} frio${n === 1 ? "" : "s"} parado${n === 1 ? "" : "s"} há 30+ dias`,
-                    leads.filter((l) => l.temperature === "cold" && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 30),
-                    (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
-                    (l) => `está frio e sem contato há ${daysSince(l.lastContact) ?? "muitos"} dias`,
-                    (n) => `${n} leads frios estão parados há mais de 30 dias. Reativo, marco como perdidos ou deixo quieto?`,
-                    () => { setTempFilter("cold"); },
-                  ),
-                  // 13 · Sem canal de contato cadastrado
-                  buildTip(
-                    "nochannel", Phone, "#64748b",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} sem nenhum canal de contato`,
-                    leads.filter((l) => !l.whatsapp && !l.email && !l.phone && l.stage !== "Conquistado" && l.stage !== "Perdida"),
-                    null,
-                    () => "está sem WhatsApp, e-mail e telefone cadastrados",
-                    (n) => `${n} leads estão sem nenhum canal de contato. Como completo esses cadastros rápido?`,
-                    () => {},
-                  ),
-                  // 14 · Sem origem definida (atrapalha os relatórios)
-                  buildTip(
-                    "noorigin", Megaphone, "#8b5cf6",
-                    (n) => `${n} lead${n === 1 ? "" : "s"} sem origem definida`,
-                    leads.filter((l) => !l.origin && l.stage !== "Conquistado" && l.stage !== "Perdida"),
-                    null,
-                    () => "está sem origem marcada - isso enfraquece os relatórios de canal",
-                    (n) => `${n} leads estão sem origem definida. Por que isso importa e como resolvo?`,
-                    () => {},
-                  ),
-                ].filter(Boolean);
-                if (tips.length === 0) return null;
-                const tip = tips[dashboardTipIndex % tips.length];
-                return (
-                  <div style={{ borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", marginBottom: 14, overflow: "hidden" }}>
-                    <div
-                      onClick={() => { if (tip.filterFn) tip.filterFn(); }}
-                      title="Toque pra abrir/filtrar esses leads"
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px", cursor: "pointer" }}
-                    >
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
-                        <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
+              {/* "Agir rápido": dica do assistente + ações vencendo/atrasadas num botão só que expande */}
+              <button
+                className="quick-act"
+                onClick={() => setQuickActOpen((v) => !v)}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", marginBottom: quickActOpen ? 10 : 14, borderRadius: 999, cursor: "pointer", fontSize: 16, fontWeight: 800, background: quickActOpen ? "#f97316" : "#fff7ed", color: quickActOpen ? "#ffffff" : "#c2410c", border: "1.5px solid #f97316" }}
+              >
+                <Bell size={17} />
+                <span>Agir rápido</span>
+                {nextActions.due.length > 0 && <span style={{ background: quickActOpen ? "#ffffff" : "#f97316", color: quickActOpen ? "#c2410c" : "#ffffff", borderRadius: 999, padding: "1px 9px", fontSize: 13.5, fontWeight: 800 }}>{nextActions.due.length}</span>}
+                <span style={{ marginLeft: "auto", fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{nextActions.overdue.length > 0 ? `${nextActions.overdue.length} atrasada${nextActions.overdue.length === 1 ? "" : "s"}` : ""}</span>
+                <ChevronRight size={18} style={{ transform: quickActOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 0.2s ease", flexShrink: 0 }} />
+              </button>
+              {quickActOpen && (<>
+                  {/* Lembrete de próximas ações vencendo - aparece quando alguma ação está atrasada ou é pra hoje */}
+                  {nextActions.due.length > 0 && (
+                    <div onClick={() => setView("acoes")} style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 16, padding: "13px 16px", marginBottom: 14, background: "linear-gradient(135deg, #fff1f0, #ffe4e1)", border: "1px solid #f5b5ae", cursor: "pointer" }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 11, background: "linear-gradient(160deg, #f87171, #dc2626)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Bell size={17} color="white" />
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{tip.label}</div>
-                        <div style={{ fontSize: 14, color: "#4b5563", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          <strong style={{ color: tip.color }}>{tip.company}</strong> {tip.phrase}{tip.extra > 0 ? ` · +${tip.extra} outro${tip.extra === 1 ? "" : "s"}` : ""}
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, color: "#b91c1c" }}>
+                          {nextActions.due.length === 1 ? "1 ação vencendo" : `${nextActions.due.length} ações vencendo`}
+                          {nextActions.overdue.length > 0 && ` · ${nextActions.overdue.length} atrasada${nextActions.overdue.length === 1 ? "" : "s"}`}
+                        </div>
+                        <div style={{ fontSize: 15, color: "#dc2626", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {nextActions.due.slice(0, 2).map((x) => `${x.lead.company}: ${x.lead.nextAction.description || "sem descrição"}`).join(" · ")}
                         </div>
                       </div>
+                      <ChevronRight size={16} color="#dc2626" style={{ flexShrink: 0 }} />
                     </div>
-                    <div style={{ display: "flex", borderTop: "1px solid rgba(109,94,248,0.15)" }}>
-                      <button
-                        onClick={() => { setChatInput(tip.aiQuestion); setView("assistente"); }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", borderRight: "1px solid rgba(109,94,248,0.15)", background: "transparent", color: "#6d5ef8", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
-                      >
-                        <Sparkles size={12} /> Perguntar ao assistente
-                      </button>
-                      <button
-                        onClick={() => setDashboardTipIndex((i) => (i + 1) % tips.length)}
-                        disabled={tips.length <= 1}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", background: "transparent", color: tips.length > 1 ? "#6d5ef8" : "#b4b6bc", fontSize: 14.5, fontWeight: 700, cursor: tips.length > 1 ? "pointer" : "default" }}
-                      >
-                        <Repeat size={12} /> Quero outra dica
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
+                  )}
+                  {/* Card de dicas rotativas - sempre mostra a mais relevante primeiro, e "Quero outra
+                      dica" troca pra próxima categoria de alerta que tiver leads pendentes */}
+                  {(() => {
+                    const buildTip = (id, icon, color, label, list, urgentSortFn, phraseFn, aiQuestionFn, filterFn) => {
+                      if (!list.length) return null;
+                      const sorted = urgentSortFn ? [...list].sort(urgentSortFn) : list;
+                      const top = sorted[0];
+                      const extra = list.length - 1;
+                      return { id, icon, color, label: label(list.length), company: top.company, phrase: phraseFn(top), extra, aiQuestion: aiQuestionFn(list.length), filterFn, count: list.length };
+                    };
+                    const tips = [
+                      // 1 · Ações combinadas que já venceram - o mais urgente de todos
+                      buildTip(
+                        "overdue", Bell, "#dc2626",
+                        (n) => `${n} próxima${n === 1 ? "" : "s"} aç${n === 1 ? "ão" : "ões"} atrasada${n === 1 ? "" : "s"}`,
+                        nextActions.overdue.map((x) => x.lead),
+                        (a, b) => new Date(a.nextAction.date) - new Date(b.nextAction.date),
+                        (l) => `tinha "${l.nextAction.description || "uma ação"}" marcada pra ${formatDateShort(l.nextAction.date)}`,
+                        (n) => `Tenho ${n} próximas ações atrasadas. Me ajuda a priorizar e resolver hoje?`,
+                        () => setView("acoes"),
+                      ),
+                      // 2 · Quentes esfriando
+                      buildTip(
+                        "hot", Flame, "#6d5ef8",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} quente${n === 1 ? "" : "s"} esfriando`,
+                        stats.hotNoContact,
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
+                        (n) => `Quais desses ${n} leads quentes sem contato eu deveria priorizar hoje?`,
+                        () => { setTempFilter("hot"); },
+                      ),
+                      // 3 · Super leads parados
+                      buildTip(
+                        "super", Star, "#ec4899",
+                        (n) => `${n} super lead${n === 1 ? "" : "s"} sem contato recente`,
+                        stats.superNoContact,
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        (l) => { const d = daysSince(l.lastContact); return d === null ? "nunca foi contatado" : `está há ${d} dia${d === 1 ? "" : "s"} sem contato`; },
+                        (n) => `Meus ${n} super leads sem contato recente, por qual eu começo?`,
+                        () => { setSuperOnly(true); },
+                      ),
+                      // 4 · Ações de hoje
+                      buildTip(
+                        "todayactions", CalendarIcon, "#d97706",
+                        (n) => `${n} aç${n === 1 ? "ão" : "ões"} pra fazer hoje`,
+                        nextActions.todayList.map((x) => x.lead),
+                        null,
+                        (l) => `pede "${l.nextAction.description || "uma ação"}" hoje`,
+                        (n) => `Tenho ${n} ações marcadas pra hoje. Monta um plano rápido pra eu executar?`,
+                        () => setView("acoes"),
+                      ),
+                      // 5 · Lista da semana pendente
+                      buildTip(
+                        "weekpending", Target, "#8fae0e",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} da semana ainda sem abordagem`,
+                        stats.weekList,
+                        null,
+                        () => "está na lista da semana esperando o primeiro toque",
+                        (n) => `Ainda tenho ${n} leads na lista da semana. Qual a melhor ordem de abordagem?`,
+                        () => setView("semana"),
+                      ),
+                      // 6 · Proposta/escopo esfriando
+                      buildTip(
+                        "staleproposal", FileText, "#0ea5e9",
+                        (n) => `${n} proposta${n === 1 ? "" : "s"} sem retorno há 7+ dias`,
+                        leads.filter((l) => (l.stage === "Escopo Enviado" || l.stage === "Proposta") && (daysSince(l.lastContact) ?? 999) >= 7),
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        (l) => { const d = daysSince(l.lastContact); return d === null ? "recebeu proposta e nunca teve follow-up" : `recebeu proposta e está há ${d} dias sem retorno`; },
+                        (n) => `${n} leads com proposta enviada estão sem retorno há mais de uma semana. Como faço o follow-up sem parecer cobrança?`,
+                        () => {},
+                      ),
+                      // 7 · Etiqueta "Já tem fornecedor" parada - hora dos scripts de segunda opinião
+                      buildTip(
+                        "fornecedor", PieChart, "#f97316",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} com fornecedor esperando a 2ª opinião`,
+                        leads.filter((l) => (l.tags || []).includes("fornecedor") && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 7),
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        () => `já tem fornecedor - use os scripts de camada de dados e segunda opinião`,
+                        (n) => `Tenho ${n} leads que já têm fornecedor. Como uso nosso diferencial de dados e SEO pra abordar cada um?`,
+                        () => { setTagFilter("fornecedor"); },
+                      ),
+                      // 8 · Sem próxima ação
+                      buildTip(
+                        "noaction", CalendarIcon, "#f59e0b",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} sem próxima ação definida`,
+                        stats.noNextAction,
+                        null,
+                        () => "está sem nenhum próximo passo agendado",
+                        (n) => `Esses ${n} leads sem próxima ação, o que eu deveria fazer com cada um?`,
+                        () => {},
+                      ),
+                      // 9 · Leads novos nunca tocados
+                      buildTip(
+                        "newnotouch", UserPlus, "#10b981",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} novo${n === 1 ? "" : "s"} sem primeiro contato`,
+                        leads.filter((l) => !l.lastContact && l.stage !== "Conquistado" && l.stage !== "Perdida" && l.createdAt && (Date.now() - new Date(l.createdAt).getTime()) / 86400000 >= 3),
+                        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+                        (l) => `entrou há ${Math.floor((Date.now() - new Date(l.createdAt).getTime()) / 86400000)} dias e ninguém falou com ele ainda`,
+                        (n) => `${n} leads entraram no funil e nunca receberam o primeiro contato. Qual script usar pra estrear bem?`,
+                        () => {},
+                      ),
+                      // 10 · Negociações antigas pra reativar
+                      buildTip(
+                        "desatendidos", Clock, "#e2483f",
+                        (n) => `${n} negociaç${n === 1 ? "ão" : "ões"} antiga${n === 1 ? "" : "s"} pra reativar`,
+                        leads.filter((l) => l.status === "Desatendido" && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        (l) => { const d = daysSince(l.lastContact); return d === null ? "esfriou sem nenhum contato registrado" : `está parado há ${d} dias`; },
+                        (n) => `Tenho ${n} negociações antigas. Quais valem reativar primeiro e com qual script?`,
+                        () => setView("desatendidos"),
+                      ),
+                      // 11 · Conquistados sem comissão definida
+                      buildTip(
+                        "nocommission", DollarSign, "#b8860b",
+                        (n) => `${n} contrato${n === 1 ? "" : "s"} sem comissão definida`,
+                        leads.filter((l) => l.stage === "Conquistado" && !l.workCompleted && getCommissionDetails(l, commissionConfig).value === 0),
+                        null,
+                        () => "fechou mas está sem comissão configurada",
+                        (n) => `Fechei ${n} contratos que estão sem comissão definida. O que preciso configurar?`,
+                        () => setView("conquistados"),
+                      ),
+                      // 12 · Frios parados há 30+ dias
+                      buildTip(
+                        "coldlong", Snowflake, "#3b82f6",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} frio${n === 1 ? "" : "s"} parado${n === 1 ? "" : "s"} há 30+ dias`,
+                        leads.filter((l) => l.temperature === "cold" && l.stage !== "Conquistado" && l.stage !== "Perdida" && (daysSince(l.lastContact) ?? 999) >= 30),
+                        (a, b) => (daysSince(b.lastContact) ?? 999) - (daysSince(a.lastContact) ?? 999),
+                        (l) => `está frio e sem contato há ${daysSince(l.lastContact) ?? "muitos"} dias`,
+                        (n) => `${n} leads frios estão parados há mais de 30 dias. Reativo, marco como perdidos ou deixo quieto?`,
+                        () => { setTempFilter("cold"); },
+                      ),
+                      // 13 · Sem canal de contato cadastrado
+                      buildTip(
+                        "nochannel", Phone, "#64748b",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} sem nenhum canal de contato`,
+                        leads.filter((l) => !l.whatsapp && !l.email && !l.phone && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                        null,
+                        () => "está sem WhatsApp, e-mail e telefone cadastrados",
+                        (n) => `${n} leads estão sem nenhum canal de contato. Como completo esses cadastros rápido?`,
+                        () => {},
+                      ),
+                      // 14 · Sem origem definida (atrapalha os relatórios)
+                      buildTip(
+                        "noorigin", Megaphone, "#8b5cf6",
+                        (n) => `${n} lead${n === 1 ? "" : "s"} sem origem definida`,
+                        leads.filter((l) => !l.origin && l.stage !== "Conquistado" && l.stage !== "Perdida"),
+                        null,
+                        () => "está sem origem marcada - isso enfraquece os relatórios de canal",
+                        (n) => `${n} leads estão sem origem definida. Por que isso importa e como resolvo?`,
+                        () => {},
+                      ),
+                    ].filter(Boolean);
+                    if (tips.length === 0) return null;
+                    const tip = tips[dashboardTipIndex % tips.length];
+                    return (
+                      <div style={{ borderRadius: 16, background: "rgba(109,94,248,0.08)", border: "1px solid rgba(109,94,248,0.25)", marginBottom: 14, overflow: "hidden" }}>
+                        <div
+                          onClick={() => { if (tip.filterFn) tip.filterFn(); }}
+                          title="Toque pra abrir/filtrar esses leads"
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px", cursor: "pointer" }}
+                        >
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", padding: 2, boxSizing: "border-box", flexShrink: 0, background: "conic-gradient(from 0deg, transparent 0%, #6d5ef8 18%, transparent 36%, transparent 100%)", animation: "ledSpin 2.4s linear infinite" }}>
+                            <img src="/funnio-icon-round.png" alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block", objectFit: "cover" }} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 15.5, fontWeight: 700, color: "#14141a" }}>{tip.label}</div>
+                            <div style={{ fontSize: 14, color: "#4b5563", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <strong style={{ color: tip.color }}>{tip.company}</strong> {tip.phrase}{tip.extra > 0 ? ` · +${tip.extra} outro${tip.extra === 1 ? "" : "s"}` : ""}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", borderTop: "1px solid rgba(109,94,248,0.15)" }}>
+                          <button
+                            onClick={() => { setChatInput(tip.aiQuestion); setView("assistente"); }}
+                            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", borderRight: "1px solid rgba(109,94,248,0.15)", background: "transparent", color: "#6d5ef8", fontSize: 14.5, fontWeight: 700, cursor: "pointer" }}
+                          >
+                            <Sparkles size={12} /> Perguntar ao assistente
+                          </button>
+                          <button
+                            onClick={() => setDashboardTipIndex((i) => (i + 1) % tips.length)}
+                            disabled={tips.length <= 1}
+                            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 10px", border: "none", background: "transparent", color: tips.length > 1 ? "#6d5ef8" : "#b4b6bc", fontSize: 14.5, fontWeight: 700, cursor: tips.length > 1 ? "pointer" : "default" }}
+                          >
+                            <Repeat size={12} /> Quero outra dica
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+              </>)}
 
               {/* Linha de campos pequenos: Conquistados, Reuniões agendadas, Negociações antigas, Super lead */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
@@ -9520,35 +9557,52 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <div style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: "#14141a" }}>{stats.superLeads.length}</div>
                 </div>
 
-                <div onClick={() => setView("metas")} style={{ borderRadius: 13, padding: "9px 12px", backgroundImage: `linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.65)), url(${BG_PURPLE_GREEN})`, backgroundSize: "cover", backgroundPosition: "center", border: `1px solid ${almostThereGoals.length ? "#f5c94c" : "#eef0f3"}`, cursor: "pointer", position: "relative" }}>
-                  {almostThereGoals.length > 0 && (
-                    <div title={`${almostThereGoals[0].sdrName} está a ${Math.round((1 - almostThereGoals[0].pct) * 100)}% de bater a meta de ${almostThereGoals[0].metricLabel}`} style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "#f5c518", boxShadow: "0 0 0 3px rgba(245,197,24,0.25)" }} />
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(109,94,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Flag size={11} color="#6d5ef8" /></div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Metas</div>
-                      <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{Object.values(goalsConfig).filter((c) => c.enabled).length} ativa{Object.values(goalsConfig).filter((c) => c.enabled).length === 1 ? "" : "s"}</div>
+                {/* Metas e Conquistas recolhidas: um botão com troféu que expande os dois cards */}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <button
+                    className="lgb"
+                    onClick={() => setGoalsOpen((v) => !v)}
+                    title="Metas e conquistas"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px 6px 6px", borderRadius: 999, cursor: "pointer", fontSize: 15, fontWeight: 800, color: "#14141a" }}
+                  >
+                    <span style={{ width: 34, height: 34, borderRadius: "50%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trophy size={17} color="#b8860b" /></span>
+                    <span>{earnedBadges.length}</span>
+                    <ChevronRight size={16} style={{ transform: goalsOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 0.2s ease" }} />
+                  </button>
+                  {goalsOpen && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+                    <div onClick={() => setView("metas")} style={{ borderRadius: 13, padding: "9px 12px", backgroundImage: `linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.65)), url(${BG_PURPLE_GREEN})`, backgroundSize: "cover", backgroundPosition: "center", border: `1px solid ${almostThereGoals.length ? "#f5c94c" : "#eef0f3"}`, cursor: "pointer", position: "relative" }}>
+                      {almostThereGoals.length > 0 && (
+                        <div title={`${almostThereGoals[0].sdrName} está a ${Math.round((1 - almostThereGoals[0].pct) * 100)}% de bater a meta de ${almostThereGoals[0].metricLabel}`} style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "#f5c518", boxShadow: "0 0 0 3px rgba(245,197,24,0.25)" }} />
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(109,94,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Flag size={11} color="#6d5ef8" /></div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Metas</div>
+                          <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{Object.values(goalsConfig).filter((c) => c.enabled).length} ativa{Object.values(goalsConfig).filter((c) => c.enabled).length === 1 ? "" : "s"}</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {almostThereGoals.length > 0
+                          ? `${almostThereGoals[0].sdrName} quase batendo ${almostThereGoals[0].metricLabel}`
+                          : (METRIC_KEYS.filter((k) => goalsConfig[k].enabled).map((k) => METRIC_DEFS[k].shortLabel).join(" · ") || "nenhuma configurada")}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {almostThereGoals.length > 0
-                      ? `${almostThereGoals[0].sdrName} quase batendo ${almostThereGoals[0].metricLabel}`
-                      : (METRIC_KEYS.filter((k) => goalsConfig[k].enabled).map((k) => METRIC_DEFS[k].shortLabel).join(" · ") || "nenhuma configurada")}
-                  </div>
-                </div>
 
-                <div onClick={() => setView("conquistas")} style={{ borderRadius: 13, padding: "9px 12px", backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.55)), url(${BG_CREAM_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(184,134,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trophy size={11} color="#b8860b" /></div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Conquistas</div>
-                      <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{earnedBadges.length}</div>
+                    <div onClick={() => setView("conquistas")} style={{ borderRadius: 13, padding: "9px 12px", backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.55)), url(${BG_CREAM_LIGHT})`, backgroundSize: "cover", backgroundPosition: "center", border: "1px solid #eef0f3", cursor: "pointer" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 7, background: "rgba(184,134,11,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trophy size={11} color="#b8860b" /></div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: "#4b5563", fontWeight: 700 }}>Conquistas</div>
+                          <div style={{ fontFamily: "inherit", fontSize: 16.5, fontWeight: 800, color: "#14141a", lineHeight: 1.2 }}>{earnedBadges.length}</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {BADGE_TIERS.map((t) => `${t.shortLabel} ${earnedBadges.filter((b) => b.tier === t.key).length}`).join(" · ")}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {BADGE_TIERS.map((t) => `${t.shortLabel} ${earnedBadges.filter((b) => b.tier === t.key).length}`).join(" · ")}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -9572,25 +9626,6 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   }}>
                     <X size={11} /> limpar
                   </button>
-                </div>
-              )}
-
-              {/* Lembrete de próximas ações vencendo - aparece quando alguma ação está atrasada ou é pra hoje */}
-              {nextActions.due.length > 0 && (
-                <div onClick={() => setView("acoes")} style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 16, padding: "13px 16px", marginBottom: 14, background: "linear-gradient(135deg, #fff1f0, #ffe4e1)", border: "1px solid #f5b5ae", cursor: "pointer" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 11, background: "linear-gradient(160deg, #f87171, #dc2626)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Bell size={17} color="white" />
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: "#b91c1c" }}>
-                      {nextActions.due.length === 1 ? "1 ação vencendo" : `${nextActions.due.length} ações vencendo`}
-                      {nextActions.overdue.length > 0 && ` · ${nextActions.overdue.length} atrasada${nextActions.overdue.length === 1 ? "" : "s"}`}
-                    </div>
-                    <div style={{ fontSize: 15, color: "#dc2626", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {nextActions.due.slice(0, 2).map((x) => `${x.lead.company}: ${x.lead.nextAction.description || "sem descrição"}`).join(" · ")}
-                    </div>
-                  </div>
-                  <ChevronRight size={16} color="#dc2626" style={{ flexShrink: 0 }} />
                 </div>
               )}
 
@@ -9684,18 +9719,18 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                         <div style={{ display: "flex", gap: 8, marginTop: 14 }} onClick={(e) => e.stopPropagation()}>
                           <div
                             onClick={() => { setWeekSectionFilter("leftover"); setView("semana"); }}
-                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.3)", cursor: "pointer", color: "#e9ecdd" }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "#14141a", cursor: "pointer", color: "#ffffff" }}
                           >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.leftover.length}</div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, opacity: 0.85, marginTop: 3 }}>sobrando da semana passada</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, marginTop: 3 }}>sobrando da semana passada</div>
                           </div>
                           <div
                             onClick={() => { setWeekSectionFilter("thisWeek"); setView("semana"); }}
-                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "rgba(20,20,26,0.3)", cursor: "pointer", color: "#e9ecdd" }}
+                            style={{ flex: 1, padding: "10px 12px", borderRadius: 14, background: "#14141a", cursor: "pointer", color: "#ffffff" }}
                           >
                             <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{weekFiltered.addedThisWeekTotal}</div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, opacity: 0.85, marginTop: 3 }}>colocados essa semana</div>
-                            <div style={{ fontSize: 13, fontWeight: 700, opacity: 0.7, marginTop: 1 }}>{weekFiltered.completed.length} feito{weekFiltered.completed.length === 1 ? "" : "s"} · {weekFiltered.addedThisWeek.length} pendente{weekFiltered.addedThisWeek.length === 1 ? "" : "s"}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, marginTop: 3 }}>colocados essa semana</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#d7fa3c", marginTop: 1 }}>{weekFiltered.completed.length} feito{weekFiltered.completed.length === 1 ? "" : "s"} · {weekFiltered.addedThisWeek.length} pendente{weekFiltered.addedThisWeek.length === 1 ? "" : "s"}</div>
                           </div>
                         </div>
                       )}
@@ -9916,6 +9951,24 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                 )}
               </div>
 
+              {/* Filtros recolhidos num botão grande - toca pra abrir/fechar todos */}
+              {(() => {
+                const activeFilters = [tempFilter !== "all", superOnly, whatsappOnly, ownerFilter !== "all", statusFilter !== "all", phaseFilter !== "all", originFilter !== "all", sectorFilter !== "all", tagFilter !== "all"].filter(Boolean).length;
+                return (
+                  <button
+                    className="filters-toggle"
+                    onClick={() => setFiltersOpen((v) => !v)}
+                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "13px 18px", marginBottom: filtersOpen ? 10 : 20, borderRadius: 999, cursor: "pointer", fontSize: 16, fontWeight: 800, background: filtersOpen || activeFilters ? "#14141a" : "#ffffff", color: filtersOpen || activeFilters ? "#ffffff" : "#14141a", border: filtersOpen || activeFilters ? "1.5px solid #14141a" : "1.5px solid #cfd6df" }}
+                  >
+                    <SlidersHorizontal size={17} />
+                    <span>Filtros</span>
+                    {activeFilters > 0 && <span style={{ background: "#d7fa3c", color: "#14141a", borderRadius: 999, padding: "1px 9px", fontSize: 13.5, fontWeight: 800 }}>{activeFilters}</span>}
+                    <span style={{ marginLeft: "auto", fontSize: 14, fontWeight: 600, opacity: 0.8 }}>{filtered.length} de {leads.length} leads</span>
+                    <ChevronRight size={18} style={{ transform: filtersOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 0.2s ease", flexShrink: 0 }} />
+                  </button>
+                );
+              })()}
+              {filtersOpen && (<>
               {/* Filtros */}
               <Glass style={{ borderRadius: 16, padding: "10px 14px", marginBottom: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <Chip active={tempFilter === "all"} onClick={() => setTempFilter("all")} color="#0f172a">Todos</Chip>
@@ -10070,6 +10123,7 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                   <Chip key={t.key} active={tagFilter === t.key} onClick={() => setTagFilter(tagFilter === t.key ? "all" : t.key)} color={t.color} count={leads.filter((l) => (l.tags || []).includes(t.key)).length}>{t.label}</Chip>
                 ))}
               </Glass>
+              </>)}
 
               <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
                 <div style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(148,163,184,0.12)" }}>
