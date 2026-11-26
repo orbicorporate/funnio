@@ -8009,7 +8009,8 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
   const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [goalsOpen, setGoalsOpen] = useState(false);
-  const [quickActOpen, setQuickActOpen] = useState(false); // dica do assistente + ações vencendo recolhidas em "Agir rápido" // Metas e Conquistas recolhidas atrás do ícone de troféu // filtros da lista recolhidos num botão "Filtros"
+  const [quickActOpen, setQuickActOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false); // "Seu progresso semanal" recolhido numa linha-resumo // dica do assistente + ações vencendo recolhidas em "Agir rápido" // Metas e Conquistas recolhidas atrás do ícone de troféu // filtros da lista recolhidos num botão "Filtros"
   const [chatMessages, setChatMessages] = useState([]); // [{role:'user'|'assistant', content}]
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -9738,189 +9739,203 @@ export default function CRM({ authMembers = [], onSyncMemberAvatar, currentUserI
                     </div>
 
                     {/* Baixo: progresso + estatísticas + alerta, fundo branco */}
-                    <div style={{ background: "rgba(255,255,255,0.18)", padding: "22px 24px" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
-                        <span style={{ fontSize: 15.5, fontWeight: 800, color: "#14141a" }}>Seu progresso semanal</span>
-                        <button
-                          onClick={() => { if (isOwner) setEditingGoal(true); }}
-                          title={isOwner ? "Clique para definir a meta semanal a qualquer momento" : "Só o gestor do funil pode alterar a meta"}
-                          style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", cursor: isOwner ? "pointer" : "default", padding: 0 }}
-                        >
-                          {editingGoal && isOwner ? (
-                            <input
-                              type="number" min={1} autoFocus defaultValue={weeklyGoal}
-                              onBlur={(e) => { const v = parseInt(e.target.value, 10); setWeeklyGoal(v > 0 ? v : DEFAULT_WEEKLY_GOAL); setEditingGoal(false); }}
-                              onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
-                              onClick={(e) => e.stopPropagation()}
-                              style={{ width: 60, padding: "3px 6px", borderRadius: 7, border: "1.5px solid #6d5ef8", fontSize: 14.5, fontWeight: 700, color: "#14141a", outline: "none" }}
-                            />
-                          ) : (
-                            <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-                              Meta: <span style={{ color: "#6d5ef8", fontWeight: 800 }}>{weeklyGoal} leads</span> {isOwner ? <Pencil size={11} color="#6d5ef8" /> : <Lock size={11} color="#9a9aa3" />}
-                            </span>
-                          )}
-                        </button>
-                      </div>
-                      {/* Deixa explícito qual semana esses números representam - evita dúvida se o
-                          progresso mostrado é da semana atual ou ficou "grudado" de uma semana anterior. */}
-                      <div style={{ fontSize: 14.5, color: "#6b7280", fontWeight: 600, marginBottom: 14 }}>
-                        Semana de {stats.weekStart.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a {new Date(stats.weekEnd.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} - só conta o que foi concluído nesse período
-                      </div>
+                    <div style={{ background: "rgba(255,255,255,0.18)", padding: progressOpen ? "18px 24px 22px" : "14px 24px" }}>
+                      {/* Recolhido: só o resumo; toca pra ver o progresso completo */}
+                      <button
+                        className="progress-toggle"
+                        onClick={() => setProgressOpen((v) => !v)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, border: "none", background: "transparent", padding: "4px 0", cursor: "pointer", marginBottom: progressOpen ? 12 : 0, fontFamily: "inherit", textAlign: "left" }}
+                      >
+                        <BarChart3 size={18} color="#14141a" />
+                        <span style={{ fontSize: 16, fontWeight: 800, color: "#14141a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>Seu progresso semanal</span>
+                        <span style={{ marginLeft: "auto", fontSize: 15, fontWeight: 800, color: goalMet ? "#059669" : "#14141a", whiteSpace: "nowrap" }}>{stats.weekDoneCount}/{weeklyGoal} · {pct}%</span>
+                        <ChevronRight size={18} color="#14141a" style={{ transform: progressOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 0.2s ease", flexShrink: 0 }} />
+                      </button>
+                      {progressOpen && (<>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
+                          <span style={{ fontSize: 14.5, fontWeight: 700, color: "#475569" }}>Semana atual</span>
+                          <button
+                            onClick={() => { if (isOwner) setEditingGoal(true); }}
+                            title={isOwner ? "Clique para definir a meta semanal a qualquer momento" : "Só o gestor do funil pode alterar a meta"}
+                            style={{ display: "flex", alignItems: "center", gap: 6, border: "none", background: "transparent", cursor: isOwner ? "pointer" : "default", padding: 0 }}
+                          >
+                            {editingGoal && isOwner ? (
+                              <input
+                                type="number" min={1} autoFocus defaultValue={weeklyGoal}
+                                onBlur={(e) => { const v = parseInt(e.target.value, 10); setWeeklyGoal(v > 0 ? v : DEFAULT_WEEKLY_GOAL); setEditingGoal(false); }}
+                                onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ width: 60, padding: "3px 6px", borderRadius: 7, border: "1.5px solid #6d5ef8", fontSize: 14.5, fontWeight: 700, color: "#14141a", outline: "none" }}
+                              />
+                            ) : (
+                              <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                                Meta: <span style={{ color: "#6d5ef8", fontWeight: 800 }}>{weeklyGoal} leads</span> {isOwner ? <Pencil size={11} color="#6d5ef8" /> : <Lock size={11} color="#9a9aa3" />}
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                        {/* Deixa explícito qual semana esses números representam - evita dúvida se o
+                            progresso mostrado é da semana atual ou ficou "grudado" de uma semana anterior. */}
+                        <div style={{ fontSize: 14.5, color: "#6b7280", fontWeight: 600, marginBottom: 14 }}>
+                          Semana de {stats.weekStart.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a {new Date(stats.weekEnd.getTime() - 86400000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} - só conta o que foi concluído nesse período
+                        </div>
 
-                      {/* Linha do tempo Seg-Sex da semana atual, com o dia de hoje aceso -
-                          deixa claro de bater o olho que a meta é da semana corrente. */}
-                      {(() => {
-                        const today = new Date();
-                        const dayIdx = (today.getDay() + 6) % 7; // 0=Seg ... 6=Dom
-                        const monday = new Date(today); monday.setHours(0, 0, 0, 0); monday.setDate(today.getDate() - dayIdx);
-                        const days = ["Seg", "Ter", "Qua", "Qui", "Sex"].map((label, i) => {
-                          const d = new Date(monday); d.setDate(monday.getDate() + i);
-                          return { label, num: d.getDate(), isToday: i === dayIdx };
-                        });
-                        return (
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, position: "relative", padding: "0 4px" }}>
-                            <div style={{ position: "absolute", top: 15, left: 24, right: 24, height: 2, background: "#eef0f3", zIndex: 0 }} />
-                            {days.map((d) => (
-                              <div key={d.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, position: "relative", zIndex: 1, flex: 1 }}>
-                                <div style={{
-                                  width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                                  background: d.isToday ? "linear-gradient(135deg, #c8e85a, #a8dc2e)" : "white",
-                                  border: d.isToday ? "none" : "2px solid #eef0f3",
-                                  boxShadow: d.isToday ? "0 0 0 4px rgba(168,220,46,0.25)" : "none",
-                                  transition: "all 0.2s ease",
-                                }}>
-                                  <span style={{ fontSize: 15.5, fontWeight: 800, color: d.isToday ? "#14141a" : "#c4c4cc" }}>{d.num}</span>
+                        {/* Linha do tempo Seg-Sex da semana atual, com o dia de hoje aceso -
+                            deixa claro de bater o olho que a meta é da semana corrente. */}
+                        {(() => {
+                          const today = new Date();
+                          const dayIdx = (today.getDay() + 6) % 7; // 0=Seg ... 6=Dom
+                          const monday = new Date(today); monday.setHours(0, 0, 0, 0); monday.setDate(today.getDate() - dayIdx);
+                          const days = ["Seg", "Ter", "Qua", "Qui", "Sex"].map((label, i) => {
+                            const d = new Date(monday); d.setDate(monday.getDate() + i);
+                            return { label, num: d.getDate(), isToday: i === dayIdx };
+                          });
+                          return (
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, position: "relative", padding: "0 4px" }}>
+                              <div style={{ position: "absolute", top: 15, left: 24, right: 24, height: 2, background: "#eef0f3", zIndex: 0 }} />
+                              {days.map((d) => (
+                                <div key={d.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, position: "relative", zIndex: 1, flex: 1 }}>
+                                  <div style={{
+                                    width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                                    background: d.isToday ? "linear-gradient(135deg, #c8e85a, #a8dc2e)" : "white",
+                                    border: d.isToday ? "none" : "2px solid #eef0f3",
+                                    boxShadow: d.isToday ? "0 0 0 4px rgba(168,220,46,0.25)" : "none",
+                                    transition: "all 0.2s ease",
+                                  }}>
+                                    <span style={{ fontSize: 15.5, fontWeight: 800, color: d.isToday ? "#14141a" : "#c4c4cc" }}>{d.num}</span>
+                                  </div>
+                                  <span style={{ fontSize: 13, fontWeight: d.isToday ? 800 : 600, color: d.isToday ? "#14141a" : "#9a9aa3" }}>{d.label}</span>
                                 </div>
-                                <span style={{ fontSize: 13, fontWeight: d.isToday ? 800 : 600, color: d.isToday ? "#14141a" : "#9a9aa3" }}>{d.label}</span>
+                              ))}
+                            </div>
+                          );
+                        })()}
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
+                          <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "ringGoalGlow 2.4s ease-in-out infinite" : "none" }}>
+                            <svg width="90" height="90" viewBox="0 0 90 90">
+                              <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="3" />
+                              <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="3" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
+                              {pct > 0 && (
+                                <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="10 228.8" opacity="0.75" transform="rotate(-90 45 45)" style={{ animation: "ringLightTravel 2.6s linear infinite" }} />
+                              )}
+                            </svg>
+                            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: 19, fontWeight: 800, color: "#14141a", lineHeight: 1 }}>{pct}%</span>
+                              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>da meta</span>
+                            </div>
+                          </div>
+
+                          <div style={{ flex: 1, minWidth: 140 }}>
+                            <div style={{ height: 4, borderRadius: 3, background: "#eef0f3", marginBottom: 8, overflow: "hidden" }}>
+                              <div style={{
+                                height: "100%", borderRadius: 4, width: `${pct}%`,
+                                background: goalMet ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #c8e85a, #a8dc2e)",
+                                transition: "width 0.3s ease", position: "relative", overflow: "hidden",
+                              }}>
+                                {pct > 0 && (
+                                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.65) 50%, transparent 70%)", backgroundSize: "200% 100%", animation: "shimmer 2.2s ease-in-out infinite" }} />
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 800, color: goalMet ? "#059669" : "#8fae0e" }}>{stats.weekDoneCount}</span>
+                              <span style={{ fontSize: 15.5, fontWeight: 700, color: "#c4c4cc" }}> / {weeklyGoal}</span>
+                              <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, marginLeft: 5 }}>leads abordados</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ borderTop: "1px solid #f1f2f5", paddingTop: 18, marginBottom: 18 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 0 }}>
+                            {[
+                              { icon: Users2, value: stats.weekDoneCount, label: "abordados", sub: "esta semana", color: "#6d5ef8", bg: "rgba(109,94,248,0.1)" },
+                              { icon: CalendarIcon, value: stats.meetingsThisWeek, label: "reuniões", sub: "esta semana", color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
+                            ].map((stat, i) => (
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 16px", borderLeft: i > 0 ? "1px solid #f1f2f5" : "none" }}>
+                                <div style={{ width: 42, height: 42, borderRadius: 12, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <stat.icon size={19} color={stat.color} />
+                                </div>
+                                <div>
+                                  <div><span style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: stat.color }}>{stat.value}</span> <span style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{stat.label}</span></div>
+                                  <div style={{ fontSize: 14.5, color: "#6b7280" }}>{stat.sub}</div>
+                                </div>
                               </div>
                             ))}
                           </div>
-                        );
-                      })()}
-
-                      <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 10 }}>
-                        <div style={{ position: "relative", width: 90, height: 90, flexShrink: 0, animation: goalMet ? "ringGoalGlow 2.4s ease-in-out infinite" : "none" }}>
-                          <svg width="90" height="90" viewBox="0 0 90 90">
-                            <circle cx="45" cy="45" r="38" fill="none" stroke="#eef0f3" strokeWidth="3" />
-                            <circle cx="45" cy="45" r="38" fill="none" stroke={goalMet ? "#059669" : DARK.lime} strokeWidth="3" strokeDasharray={`${(pct / 100) * 238.8} 238.8`} strokeLinecap="round" transform="rotate(-90 45 45)" />
-                            {pct > 0 && (
-                              <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="10 228.8" opacity="0.75" transform="rotate(-90 45 45)" style={{ animation: "ringLightTravel 2.6s linear infinite" }} />
-                            )}
-                          </svg>
-                          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                            <span style={{ fontSize: 19, fontWeight: 800, color: "#14141a", lineHeight: 1 }}>{pct}%</span>
-                            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>da meta</span>
-                          </div>
                         </div>
 
-                        <div style={{ flex: 1, minWidth: 140 }}>
-                          <div style={{ height: 4, borderRadius: 3, background: "#eef0f3", marginBottom: 8, overflow: "hidden" }}>
-                            <div style={{
-                              height: "100%", borderRadius: 4, width: `${pct}%`,
-                              background: goalMet ? "linear-gradient(90deg, #34d399, #059669)" : "linear-gradient(90deg, #c8e85a, #a8dc2e)",
-                              transition: "width 0.3s ease", position: "relative", overflow: "hidden",
-                            }}>
-                              {pct > 0 && (
-                                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.65) 50%, transparent 70%)", backgroundSize: "200% 100%", animation: "shimmer 2.2s ease-in-out infinite" }} />
-                              )}
-                            </div>
+                        {stats.weekCompletedStale.length > 0 && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(148,163,184,0.1)", marginBottom: 18 }}>
+                            <Info size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
+                            <span style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 600 }}>
+                              {stats.weekCompletedStale.length} lead{stats.weekCompletedStale.length === 1 ? "" : "s"} concluído{stats.weekCompletedStale.length === 1 ? "" : "s"} em semana{stats.weekCompletedStale.length === 1 ? "" : "s"} anterior{stats.weekCompletedStale.length === 1 ? "" : "es"} - não conta mais nesse progresso
+                            </span>
                           </div>
-                          <div>
-                            <span style={{ fontFamily: "inherit", fontSize: 20, fontWeight: 800, color: goalMet ? "#059669" : "#8fae0e" }}>{stats.weekDoneCount}</span>
-                            <span style={{ fontSize: 15.5, fontWeight: 700, color: "#c4c4cc" }}> / {weeklyGoal}</span>
-                            <span style={{ fontSize: 15, color: "#6b7280", fontWeight: 600, marginLeft: 5 }}>leads abordados</span>
-                          </div>
-                        </div>
-                      </div>
+                        )}
 
-                      <div style={{ borderTop: "1px solid #f1f2f5", paddingTop: 18, marginBottom: 18 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 0 }}>
-                          {[
-                            { icon: Users2, value: stats.weekDoneCount, label: "abordados", sub: "esta semana", color: "#6d5ef8", bg: "rgba(109,94,248,0.1)" },
-                            { icon: CalendarIcon, value: stats.meetingsThisWeek, label: "reuniões", sub: "esta semana", color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
-                          ].map((stat, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 16px", borderLeft: i > 0 ? "1px solid #f1f2f5" : "none" }}>
-                              <div style={{ width: 42, height: 42, borderRadius: 12, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                <stat.icon size={19} color={stat.color} />
+                        {!goalMet ? (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 16, background: "rgba(226,72,63,0.07)", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                              <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(226,72,63,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <Target size={21} color="#e2483f" />
                               </div>
                               <div>
-                                <div><span style={{ fontFamily: "inherit", fontSize: 22, fontWeight: 800, color: stat.color }}>{stat.value}</span> <span style={{ fontSize: 14.5, fontWeight: 700, color: "#14141a" }}>{stat.label}</span></div>
-                                <div style={{ fontSize: 14.5, color: "#6b7280" }}>{stat.sub}</div>
+                                <div style={{ fontSize: 16.5, fontWeight: 800, color: "#e2483f", lineHeight: 1.2 }}>{remaining} lead{remaining === 1 ? "" : "s"} restante{remaining === 1 ? "" : "s"}</div>
+                                <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>para bater a meta semanal</div>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {stats.weekCompletedStale.length > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(148,163,184,0.1)", marginBottom: 18 }}>
-                          <Info size={13} color="#94a3b8" style={{ flexShrink: 0 }} />
-                          <span style={{ fontSize: 14.5, color: "#4b5563", fontWeight: 600 }}>
-                            {stats.weekCompletedStale.length} lead{stats.weekCompletedStale.length === 1 ? "" : "s"} concluído{stats.weekCompletedStale.length === 1 ? "" : "s"} em semana{stats.weekCompletedStale.length === 1 ? "" : "s"} anterior{stats.weekCompletedStale.length === 1 ? "" : "es"} - não conta mais nesse progresso
-                          </span>
-                        </div>
-                      )}
-
-                      {!goalMet ? (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 16, background: "rgba(226,72,63,0.07)", flexWrap: "wrap" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(226,72,63,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Target size={21} color="#e2483f" />
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 16.5, fontWeight: 800, color: "#e2483f", lineHeight: 1.2 }}>{remaining} lead{remaining === 1 ? "" : "s"} restante{remaining === 1 ? "" : "s"}</div>
-                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>para bater a meta semanal</div>
-                            </div>
+                            <button
+                              className="lgb"
+                              onClick={() => setView("semana")}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 7,
+                                padding: "10px 16px",
+                                borderRadius: 999,
+                                color: "#14141a",
+                                fontSize: 15.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                flexShrink: 0
+                              }}>
+                              <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
+                            </button>
                           </div>
-                          <button
-                            className="lgb"
-                            onClick={() => setView("semana")}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 7,
-                              padding: "10px 16px",
-                              borderRadius: 999,
-                              color: "#14141a",
-                              fontSize: 15.5,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              flexShrink: 0
-                            }}>
-                            <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 16, background: "rgba(31,169,113,0.07)", flexWrap: "wrap" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(31,169,113,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Trophy size={21} color="#059669" />
+                        ) : (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 16, background: "rgba(31,169,113,0.07)", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                              <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(31,169,113,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <Trophy size={21} color="#059669" />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 16.5, fontWeight: 800, color: "#059669", lineHeight: 1.2 }}>Meta da semana batida! 🎉</div>
+                                <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>continue assim até o fim da semana</div>
+                              </div>
                             </div>
-                            <div>
-                              <div style={{ fontSize: 16.5, fontWeight: 800, color: "#059669", lineHeight: 1.2 }}>Meta da semana batida! 🎉</div>
-                              <div style={{ fontSize: 14.5, fontWeight: 600, color: "#4b5563" }}>continue assim até o fim da semana</div>
-                            </div>
+                            <button
+                              className="lgb"
+                              onClick={() => setView("semana")}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 7,
+                                padding: "10px 16px",
+                                borderRadius: 999,
+                                color: "#14141a",
+                                fontSize: 15.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                flexShrink: 0
+                              }}>
+                              <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
+                            </button>
                           </div>
-                          <button
-                            className="lgb"
-                            onClick={() => setView("semana")}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 7,
-                              padding: "10px 16px",
-                              borderRadius: 999,
-                              color: "#14141a",
-                              fontSize: 15.5,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              flexShrink: 0
-                            }}>
-                            <BarChart3 size={13} /> Ver progresso <ChevronRight size={13} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                    
+                      </>)}
+</div>
                   </div>
                 );
               })()}
